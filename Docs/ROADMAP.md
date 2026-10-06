@@ -1,7 +1,7 @@
 # Vertical slice y roadmap
 
-Estado actual: **M0 y M1 aprobados; M2 implementado, aceptación manual pendiente**.
-Ver [M1](M1.md) y [M2 y su validación](M2.md). M3–M8 siguen pendientes.
+Estado actual: **M0, M1 y M2 aprobados; M3 implementado, aceptación manual pendiente**.
+Ver [M1](M1.md), [M2](M2.md) y [M3 y su validación](M3.md). M4–M8 siguen pendientes.
 
 ## Experiencia objetivo
 
@@ -17,8 +17,9 @@ primera persona y da feedback visible para cada acción o rechazo.
 - Un jugador, teclado/ratón, una sala, una estación, un plato, un cliente
   placeholder y un pedido activo. Sin pathfinding ni turnos de empleados.
 - Un tipo de ingrediente basta para demostrar identidad y estado; cada porción
-  tiene estado propio. Estados mínimos: Raw, Cooked, Burned. Deterioro y frescura
-  avanzada llegarán después; no confundir cocción con pudrición.
+  tiene estado propio. M3 incluye deterioro básico Fresh/Acceptable/Spoiled/Rotten,
+  independiente de los estados de cocción previstos para M4: Raw, Cooked, Burned.
+  Factores de deterioro más detallados llegarán después; no confundir los dos ejes.
 - Cocción por tiempo acumulado con una fuente activa, no por simulación térmica.
   La cocina física inicial valida colocar/retirar objetos; no implementa todavía
   fluidos, cortes, transferencia de calor o contactos de precisión.
@@ -55,7 +56,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M0 · `feature/project-foundation` | Git, carpetas, documentación y plan. | Metas completas, fuentes y caches separados, sin cambios en gameplay/paquetes/configuración. Abrir SampleScene y comprobar carpetas/Console. |
 | M1 · `feature/player-controller` | Escena `PrototypeRestaurant`, suelo/paredes de primitivas, cámara y jugador. | WASD mueve y ratón mira; no atraviesa paredes; el cursor se captura/libera; entrar/salir de Play dos veces no duplica input. Cámara y velocidad configurables. Sin interacción todavía. |
 | M2 · `feature/world-interaction` | Contrato genérico, raycast de alcance limitado y feedback; coger/transportar/soltar/lanzar cuatro cajas físicas. | Mostrar prompt y bindings solo con control/objetivo válido; paredes y alcance bloquean la acción; un agarre exclusivo; caminar/mirar sosteniendo; comparar masas/tamaños; limitar velocidades y liberar si falta espacio seguro o desaparece el objeto. Interact pasa de Hold a pulsación; Drop/Throw configurables. Tests deterministas, física PlayMode y aceptación manual según M2.md. |
-| M3 · `feature/food-state` | Definición mínima y estado independiente por porción; assembly Domain y tests de negocio. | Dos porciones de la misma definición no comparten estado; coger/soltar conserva instancia; no duplicar porciones; modificar un estado no modifica el ScriptableObject. Tests EditMode para independencia y pertenencia. |
+| M3 · `feature/food-state` | Tres definiciones y cuatro alimentos físicos; Domain independiente de Unity, deterioro/temperatura e inspección provisional. | Dos porciones comparten definición pero no estado; recoger/soltar/lanzar conserva identidad y no muta el asset. Frescura 0–100 y transiciones por umbrales; temperatura por unidad y grandes saltos temporales deterministas. Fixture fresca/envejecida/fría/contaminada y aceleración solo de desarrollo. Tests EditMode/PlayMode y regresión M1/M2 según M3.md; sin cocción. |
 | M4 · `feature/basic-cooking` | Estación no eléctrica para una porción y progreso de cocción. | Raw → Cooked → Burned en umbrales configurados; retirar pausa el calor acumulado; volver a colocar continúa sin resetear; no cocina lejos de la estación. Tests con tiempo explícito antes/en/después del umbral y comprobación PlayMode de colocación. |
 | M5 · `feature/dish-assembly` | Plato con colección de porciones y montaje por interacción. | Una porción pasa de mano/estación al plato sin duplicarse; retirar conserva estado; plato vacío no entregable. Montar dos porciones en distinto orden conserva los mismos datos. Tests de pertenencia y composición. |
 | M6 · `feature/customer-order` | Cliente estático y un pedido legible con requisito e importe. | Consultar pedido desde primera persona; validar por datos: vacío/Raw/Burned fallan y contenido comestible que satisface el pedido pasa. No requiere navegación ni IA. Tests de predicado de aceptación. |
@@ -91,7 +92,7 @@ El orden siguiente es orientativo y se revisará con evidencia del prototipo:
 1. **Bucle de supervivencia:** obtención de provisiones con 0 €, precios de compra,
    combustible, reposición y sistema mínimo de electricidad. Comprobar que existe
    una vía jugable para realizar la primera venta sin dinero inicial.
-2. **Profundidad de cocina:** más ingredientes, deterioro, almacenamiento, herramientas
+2. **Profundidad de cocina:** más ingredientes, factores de deterioro, almacenamiento, herramientas
    físicas y criterios de plato más expresivos, manteniendo creación libre.
 3. **Servicio y negocio:** múltiples pedidos, clientes con navegación, reputación,
    balances y empleados. Introducir guardado cuando el progreso lo requiera.

@@ -1,9 +1,8 @@
 # Arquitectura y convenciones
 
-Estado: M1 implementa adaptadores Unity de jugador; M2 añade interacción genérica,
-agarre físico y feedback provisional en la misma escena greybox, con pruebas.
-Domain no tiene clases todavía; las separaciones de negocio descritas aquí se
-aplicarán cuando aparezcan sus reglas reales.
+Estado: M1 implementa jugador FPS; M2 interacción genérica y agarre físico;
+M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
+adaptadores Unity e inspección. Los sistemas de cocción/restaurante siguen pendientes.
 
 ## Dependencias y responsabilidades
 
@@ -71,9 +70,9 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-M1/M2 incluyen `PrototypeRestaurant.unity`, tres materiales greybox y cuatro de
-cajas físicas, todos URP/Lit simples. Todavía no hay prefabs ni ScriptableObjects
-propios.
+M1–M3 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
+cajas físicas y tres de alimentos, todos URP/Lit simples. M3 crea tres
+ScriptableObjects FoodDefinition. Todavía no hay prefabs propios.
 
 ## Assemblies y tests al implementar
 
@@ -84,16 +83,15 @@ Input System y URP y solo compila para Editor. Los scripts del tutorial permanec
 en sus assemblies predefinidos. Los assemblies de tests son TestAssemblies y no
 se incluyen en builds normales del jugador.
 
-Al introducir las primeras reglas de negocio (previsto M3):
+M3 introduce las primeras reglas de negocio:
 
 - `ZeroStarRestaurant.Domain`: bajo Domain, `noEngineReferences: true`, sin
   referencias a Runtime o paquetes del Editor.
-- Añadir a `ZeroStarRestaurant.Runtime` una referencia a Domain cuando use sus
-  reglas. No mover los scripts M1 ni regenerar sus GUID.
-- Ampliar `ZeroStarRestaurant.Tests.EditMode` con una referencia a Domain para
-  sus pruebas. Ya prueba referencias, entrada y geometría de la escena M1.
-- Mantener `ZeroStarRestaurant.Tests.PlayMode` para pruebas de integración. M1
-  comprueba física nativa y el ciclo de activación del input.
+- Runtime referencia Domain para adaptar FoodState; Editor lo referencia para
+  generar categorías/validar perfiles. No se mueven scripts M1/M2 ni cambian GUID.
+- EditMode referencia Domain para pruebas deterministas, además de comprobar
+  escena, configuración e input. PlayMode también lo referencia para comprobar
+  identidad del estado durante interacción/física nativa y ciclo de activación.
 
 Los assemblies de tests no se incluyen en builds de jugador. No añadir NUnit a
 Assembly-CSharp, ni depender de Assembly-CSharp desde un assembly de tests:
@@ -137,6 +135,41 @@ cursor/foco. La API de interacción puede probarse sin un dispositivo físico.
 Cada adaptador posee su copia del asset; el de M2 solo habilita sus tres acciones.
 Se reutilizan los assemblies existentes. Ver [ADR 0003](Decisions/0003-physical-interaction.md)
 y [configuración, límites y validación de M2](M2.md).
+
+## Alimentos M3
+
+```text
+FoodDefinition (asset de autoría) → FoodProfile (instantánea inmutable, Domain)
+FoodItem (unidad Unity)           → FoodState (edad, exposición, temperatura, contaminación)
+FoodSimulation (tiempo/ambiente)  → FoodState.Advance(segundos, ambiente, multiplicador)
+Pickup + Rigidbody               → pose y agarre, sin referencias a Food
+FoodInspectionFeedback           ← estado de la comida enfocada o sostenida
+```
+
+La definición incluye ID/nombre/categoría, coste en céntimos, vida de frescura,
+respuesta térmica y umbrales. No incluye material, malla, collider ni estado
+mutable. Dos FoodItem pueden compartir el asset; cada uno crea su propio estado
+en Awake y conserva esa referencia al desactivar/reactivar y al recoger/lanzar.
+Los ajustes iniciales de fixture son campos de la unidad, no del asset compartido.
+
+La edad aumenta con tiempo explícito; la exposición equivalente aumenta con ese
+tiempo por una tasa externa no negativa. Frescura 0–100 se deriva de exposición
+limitada a su vida; la condición Fresh/Acceptable/Spoiled/Rotten se deriva de
+umbrales, sin duplicar estado. Temperatura se aproxima analíticamente al ambiente.
+Contaminación es una marca independiente. Domain no usa Time, GameObject ni Unity.
+
+M3 no relaciona automáticamente temperatura y tasa de deterioro ni modela cocina.
+El driver usa tasa 1; un adaptador posterior puede suministrar otra. El método
+Advance permite intervalos grandes, con resultados equivalentes a pasos pequeños
+cuando entorno/tasa son constantes. Para cambios, segmentar los intervalos.
+La fixture ofrece multiplicador y botón de desarrollo sin modificar el tiempo
+global. El driver referencia las cuatro unidades explícitamente, sin descubrimiento
+global, inventario ni persistencia.
+
+El feedback de comida conoce ambos adaptadores para presentar datos. Los
+componentes de interacción y el modelo de alimento no consultan su representación.
+Ver [ADR 0004](Decisions/0004-food-state-and-time.md) y [M3](M3.md), incluyendo
+responsabilidad única sobre tiempo y separación entre deterioro y futura cocción.
 
 ## Convenciones prácticas
 

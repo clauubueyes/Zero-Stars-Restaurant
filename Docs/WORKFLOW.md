@@ -28,6 +28,12 @@ M1 ya está aprobado. M2 se desarrolla desde esa rama:
 git switch -c feature/world-interaction feature/player-controller
 ```
 
+M2 aprobado termina en `14e0575`. M3 parte de ese commit, sin merge previo:
+
+```powershell
+git switch -c feature/food-state 14e0575
+```
+
 No hay remoto, CI ni protección de ramas del servidor configurados: la estabilidad
 de main depende de seguir este flujo local hasta conectar un remoto.
 
@@ -86,6 +92,9 @@ propias en ambos modos del Test Runner. El generador no se ejecuta automáticame
 al importar el proyecto y no cambia las escenas de Build Settings.
 Para M2, seguir [interacción física y límites](M2.md), incluyendo regresión M1.
 El menú actual del generador es **Zero Star Restaurant > Prototype > Rebuild Greybox Scene**.
+Para M3, seguir [alimentos y simulación temporal](M3.md). El mismo menú reconstruye
+el prototipo actual; reutiliza definiciones y materiales. La aceleración de comida
+se configura en Inspector y no cambia la física ni el input de M1/M2.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

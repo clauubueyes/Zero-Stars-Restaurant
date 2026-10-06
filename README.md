@@ -5,8 +5,10 @@ en Unity. El jugador comienza con **0 €**, un local casi vacío y **sin electr
 El objetivo es conseguir que el negocio sobreviva mediante sistemas combinables.
 
 M1 permite caminar, mirar y saltar en un restaurante greybox. M2 añade interacción
-genérica y cuatro cajas físicas para coger, transportar, soltar y lanzar. Los
-sistemas de restaurante siguen pendientes. La escena de plantilla
+genérica y cuatro cajas físicas para coger, transportar, soltar y lanzar. M3 añade
+alimentos con estado independiente, deterioro temporal y temperatura, inspeccionables
+con feedback de desarrollo. Cocción y los demás sistemas siguen pendientes.
+La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
 ## Abrir el proyecto
@@ -25,6 +27,10 @@ sistemas de restaurante siguen pendientes. La escena de plantilla
 6. Mirar una caja a menos de 3 m: **E** la recoge, **G** la suelta y **botón derecho
    del ratón** la lanza. El texto provisional muestra objeto, acción y binding.
    Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
+7. Ir al banco de pruebas a la izquierda del spawn (`FoodTestZone`): dos porciones
+   de carne, pan y queso usan las mismas acciones M2. Mirar o sostener comida
+   muestra frescura, temperatura, condición, edad y contaminación. El Inspector
+   de FoodTestZone permite avanzar tiempo solo de comida; ver [M3](Docs/M3.md).
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -60,8 +66,11 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [M1: pruebas, controles, configuración y reconstrucción del greybox](Docs/M1.md).
 - [M2: interacción física, validación y pruebas manuales](Docs/M2.md).
 - [Decisión sobre interacción y agarre físico](Docs/Decisions/0003-physical-interaction.md).
+- [M3: alimentos, definiciones, deterioro, pruebas y límites](Docs/M3.md).
+- [Decisión sobre estado de alimento y tiempo](Docs/Decisions/0004-food-state-and-time.md).
 
 `main` conserva el proyecto original como baseline. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
 M2 parte de M1 aprobado en `feature/world-interaction`.
+M3 parte de M2 aprobado (`14e0575`) en `feature/food-state`.
 No hay remoto configurado y no se ha integrado en main; los commits son locales.
