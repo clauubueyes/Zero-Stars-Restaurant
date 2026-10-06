@@ -11,7 +11,10 @@ La petición aprobada de M6 amplía su alcance a Customer Order → Delivery →
 y sustituye la división anterior M6 pedido/M7 entrega-pago. También sustituye el
 rechazo por Raw/Burnt/calidad: ahora calidad y corrección se informan separadamente,
 y solo la coincidencia estructural controla aceptación/pago. Ver ADR 0007.
-M7 no se ha implementado ni autorizado; su alcance deberá acordarse después de M6.
+M1–M6, polish y entrega tolerante aprobados en **`144cca5`**. La petición de M7
+autoriza exclusivamente **Food Storage & Refrigeration**, implementado en
+`feature/food-storage-refrigeration` y pendiente de aceptación manual; ver [M7](M7.md).
+No autoriza electricidad, economía/compras ni M8.
 
 ## Experiencia objetivo
 
@@ -76,7 +79,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M5 · `feature/dish-assembly` | Montaje físico libre, identidad y estado real por ingrediente; reconocimiento data-driven y plato final manipulable. | Añadir/retirar/reorganizar por colocación, pertenencia exclusiva e IDs propios; pila ordenada reconoce Hamburger/Cheeseburger, otras combinaciones son Custom Dish. Confirmar no permite vacío ni duplicación; conserva referencias, estado, orden y datos agregados vivos. Proxy físico transporta sin dispersar ingredientes. Tests Domain/PlayMode e integración Pickup→Cooking→Assembly según M5.md; sin clientes/pedidos/pagos. |
 | M6 · `feature/customer-service-loop` | Un cliente móvil por ruta, pedido, entrega física, evaluación separada y pago. | Enter → Order → Wait → Receive → Evaluate → Pay/Reject → Leave; pedido con ID independiente y menú configurable/forzable. Solo Dish final suelto/intacto apoyado se evalúa. Coincidencia paga 500/650 céntimos una vez; con el polish el vendido viaja visible con el cliente, se desregistra y destruye al llegar a salida. Incorrecto/Custom conserva plato y cierra visita sin cobrar. Calidad no afecta pago. Recibo con IDs/ingredientes/frescura/cocción/contaminación/coste, saldo 0 inicial y siguiente cliente con delay. Tests Domain, físicos e integración/regresiones según M6.md y VERTICAL-SLICE-POLISH.md. |
 | Polish · `fix/vertical-slice-polish` | Corrección del flujo M1–M6, desde `9335899`. | Clic contextual conserva la Food sostenida y la apila con bounds; E permite retirar. F sigue confirmando; todas las partes resuelven el mismo Pickup del Dish, también Custom. Venta conserva mismo agregado y recibo; impide recogida/reventa/doble pago, limpia al salir. Prep/Grill/Assembly próximos y pasillo despejado hacia Delivery. Generador reproducible. Sin cambios Domain ni M7. |
-| M7 · por acordar | Trabajo posterior exclusivamente con nueva autorización. | Entrega/pago básicos están en M6. No se anticipan reputación, seguridad alimentaria, colas, stock, guardado u otros sistemas. |
+| M7 · `feature/food-storage-refrigeration` | Fridge y Freezer físicos, entornos fríos y conservación por temperatura real. | Enfriamiento progresivo a +4/−18 °C y calentamiento al retirar; tasas 1/0.1/0.001 según temperatura real. Edad, ID, FoodState, frescura, contaminación y cocción se conservan. E/G/E usa física existente; único FoodSimulation, integración analítica de exposición y regresiones M1–M6. Sin inventario, puertas funcionales, electricidad, compras ni M8; ver M7.md y ADR 0009. |
 | M8 · `fix/vertical-slice-integration` | Ciclo completo y revisión de fallos, sin sistemas nuevos. | Ejecutar el recorrido de abajo, repetir desde una nueva sesión y comprobar que las vistas son sustituibles. Console sin errores propios; build de desarrollo local si están instalados sus módulos. |
 
 ## Recorrido de aceptación del slice

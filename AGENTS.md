@@ -17,7 +17,9 @@
   y ADR 0005. M5 añade composición libre, reconocimiento y plato agregado; ver
   `Docs/M5.md` y ADR 0006. M6 implementa un cliente activo, pedido, entrega física,
   evaluación independiente de calidad y pago; ver `Docs/M6.md` y ADR 0007.
-  M7 y los sistemas posteriores no están implementados.
+  M1–M6, polish y entrega tolerante están aprobados en `144cca5`.
+  M7 añade almacenamiento físico y conservación térmica; ver `Docs/M7.md` y ADR 0009.
+  M8 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -97,7 +99,13 @@
   solo pertenece a AssemblySurface; E/G y Throw derecho siguen siendo genéricos.
   Finalizar usa un proxy único; el agarre elevado configurable evita depender de
   qué ingrediente se enfoca. Ver Docs/VERTICAL-SLICE-POLISH.md y ADR 0008.
-  No continuar con M7 sin autorización expresa.
+  M7 reutiliza HeatSource con ColdStorage; FoodSimulation sigue siendo el único reloj.
+  FoodPreservationSettings crea una política inmutable por temperatura real, también
+  fuera del almacenamiento. FoodState integra cruces de umbrales; nunca usar flags
+  isInFridge/isFrozen para deterioro, recrear estado o restaurar frescura/contaminación.
+  La API sin perfil conserva tasa M3; asignar explícitamente el perfil de conservación
+  al reloj de escenas con almacenamiento. No implementar electricidad/economía/M8
+  sin autorización expresa. Ver Docs/M7.md y ADR 0009.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.

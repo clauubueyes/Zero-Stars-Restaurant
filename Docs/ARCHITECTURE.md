@@ -5,7 +5,9 @@ M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
 adaptadores Unity e inspección. M4 añade fuente física y cocción térmica.
 M5 añade montaje libre y transporte de platos; M5 y su feedback están aprobados.
 M6 añade un cliente activo, pedidos, entrega física, evaluación y pago; aprobado en
-`9335899`. El polish añade snap de montaje y transporte visible de ventas. M7 pendiente.
+`9335899`. El polish añade snap de montaje y transporte visible de ventas.
+M1–M6/polish están aprobados en `144cca5`. M7 añade almacenamiento físico y
+conservación térmica; pendiente de aceptación manual. M8 no implementado.
 
 ## Dependencias y responsabilidades
 
@@ -165,8 +167,9 @@ limitada a su vida; la condición Fresh/Acceptable/Spoiled/Rotten se deriva de
 umbrales, sin duplicar estado. Temperatura se aproxima analíticamente al ambiente.
 Contaminación es una marca independiente. Domain no usa Time, GameObject ni Unity.
 
-M3 no relaciona automáticamente temperatura y tasa de deterioro ni modela cocina.
-El driver usa tasa 1; un adaptador posterior puede suministrar otra. El método
+La API original M3 sin perfil de conservación usa tasa 1, independiente de temperatura.
+M7 asigna explícitamente su perfil al reloj para conservación por temperatura real.
+El método
 Advance permite intervalos grandes, con resultados equivalentes a pasos pequeños
 cuando entorno/tasa son constantes. Para cambios, segmentar los intervalos.
 La fixture ofrece multiplicador y botón de desarrollo sin modificar el tiempo
@@ -199,6 +202,36 @@ Retirar pausa dosis y enfría gradualmente; recolocar continúa desde el mismo e
 No hay cocción residual en este prototipo. Cocinar no recupera frescura ni limpia
 contaminación. M2 permanece genérico: no se modifican sus scripts ni input.
 Ver [ADR 0005](Decisions/0005-thermal-cooking.md) y [M4](M4.md).
+
+## Conservación y almacenamiento M7
+
+```text
+Fridge / Freezer (ColdStorage) → posición actual en interior → ThermalEnvironment
+Plancha / almacenamiento / ambiente → FoodSimulation → un entorno por FoodItem
+FoodPreservationSettings → FoodPreservationProfile inmutable (Domain)
+FoodState.Advance(tiempo, entorno, preservation: perfil) → edad + exposición térmica + temperatura
+Pickup / Rigidbody / estantes → colocar y recuperar la misma unidad
+```
+
+ColdStorage reutiliza HeatSource sin avances adicionales ni listas de entrada/salida.
+El contrato permite un objetivo frío y desactiva cocción. Compara la posición de la
+unidad con un interior orientado, también para ingredientes originales de Dish
+cuyos colliders individuales están retirados. No consulta recetas, representación
+ni identidad para decidir temperatura. Un gabinete desactivado o transferencia cero
+deja de aportar entorno; el reloj vuelve al ambiente sin salto de temperatura.
+
+La política usa temperatura real: >5 °C tasa 1; entre 0 y 5 °C tasa 0.1;
+≤0 °C tasa 0.001. Integra analíticamente cruces durante la relajación exponencial,
+sin bucles por segundo ni decisiones por pertenencia a nevera. La edad avanza
+completa; frío no restaura frescura, contaminación o dosis de cocción. La política
+también se aplica mientras una pieza retirada todavía permanece fría.
+
+El asset compartido solo configura umbrales/tasas, validado y copiado una vez por
+Advance. Sin perfil, la API conserva las reglas originales M3/M4. La escena asigna
+el perfil explícitamente y conserva un solo propietario de tiempo. Se mantiene
+selección M4 por mayor transferencia y empate por orden de referencias.
+Los gabinetes son fixtures activos sin puertas, inventario, electricidad o compras.
+Ver [M7](M7.md) y [ADR 0009](Decisions/0009-food-storage-refrigeration.md).
 
 ## Platos y montaje M5
 

@@ -40,8 +40,14 @@ M5 y su feedback aprobados terminan en `6a3ca72`; M6 parte exactamente de él:
 git switch -c feature/customer-service-loop 6a3ca72
 ```
 
-No hay remoto, CI ni protección de ramas del servidor configurados: la estabilidad
-de main depende de seguir este flujo local hasta conectar un remoto.
+M1–M6/polish y entrega tolerante aprobados terminan en `144cca5`; M7 parte de él:
+
+```powershell
+git switch -c feature/food-storage-refrigeration 144cca5
+```
+
+Hay remoto `origin` configurado y main apunta a la base aprobada `144cca5` al
+comenzar M7. Mantenerlo estable; no integrar ni publicar salvo autorización expresa.
 
 Un commit debe contar un cambio concreto y comprobable. Ejemplos:
 `feat: add first-person movement`, `fix: prevent duplicate order payment`,

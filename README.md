@@ -12,7 +12,9 @@ M5 añade montaje libre, reconocimiento de platos y transporte agregado.
 M6 cierra el ciclo con un cliente activo, pedido visible, entrega física,
 evaluación y pago en céntimos; validado por el usuario en `9335899`.
 El polish añade snap contextual, agarre coherente del plato y salida visible del
-cliente con la venta. M7 sigue pendiente.
+cliente con la venta. M1–M6 y polish están aprobados en `144cca5`.
+M7 añade Fridge/Freezer físicos y conservación por temperatura real, con el mismo
+reloj e identidad; pendiente de aceptación manual.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
@@ -59,6 +61,15 @@ La escena de plantilla
     La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
     parcial: basta soltar y dejar reposar; no exige centrar el plato.
 
+11. Los gabinetes abiertos **Fridge** (azul claro, +4 °C) y **Freezer** (azul oscuro,
+    −18 °C) están en el lado izquierdo, entre spawn y cocina. **E** recoge comida,
+    mirar dentro aproximadamente horizontal y **G** la deposita en el estante;
+    **E** recupera normalmente. La temperatura cambia gradualmente al guardar y
+    retirar, conservando el estado original.
+    Deterioro por temperatura real: normal, 10× más lento refrigerado y 1000× más
+    lento congelado. Edad sigue avanzando. Ver [M7](Docs/M7.md) para medirlo con
+    los botones del único FoodSimulation y comprobar límites/identidad.
+
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
 **Unity Test Framework 1.7.0** instalado. El inventario completo está en
@@ -103,8 +114,10 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión sobre transacción y separación de calidad](Docs/Decisions/0007-customer-delivery-payment.md).
 - [Polish del slice: controles, distribución, archivos, tests y validación](Docs/VERTICAL-SLICE-POLISH.md).
 - [Decisión sobre snap, agarre y retirada de ventas](Docs/Decisions/0008-vertical-slice-polish.md).
+- [M7: Fridge/Freezer, conservación, pruebas y límites](Docs/M7.md).
+- [Decisión sobre almacenamiento y política térmica](Docs/Decisions/0009-food-storage-refrigeration.md).
 
-`main` conserva el proyecto original como baseline. La foundation está en
+`main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
 M2 parte de M1 aprobado en `feature/world-interaction`.
 M3 parte de M2 aprobado (`14e0575`) en `feature/food-state`.
@@ -112,4 +125,5 @@ M4 parte de M3 aprobado (`307174a`) en `feature/basic-cooking`.
 M5 parte de M4 aprobado (`d7eb2bf`) en `feature/dish-assembly`.
 M6 parte de M5 y feedback aprobados (`6a3ca72`) en `feature/customer-service-loop`.
 Su polish parte de M6 aprobado (`9335899`) en `fix/vertical-slice-polish`.
-No hay remoto configurado y no se ha integrado en main; los commits son locales.
+M7 parte del slice/polish aprobado (`144cca5`) en `feature/food-storage-refrigeration`.
+Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.
