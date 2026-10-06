@@ -47,21 +47,25 @@ namespace ZeroStarRestaurant.Tests
             FoodItem[] buns = Components<FoodItem>().Where(food => food.Definition.Id == "food.bun").Take(2).ToArray();
             FoodItem patty = Components<FoodItem>().First(food => food.Definition.Id == "food.raw_beef_patty");
             patty.State.SetTemperature(120); patty.State.Advance(45, new ThermalEnvironment(120, allowsCooking: true), 0);
-            float height = surface.Dish.GetComponent<BoxCollider>().bounds.max.y;
+            var player = Components<FirstPersonController>().Single();
+            Transform view = Components<Camera>().Single().transform;
+            var carry = Components<PhysicalCarry>().Single();
+            var assembly = Components<DishAssemblyInteraction>().Single();
             foreach (FoodItem food in new[] { buns[0], patty, buns[1] })
             {
-                Rigidbody body = food.GetComponent<Rigidbody>(); body.rotation = Quaternion.identity;
-                float half = food.GetComponent<BoxCollider>().bounds.extents.y;
-                food.transform.position = new Vector3(surface.Dish.transform.position.x, height + half + 0.003f, surface.Dish.transform.position.z);
-                body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; height += half * 2f + 0.003f;
+                player.transform.position = new Vector3(food.transform.position.x, 0.03f, food.transform.position.z - 1.5f);
+                view.LookAt(food.transform.position); Physics.SyncTransforms();
+                Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+                player.transform.position = new Vector3(surface.Dish.transform.position.x, 0.03f, 1.95f);
+                view.LookAt(surface.Dish.transform.position); Physics.SyncTransforms();
+                Assert.That(assembly.TryPlace(), Is.True);
+                for (int frame = 0; frame < 10; frame++) yield return new WaitForFixedUpdate();
             }
             Physics.SyncTransforms();
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
             surface.RefreshComposition(); Assert.That(surface.PreviewDefinition?.DisplayName, Is.EqualTo("Hamburger"));
-            var player = Components<FirstPersonController>().Single();
-            Transform view = Components<Camera>().Single().transform;
-            var carry = Components<PhysicalCarry>().Single();
-            player.transform.position = new Vector3(-1.7f, 0.03f, 3.05f); view.LookAt(buns[1].transform.position);
+            Vector3 pickupSpot = new Vector3(surface.Dish.transform.position.x, 0.03f, 1.95f);
+            player.transform.position = pickupSpot; view.LookAt(buns[1].transform.position);
             Assert.That(surface.TryInteract(new InteractionContext(player.transform, carry)), Is.True);
             DishItem dish = surface.Dish; var id = dish.State.InstanceId; var pattyId = patty.State.InstanceId;
             Assert.That(carry.TryPickUp(dish.GetComponent<Pickup>()), Is.True);
@@ -69,12 +73,12 @@ namespace ZeroStarRestaurant.Tests
             for (int frame = 0; frame < 35; frame++)
             { view.rotation = Quaternion.Slerp(start, Quaternion.identity, (frame + 1f) / 35f); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 60; frame++)
-            { player.transform.position = new Vector3(Mathf.Lerp(-1.7f, 0f, (frame + 1f) / 60f), 0.03f, 3.05f); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
+            { player.transform.position = new Vector3(Mathf.Lerp(pickupSpot.x, 0f, (frame + 1f) / 60f), 0.03f, pickupSpot.z); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             // Turn through the open west side, then approach the unchanged 1.1 m counter.
             for (int frame = 0; frame < 90; frame++)
             { view.rotation = Quaternion.Euler(-5f, -180f * (frame + 1f) / 90f, 0f); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 60; frame++)
-            { player.transform.position = new Vector3(0f, 0.03f, Mathf.Lerp(3.05f, 2.25f, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
+            { player.transform.position = new Vector3(0f, 0.03f, Mathf.Lerp(pickupSpot.z, 2.25f, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult, Is.Null, "A held dish is never sold.");
             carry.Drop(); for (int frame = 0; frame < 75; frame++) yield return new WaitForFixedUpdate();

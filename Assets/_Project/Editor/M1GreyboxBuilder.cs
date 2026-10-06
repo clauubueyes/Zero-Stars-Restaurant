@@ -84,13 +84,13 @@ namespace ZeroStarRestaurant.Editor
                 CreateBox(environment.transform, "WallEast", new Vector3(7.25f, 1.75f, 0f), new Vector3(0.5f, 3.5f, 13f), wall);
                 CreateBox(environment.transform, "WallNorth", new Vector3(0f, 1.75f, 6.25f), new Vector3(14f, 3.5f, 0.5f), wall);
                 CreateBox(environment.transform, "WallSouth", new Vector3(0f, 1.75f, -6.25f), new Vector3(14f, 3.5f, 0.5f), wall);
-                CreateBox(environment.transform, "KitchenDivider", new Vector3(1f, 1.75f, 3.75f), new Vector3(0.3f, 3.5f, 4.5f), wall);
+                CreateBox(environment.transform, "KitchenDivider", new Vector3(4.5f, 1.75f, 3.75f), new Vector3(0.3f, 3.5f, 4.5f), wall);
                 CreateBox(environment.transform, "ServiceCounterVolume", new Vector3(0f, 0.55f, 0.5f), new Vector3(4f, 1.1f, 0.8f), volume);
                 CreateBox(environment.transform, "WorktopVolume", new Vector3(5.5f, 0.45f, 3.5f), new Vector3(1.2f, 0.9f, 3f), volume);
-                CreateBox(environment.transform, "TableVolume", new Vector3(-4f, 0.4f, 2.5f), new Vector3(1.5f, 0.8f, 1.5f), volume);
+                CreateBox(environment.transform, "TableVolume", new Vector3(4f, 0.4f, -4f), new Vector3(1.5f, 0.8f, 1.5f), volume);
                 // A low step and tall blocker make gravity, jump and collisions easy to check.
-                CreateBox(environment.transform, "LowStep", new Vector3(-4f, 0.1f, -1f), new Vector3(1.5f, 0.2f, 1f), volume);
-                CreateBox(environment.transform, "TallBlocker", new Vector3(4f, 1.5f, -2f), new Vector3(1.2f, 3f, 1.2f), volume);
+                CreateBox(environment.transform, "LowStep", new Vector3(4f, 0.1f, -0.8f), new Vector3(1.5f, 0.2f, 1f), volume);
+                CreateBox(environment.transform, "TallBlocker", new Vector3(5.5f, 1.5f, -2f), new Vector3(1.2f, 3f, 1.2f), volume);
 
                 var player = new GameObject("Player");
                 player.transform.position = new Vector3(0f, 0.05f, -4.5f);
@@ -180,7 +180,7 @@ namespace ZeroStarRestaurant.Editor
                 var cookingZone = new GameObject("CookingTestZone");
                 var grill = new GameObject("GrillStation");
                 grill.transform.SetParent(cookingZone.transform, false);
-                grill.transform.localPosition = new Vector3(-5f, 0f, 0.6f);
+                grill.transform.localPosition = new Vector3(-2.5f, 0f, 3.7f);
                 CreateBox(grill.transform, "GrillBase", new Vector3(0f, 0.45f, 0f),
                     new Vector3(2.4f, 0.9f, 1.2f), volume);
                 CreateBox(grill.transform, "GrillHotSurface", new Vector3(0f, 0.95f, 0f),
@@ -196,7 +196,7 @@ namespace ZeroStarRestaurant.Editor
                 var heatData = new SerializedObject(heat);
                 heatData.FindProperty("_effectiveZone").objectReferenceValue = zone;
                 heatData.ApplyModifiedPropertiesWithoutUndo();
-                CreateBox(cookingZone.transform, "CookingPrepBench", new Vector3(-5f, 0.4f, -2.3f),
+                CreateBox(cookingZone.transform, "CookingPrepBench", new Vector3(-5.2f, 0.4f, 2f),
                     new Vector3(2.4f, 0.8f, 0.7f), volume);
                 float[] temperatures = { 21f, -18f, 21f, 21f };
                 string[] fixtureNames = { "Fresh", "Frozen", "Rotten", "Contaminated" };
@@ -205,22 +205,23 @@ namespace ZeroStarRestaurant.Editor
                     foods.Add(CreateFood(cookingZone.transform, "Raw Beef Patty - " + fixtureNames[index] + " cooking fixture",
                         0f, new Vector3(0.4f, 0.12f, 0.4f), 0.15f, beefMaterial, beef, 0f,
                         index == 2 ? 0f : 100f, temperatures[index], index == 3,
-                        new Vector3(-5.8f + index * 0.5f, 0.91f, -2.3f)));
+                        new Vector3(-6f + index * 0.5f, 0.91f, 2f)));
                 }
                 FoodSimulation foodSimulation = foodZone.AddComponent<FoodSimulation>();
                 var assemblyZone = new GameObject("AssemblyTestZone");
-                CreateBox(assemblyZone.transform, "AssemblyWorkbench", new Vector3(-3.2f, 0.45f, 4.8f),
-                    new Vector3(4.8f, 0.9f, 1.5f), volume);
-                CreateBox(assemblyZone.transform, "AssemblySupplyBench", new Vector3(3.3f, 0.4f, 4.9f),
-                    new Vector3(3f, 0.8f, 1.5f), volume);
+                // Compact working row: nearby prep/supplies -> grill -> assembly, with an open aisle to delivery.
+                CreateBox(assemblyZone.transform, "AssemblyWorkbench", new Vector3(0.7f, 0.45f, 3.7f),
+                    new Vector3(3.4f, 0.9f, 1.5f), volume);
+                CreateBox(assemblyZone.transform, "AssemblySupplyBench", new Vector3(-5.2f, 0.4f, 3.7f),
+                    new Vector3(2.4f, 0.8f, 1.2f), volume);
                 for (int index = 0; index < 6; index++)
                     foods.Add(CreateFood(assemblyZone.transform, "Bun - Assembly supply " + (index + 1), 0f,
                         new Vector3(0.4f, 0.22f, 0.4f), 0.08f, bunMaterial, bun, 0f, 100f, 21f, false,
-                        new Vector3(2.4f + index % 3 * 0.6f, 0.96f, index < 3 ? 4.5f : 5.1f)));
+                        new Vector3(-6f + index % 3 * 0.45f, 0.96f, index < 3 ? 3.4f : 4f)));
                 for (int index = 0; index < 4; index++)
                     foods.Add(CreateFood(assemblyZone.transform, "Cheese - Assembly supply " + (index + 1), 0f,
                         new Vector3(0.32f, 0.06f, 0.32f), 0.025f, cheeseMaterial, cheese, 0f, 100f, 21f, false,
-                        new Vector3(4.2f + index % 2 * 0.4f, 0.88f, index < 2 ? 4.5f : 5.1f)));
+                        new Vector3(-4.6f + index % 2 * 0.35f, 0.88f, index < 2 ? 3.4f : 4f)));
                 DishDefinition[] dishDefinitions =
                 {
                     GetOrCreateDishDefinition("Hamburger", "dish.hamburger", "Hamburger", new[] { bun, beef, bun }),
@@ -229,7 +230,7 @@ namespace ZeroStarRestaurant.Editor
                 Material trayMaterial = GetOrCreateMaterial("DishTray", new Color(0.7f, 0.85f, 0.85f));
                 var assemblySurfaces = new List<AssemblySurface>();
                 for (int index = 0; index < 3; index++)
-                    assemblySurfaces.Add(CreateAssemblyStation(assemblyZone.transform, index + 1, new Vector3(-4.7f + index * 1.5f, 0f, 4.8f),
+                    assemblySurfaces.Add(CreateAssemblyStation(assemblyZone.transform, index + 1, new Vector3(-0.4f + index * 1.1f, 0f, 3.7f),
                         foodSimulation, dishDefinitions, trayMaterial));
                 assemblyInputData.Update();
                 SerializedProperty surfaces = assemblyInputData.FindProperty("_surfaces");

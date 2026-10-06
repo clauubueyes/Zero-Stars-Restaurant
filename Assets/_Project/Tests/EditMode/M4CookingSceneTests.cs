@@ -63,7 +63,8 @@ namespace ZeroStarRestaurant.Tests
             {
                 Assert.That(food.GetComponent<Pickup>(), Is.Not.Null);
                 Assert.That(food.GetComponent<Rigidbody>().isKinematic, Is.False);
-                Assert.That(food.transform.position.z, Is.LessThan(-1.9f));
+                Collider prep = Components<Collider>().Single(collider => collider.name == "CookingPrepBench");
+                Assert.That(prep.bounds.Contains(new Vector3(food.transform.position.x, prep.bounds.center.y, food.transform.position.z)), Is.True);
             }
         }
     }
