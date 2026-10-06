@@ -48,7 +48,7 @@ La escena de plantilla
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
 10. Al entrar el cliente, el panel derecho muestra pedido y saldo **€0.00**.
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
-    `CustomerServiceZone/DeliveryPad`, centrar el conjunto elevado sobre el verde
+    `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
     y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
     **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
     Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
@@ -56,6 +56,8 @@ La escena de plantilla
     aparece 3 s después de completar la salida. Ver [M6](Docs/M6.md) para casos y límites.
     Seguir [las pruebas actuales del polish](Docs/VERTICAL-SLICE-POLISH.md) para
     posiciones, snap, transporte visible y pruebas de rechazo.
+    La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
+    parcial: basta soltar y dejar reposar; no exige centrar el plato.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;

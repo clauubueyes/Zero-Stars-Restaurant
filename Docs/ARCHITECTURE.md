@@ -274,7 +274,11 @@ No quedan referencias Unity en recibos.
 Los IDs procesados se conservan en el ledger de la sesión para impedir doble pago.
 
 DeliveryZone consulta volumen actual, ignora ingredientes/cajas/borradores/manos
-ocupadas y exige apoyo en el pad. Una colocación rechazada se registra hasta retirar
+ocupadas y exige apoyo en el pad. La entrega tolerante usa solapamiento del collider
+real con el trigger y cobertura XZ mínima del 20% del área menor pad/plato, no el
+centro del plato. Conserva tolerancia de altura y velocidades; visual y trigger
+comparten huella. Ver [corrección y límites](DELIVERY-TOLERANCE-FIX.md).
+Una colocación rechazada se registra hasta retirar
 o recoger el plato: evita venderlo involuntariamente al siguiente cliente. No exige
 una nueva tecla, input o dependencia. Ver [ADR 0007](Decisions/0007-customer-delivery-payment.md)
 y [M6](M6.md).

@@ -2,7 +2,10 @@
 
 Estado actual: **M0–M6 aprobados por el usuario; M6 aprobado en `9335899`**.
 El [polish del slice](VERTICAL-SLICE-POLISH.md) mejora snap, agarre, transporte de
-ventas y greybox en `fix/vertical-slice-polish`; su comprobación manual está pendiente.
+ventas y greybox en `fix/vertical-slice-polish`.
+La prueba manual del slice detectó precisión excesiva en entrega; la
+[corrección de tolerancia](DELIVERY-TOLERANCE-FIX.md), desde `17bacd9`, permite
+solapamiento parcial razonable y conserva apoyo, manos libres y pago único.
 Ver [M1](M1.md), [M2](M2.md), [M3](M3.md), [M4](M4.md), [M5](M5.md) y [M6](M6.md).
 La petición aprobada de M6 amplía su alcance a Customer Order → Delivery → Payment
 y sustituye la división anterior M6 pedido/M7 entrega-pago. También sustituye el
@@ -91,8 +94,10 @@ dividirlo manteniendo un resultado comprobable en cada paso.
    Probar por separado
    Burnt, Rotten cocinado y contaminado dentro de un Dish estructuralmente correcto:
    Correct order YES; estado peligroso visible por separado, pago completo.
-5. Confirmar F, recoger E, llevar físicamente al pad verde y depositar G. Correcto
-   cobra 5 € o 6,50 € según menú; cliente sale llevando el mismo plato y ambos se
+5. Confirmar F, recoger E, llevar físicamente al pad verde y depositar G. Se detecta
+   también en bordes con parte razonable del conjunto sobre el pad; no exige centrar.
+   Al reposar, un pedido correcto cobra 5 € o 6,50 € según menú; cliente sale
+   llevando el mismo plato y ambos se
    retiran al llegar a salida. Consultas repetidas
    no vuelven a pagar. Retirar un rechazado antes de ofrecerlo a otro cliente.
 6. Detener y volver a iniciar Play: nueva sesión con 0 €, pedido y provisiones

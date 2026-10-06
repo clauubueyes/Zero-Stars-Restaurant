@@ -5,6 +5,9 @@ Fecha: 2026-10-06. Rama **`fix/vertical-slice-polish`**, desde M6 aprobado
 `e552029`. M6 fue validado manualmente por el usuario; esta corrección requiere
 su propia comprobación manual. **M7 no implementado**.
 
+La [corrección de entrega posterior](DELIVERY-TOLERANCE-FIX.md) amplía el pad y
+admite solapamiento parcial; las instrucciones de entrega de esta guía lo reflejan.
+
 Se inspeccionaron AGENTS, documentación, historial, referencias, input, generador
 y Runtime M1–M6. Comprobados Unity **6000.5.3f1**, URP **17.5.0**, Input System
 **1.19.0**, Test Framework **1.7.0**, URP PC/Linear. No cambia Domain, paquetes,
@@ -71,7 +74,7 @@ este es el recorrido actual:
 | AssemblySupplyBench | -5.2 / 3.7 | Pan y queso, junto a preparación. |
 | GrillStation | -2.5 / 3.7 | Plancha rojiza, misma configuración térmica. |
 | AssemblyStation1/2/3 | -0.4, 0.7, 1.8 / 3.7 | Bandejas en banco compacto. |
-| DeliveryPad | 0 / 0.5 | Pad verde sobre mostrador, top 1.13 m, sin cambios. |
+| DeliveryPad | 0 / 0.5 | Pad verde de 1.8 × 1.0 m sobre mostrador, top 1.13 m. |
 
 Pasillo de trabajo alrededor de **Z 2.0–2.25** entre montaje y mostrador. Divider
 se mueve a X 4.5; mesa, escalón y bloque alto al lateral derecho. Queda espacio
@@ -146,7 +149,8 @@ con teclado/ratón; esas comprobaciones quedan para el usuario.
    mirando hacia abajo. G y E permiten soltar y volver a recoger el agregado.
 7. Caminar por el pasillo a detrás del mostrador, aproximadamente **(0, 0, 2.25)**,
    mirando al pad verde `(0, 1.8, 0.5)`. El plato se mantiene elevado sin tener que
-   buscar un ángulo preciso. Centrar sobre pad, esperar frenar y **G**. Sostenido
+   buscar un ángulo preciso. Colocar parte razonable sobre el verde, incluso en
+   bordes, esperar frenar y **G**. Sostenido
    no se vende; al reposar se procesa automáticamente.
 8. Ver **Correct order: YES**, **Payment: €5.00**, **Balance: €5.00** y carne/ID
    originales en recibo. El plato se mueve delante del cliente, permanece visible
