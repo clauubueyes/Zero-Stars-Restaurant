@@ -72,6 +72,7 @@ namespace ZeroStarRestaurant.Editor
                 FoodCategory.Bakery, 35, 1800f, 90f);
             FoodDefinition cheese = GetOrCreateFoodDefinition("Cheese", "food.cheese", "Cheese",
                 FoodCategory.Dairy, 25, 1200f, 45f);
+            FoodPreservationSettings preservation = GetOrCreatePreservationSettings();
             Scene previousScene = SceneManager.GetActiveScene();
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
             try
@@ -239,13 +240,21 @@ namespace ZeroStarRestaurant.Editor
                     surfaces.GetArrayElementAtIndex(index).objectReferenceValue = assemblySurfaces[index];
                 assemblyInputData.ApplyModifiedPropertiesWithoutUndo();
                 var simulationData = new SerializedObject(foodSimulation);
+                simulationData.FindProperty("_preservationSettings").objectReferenceValue = preservation;
                 SerializedProperty foodReferences = simulationData.FindProperty("_foods");
                 foodReferences.arraySize = foods.Count;
                 for (int index = 0; index < foods.Count; index++)
                     foodReferences.GetArrayElementAtIndex(index).objectReferenceValue = foods[index];
                 SerializedProperty heatReferences = simulationData.FindProperty("_heatSources");
-                heatReferences.arraySize = 1;
+                var storageZone = new GameObject("FoodStorageZone");
+                ColdStorage fridge = CreateColdStorage(storageZone.transform, "Fridge", new Vector3(-5.8f, 0f, -0.1f), 4f,
+                    GetOrCreateMaterial("FridgeShell", new Color(0.4f, 0.7f, 0.8f)), volume);
+                ColdStorage freezer = CreateColdStorage(storageZone.transform, "Freezer", new Vector3(-5.8f, 0f, -1.9f), -18f,
+                    GetOrCreateMaterial("FreezerShell", new Color(0.2f, 0.35f, 0.7f)), volume);
+                heatReferences.arraySize = 3;
                 heatReferences.GetArrayElementAtIndex(0).objectReferenceValue = heat;
+                heatReferences.GetArrayElementAtIndex(1).objectReferenceValue = fridge;
+                heatReferences.GetArrayElementAtIndex(2).objectReferenceValue = freezer;
                 simulationData.ApplyModifiedPropertiesWithoutUndo();
 
                 CreateCustomerService(foodSimulation, dishDefinitions);
@@ -272,6 +281,50 @@ namespace ZeroStarRestaurant.Editor
                     SceneManager.SetActiveScene(previousScene);
                 EditorSceneManager.CloseScene(scene, true);
             }
+        }
+
+        private static FoodPreservationSettings GetOrCreatePreservationSettings()
+        {
+            string path = FoodDefinitionFolder + "/PreservationSettings.asset";
+            FoodPreservationSettings settings = AssetDatabase.LoadAssetAtPath<FoodPreservationSettings>(path);
+            if (settings == null)
+            {
+                settings = ScriptableObject.CreateInstance<FoodPreservationSettings>();
+                AssetDatabase.CreateAsset(settings, path);
+            }
+            settings.CreateProfile(); // Validate existing authoring without overwriting it.
+            return settings;
+        }
+
+        private static ColdStorage CreateColdStorage(Transform parent, string name, Vector3 position,
+            float temperature, Material shell, Material shelf)
+        {
+            var cabinet = new GameObject(name);
+            cabinet.transform.SetParent(parent, false); cabinet.transform.localPosition = position;
+            cabinet.transform.localRotation = Quaternion.Euler(0f, -90f, 0f); // Open front faces the working aisle (east).
+            CreateBox(cabinet.transform, "Base", new Vector3(0f, 0.4f, 0f), new Vector3(1.6f, 0.8f, 1.4f), shell);
+            CreateBox(cabinet.transform, "Shelf", new Vector3(0f, 0.85f, 0f), new Vector3(1.6f, 0.1f, 1.4f), shelf);
+            CreateBox(cabinet.transform, "LeftWall", new Vector3(-0.75f, 1.575f, 0f), new Vector3(0.1f, 1.35f, 1.4f), shell);
+            CreateBox(cabinet.transform, "RightWall", new Vector3(0.75f, 1.575f, 0f), new Vector3(0.1f, 1.35f, 1.4f), shell);
+            CreateBox(cabinet.transform, "BackWall", new Vector3(0f, 1.575f, 0.65f), new Vector3(1.6f, 1.35f, 0.1f), shell);
+            CreateBox(cabinet.transform, "Top", new Vector3(0f, 2.3f, 0f), new Vector3(1.6f, 0.1f, 1.4f), shell);
+            var interiorObject = new GameObject("ThermalInterior", typeof(BoxCollider));
+            interiorObject.transform.SetParent(cabinet.transform, false);
+            BoxCollider interior = interiorObject.GetComponent<BoxCollider>(); interior.isTrigger = true;
+            interior.center = new Vector3(0f, 1.575f, -0.025f); interior.size = new Vector3(1.4f, 1.35f, 1.25f);
+            ColdStorage storage = cabinet.AddComponent<ColdStorage>();
+            var data = new SerializedObject(storage);
+            data.FindProperty("_interior").objectReferenceValue = interior;
+            data.FindProperty("_temperatureCelsius").floatValue = temperature;
+            data.ApplyModifiedPropertiesWithoutUndo();
+            var label = new GameObject("DevelopmentLabel", typeof(TextMesh));
+            label.transform.SetParent(cabinet.transform, false); label.transform.localPosition = new Vector3(0f, 2.3f, -0.71f);
+            TextMesh text = label.GetComponent<TextMesh>(); text.text = name + (temperature < 0f ? " -18 C" : " +4 C");
+            text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
+            text.characterSize = 0.035f; text.fontSize = 48; text.color = Color.white;
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.GetComponent<MeshRenderer>().sharedMaterial = text.font.material;
+            return storage;
         }
 
         private static Material GetOrCreateMaterial(string name, Color color)

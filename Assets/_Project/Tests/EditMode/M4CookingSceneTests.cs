@@ -35,7 +35,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(config.FindProperty("_temperatureCelsius").floatValue, Is.EqualTo(180f));
             Assert.That(config.FindProperty("_transferMultiplier").floatValue, Is.EqualTo(4f));
             var driver = new SerializedObject(Components<FoodSimulation>().Single());
-            Assert.That(driver.FindProperty("_heatSources").arraySize, Is.EqualTo(1));
+            Assert.That(driver.FindProperty("_heatSources").arraySize, Is.EqualTo(Components<HeatSource>().Length));
             Assert.That(driver.FindProperty("_heatSources").GetArrayElementAtIndex(0).objectReferenceValue, Is.EqualTo(grill));
             Assert.That(driver.FindProperty("_foods").arraySize, Is.EqualTo(Components<FoodItem>().Length));
         }
