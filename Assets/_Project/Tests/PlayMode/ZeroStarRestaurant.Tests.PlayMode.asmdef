@@ -1,0 +1,6 @@
+{
+    "name": "ZeroStarRestaurant.Tests.PlayMode",
+    "references": ["ZeroStarRestaurant.Runtime", "Unity.InputSystem"],
+    "optionalUnityReferences": ["TestAssemblies"],
+    "autoReferenced": false
+}
