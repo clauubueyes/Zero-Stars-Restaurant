@@ -8349,6 +8349,8 @@ GameObject:
   - component: {fileID: 999010030}
   - component: {fileID: 999010029}
   - component: {fileID: 1163158815}
+  - component: {fileID: 1163158816}
+  - component: {fileID: 1163158817}
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -13760,6 +13762,7 @@ MonoBehaviour:
   - {fileID: 999010006}
   _servicePosition: {fileID: 999010033}
   _customersRoot: {fileID: 2081385493}
+  _restaurantDay: {fileID: 1163158816}
   _capacity: 4
   _arrivalIntervalSeconds: 3
 --- !u!1 &2081385492
@@ -13793,3 +13796,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 999010031}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1163158816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7869dc13de14195996343d18cbc9f08, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayController
+  _queue: {fileID: 1163158815}
+  _startingHour: 9
+  _startingMinute: 0
+  _openingHour: 9
+  _openingMinute: 0
+  _closingHour: 17
+  _closingMinute: 0
+  _worldSecondsPerSimulationSecond: 60
+  _startAutomatically: 1
+  _advanceAutomatically: 1
+  _paused: 0
+--- !u!114 &1163158817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01642845d8fb4c16b5f70d95827fe8c7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayFeedback
+  _day: {fileID: 1163158816}

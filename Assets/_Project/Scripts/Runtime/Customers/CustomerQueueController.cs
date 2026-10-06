@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using ZeroStarRestaurant.Restaurant;
 
 namespace ZeroStarRestaurant.Customers
 {
@@ -12,12 +13,14 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField] private Transform[] _entrancePath = Array.Empty<Transform>();
         [SerializeField] private Transform _servicePosition;
         [SerializeField] private Transform _customersRoot;
+        [SerializeField] private RestaurantDayController _restaurantDay;
         [SerializeField, Range(1, 4)] private int _capacity = 4;
         [SerializeField, Min(0.1f)] private float _arrivalIntervalSeconds = 3f;
         private readonly List<QueuedCustomer> _customers = new List<QueuedCustomer>();
         private IReadOnlyList<QueuedCustomer> _view;
         private CustomerQueueState _state;
         private double _arrivalRemaining;
+        private double _initialDelaySeconds;
         public const float MinimumSpacing = 1.25f;
         public QueuedCustomer Template => _template;
         public IReadOnlyList<QueuedCustomer> Customers => _view ?? (_view = _customers.AsReadOnly());
@@ -28,6 +31,8 @@ namespace ZeroStarRestaurant.Customers
         public bool IsFull => _state != null && _state.IsFull;
         public double NextArrivalSeconds => Math.Max(0, _arrivalRemaining);
         public Transform ServicePosition => _servicePosition;
+        public RestaurantDayController DayController => _restaurantDay;
+        public bool CanAdmitCustomers => _restaurantDay == null || _restaurantDay.CanAdmitCustomers;
         public bool IsReadyForService => Head != null && Head.State.Stage == QueuedCustomerStage.Waiting &&
             (Head.transform.position - _servicePosition.position).sqrMagnitude < 0.0001f;
 
@@ -37,7 +42,12 @@ namespace ZeroStarRestaurant.Customers
             Validate();
             if (double.IsNaN(initialDelaySeconds) || double.IsInfinity(initialDelaySeconds) || initialDelaySeconds < 0)
                 throw new ArgumentOutOfRangeException(nameof(initialDelaySeconds));
-            _state = new CustomerQueueState(_capacity); _arrivalRemaining = initialDelaySeconds;
+            _state = new CustomerQueueState(_capacity); _initialDelaySeconds = initialDelaySeconds; _arrivalRemaining = initialDelaySeconds;
+        }
+        public void RestartAdmissionDelay()
+        {
+            if (Count != 0) throw new InvalidOperationException("A new admission window requires an empty restaurant.");
+            if (_state != null) _arrivalRemaining = _initialDelaySeconds;
         }
         public void Validate()
         {
@@ -58,7 +68,7 @@ namespace ZeroStarRestaurant.Customers
         }
         public bool TryAdmit(double? patienceSeconds = null)
         {
-            if (!isActiveAndEnabled || _state == null || _state.IsFull || _template == null || _customersRoot == null) return false;
+            if (!isActiveAndEnabled || !CanAdmitCustomers || _state == null || _state.IsFull || _template == null || _customersRoot == null) return false;
             Vector3 entry = _template.Movement.EntryPosition;
             foreach (QueuedCustomer customer in _customers)
                 if ((customer.transform.position - entry).sqrMagnitude < MinimumSpacing * MinimumSpacing) return false;
@@ -94,8 +104,11 @@ namespace ZeroStarRestaurant.Customers
                     state.Arrive(); customer.transform.rotation = Quaternion.identity;
                 }
             }
-            _arrivalRemaining = Math.Max(0, _arrivalRemaining - elapsedSeconds);
-            if (_arrivalRemaining == 0) TryAdmit();
+            if (CanAdmitCustomers)
+            {
+                _arrivalRemaining = Math.Max(0, _arrivalRemaining - elapsedSeconds);
+                if (_arrivalRemaining == 0) TryAdmit();
+            }
         }
         public bool TryBeginService() => IsReadyForService && _state.TryBeginService(Head.State);
         public bool BeginHeadLeaving() => Head != null && _state.TryBeginLeaving(Head.State);
@@ -105,6 +118,7 @@ namespace ZeroStarRestaurant.Customers
             if (retired == null || !_state.TryCompleteExit(retired.State)) return false;
             _customers.RemoveAt(0); retired.gameObject.SetActive(false); Destroy(retired.gameObject);
             foreach (QueuedCustomer customer in _customers) customer.Movement.RetargetQueuePoint(_queuePoints[customer.State.QueueIndex]);
+            if (_restaurantDay != null) _restaurantDay.RefreshOccupancy();
             return true;
         }
         public void CancelAll(double nextDelaySeconds)
@@ -112,6 +126,7 @@ namespace ZeroStarRestaurant.Customers
             foreach (QueuedCustomer customer in _customers)
                 if (customer != null) { customer.gameObject.SetActive(false); Destroy(customer.gameObject); }
             _customers.Clear(); _state?.Clear(); _arrivalRemaining = nextDelaySeconds;
+            if (_restaurantDay != null) _restaurantDay.RefreshOccupancy();
         }
         private void OnDestroy() => CancelAll(0);
     }
