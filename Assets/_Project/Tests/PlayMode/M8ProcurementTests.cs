@@ -100,7 +100,8 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator GenericEInteractionSelectsProductBuysAndPicksUpRealOutput()
         {
             IngredientPurchaseButton button = Components<IngredientPurchaseButton>().Single(item => item.name == "BuyRawBeefPatty");
-            _player.transform.position = new Vector3(-4, 0.03f, -4.7f); _view.LookAt(button.transform.position); Physics.SyncTransforms();
+            _player.transform.position = new Vector3(-4.4f, 0.03f, 2.65f);
+            _view.LookAt(button.transform.position); Physics.SyncTransforms();
             PlayerInteraction interaction = Components<PlayerInteraction>().Single();
             Assert.That(interaction.TryInteract(), Is.True, "E on the greybox beef product should buy.");
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(920)); FoodItem food = _simulation.Foods.Single();
@@ -146,7 +147,7 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
-        public IEnumerator PurchasedIngredientsCookAssembleDeliverPayOnceAndFundAnotherPurchase()
+        public IEnumerator PurchasedIngredientsStoreCookAssembleDeliverPayOnceAndFundAnotherPurchase()
         {
             _service.Advance(1); _service.Advance(100); _service.Advance(1);
             AssemblySurface surface = Components<AssemblySurface>().OrderBy(item => item.name).Last();
@@ -155,6 +156,16 @@ namespace ZeroStarRestaurant.Tests
             FoodItem top = Buy(0, new Vector3(-3, 1.12f, -3.75f));
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(850));
             var originalStates = new[] { bottom.State, patty.State, top.State };
+            ColdStorage fridge = Components<ColdStorage>().Single(item => item.name == "Fridge");
+            BoxCollider interior = (BoxCollider)new SerializedObject(fridge).FindProperty("_interior").objectReferenceValue;
+            patty.GetComponent<Rigidbody>().position = interior.bounds.center; Physics.SyncTransforms();
+            for (int frame = 0; frame < 60; frame++) yield return new WaitForFixedUpdate();
+            Assert.That(fridge.TryGetEnvironment(patty, out _), Is.True);
+            _simulation.Advance(120);
+            Assert.That(patty.State.TemperatureCelsius, Is.InRange(4, 5));
+            Assert.That(patty.State, Is.SameAs(originalStates[1]));
+            patty.GetComponent<Rigidbody>().position = Components<GrillHeatSource>().Single().transform.position + Vector3.up * 1.07f;
+            Physics.SyncTransforms();
             for (int frame = 0; frame < 45; frame++) yield return new WaitForFixedUpdate();
             for (int step = 0; step < 40 && patty.State.Cooking.Stage != CookingStage.Cooked; step++) _simulation.Advance(5);
             Assert.That(patty.State.Cooking.Stage, Is.EqualTo(CookingStage.Cooked));
@@ -247,7 +258,10 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator DevelopmentFixturesRequireExplicitOptInAndNeverDuplicateRegistration()
         {
             DevelopmentIngredientSupply supply = Components<DevelopmentIngredientSupply>().Single();
+            GameObject bench = Components<Transform>().Single(item => item.name == "AssemblySupplyBench").gameObject;
+            Assert.That(bench.activeSelf, Is.False);
             supply.EnableForDevelopment(); Assert.That(_simulation.Foods.Count, Is.EqualTo(18));
+            Assert.That(bench.activeSelf, Is.True);
             Assert.That(_simulation.Foods.All(food => food.State != null && food.gameObject.activeInHierarchy), Is.True);
             var ids = _simulation.Foods.Select(food => food.State.InstanceId).ToArray();
             supply.EnableForDevelopment(); Assert.That(_simulation.Foods.Count, Is.EqualTo(18));

@@ -41,15 +41,17 @@ namespace ZeroStarRestaurant.Tests
             FoodState state = food.State; var id = state.InstanceId; var cooking = state.Cooking;
             state.Contaminate(); double age = state.AgeSeconds;
             PlayerInteraction interaction = Components<PlayerInteraction>().Single();
-            _player.position = new Vector3(food.transform.position.x, 0.03f, -5f); _view.LookAt(food.transform.position); Physics.SyncTransforms();
+            _player.position = new Vector3(-4.4f, 0.03f, 2.65f);
+            _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(interaction.TryInteract(), Is.True);
-            yield return Look(Quaternion.identity);
+            yield return Move(new Vector3(-3.6f, 0.03f, 2.65f));
             foreach (string name in new[] { "Fridge", "Freezer" })
             {
                 ColdStorage storage = Components<ColdStorage>().Single(item => item.name == name);
-                yield return Move(new Vector3(-2.9f, 0.03f, storage.transform.position.z));
+                yield return Look(Quaternion.Euler(0, 90, 0));
+                yield return Move(new Vector3(-3.6f, 0.03f, storage.transform.position.z));
                 yield return Look(Quaternion.Euler(0, -90, 0));
-                yield return Move(new Vector3(-3.8f, 0.03f, storage.transform.position.z));
+                yield return Move(new Vector3(-4.4f, 0.03f, storage.transform.position.z));
                 for (int frame = 0; frame < 30; frame++) yield return new WaitForFixedUpdate();
                 Assert.That(storage.TryGetEnvironment(food, out _), Is.True, "Food must enter the open cabinet before dropping.");
                 interaction.Drop(); for (int frame = 0; frame < 60; frame++) yield return new WaitForFixedUpdate();
@@ -63,7 +65,7 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(interaction.TryInteract(), Is.True, "The ordinary E interaction retrieves food from " + name);
                 Assert.That(_carry.HeldBody, Is.SameAs(food.GetComponent<Rigidbody>()));
                 yield return Look(Quaternion.Euler(0, -90, 0));
-                yield return Move(new Vector3(-2.9f, 0.03f, storage.transform.position.z));
+                yield return Move(new Vector3(-3.6f, 0.03f, storage.transform.position.z));
                 Assert.That(storage.TryGetEnvironment(food, out _), Is.False);
                 Assert.That(food.State, Is.SameAs(state)); Assert.That(state.InstanceId, Is.EqualTo(id));
                 Assert.That(state.Cooking, Is.SameAs(cooking)); Assert.That(cooking.EquivalentSeconds, Is.Zero);

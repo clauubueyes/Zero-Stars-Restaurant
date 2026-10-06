@@ -36,6 +36,7 @@ namespace ZeroStarRestaurant.Tests
                 new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
             Components<DevelopmentIngredientSupply>().Single().EnableForDevelopment();
+            _scene.GetRootGameObjects().Single(root => root.name == "PhysicalTestObjects").SetActive(true);
             _surface = Components<AssemblySurface>().OrderBy(surface => surface.name).First();
             _assembly = Components<DishAssemblyInteraction>().Single();
             _detector = Components<InteractionDetector>().Single();
@@ -134,7 +135,7 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator QuickPlacementUsesTheActualFirstHitAndRejectsWallRangeAndDisabledSurface()
         {
             FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
-            _player.transform.position = food.transform.position + new Vector3(0f, -food.transform.position.y, -1.5f);
+            _player.transform.position = new Vector3(-4.4f, 0.03f, 2.65f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
             _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
