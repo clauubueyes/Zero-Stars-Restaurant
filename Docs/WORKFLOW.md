@@ -46,6 +46,12 @@ M1–M6/polish y entrega tolerante aprobados terminan en `144cca5`; M7 parte de 
 git switch -c feature/food-storage-refrigeration 144cca5
 ```
 
+M7 aprobado termina en `8872f0d`; M8 parte de ese commit:
+
+```powershell
+git switch -c feature/economy-procurement 8872f0d
+```
+
 Hay remoto `origin` configurado y main apunta a la base aprobada `144cca5` al
 comenzar M7. Mantenerlo estable; no integrar ni publicar salvo autorización expresa.
 

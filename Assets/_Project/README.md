@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M7. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M8. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -19,7 +19,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 Las carpetas vacías contienen `.gitkeep` para que existan también tras clonar.
 M1 incluye `Scenes/PrototypeRestaurant.unity`, tres materiales greybox, controlador
 FPS en `Scripts/Runtime/Player`, generador de escena en Editor y tests EditMode y
-PlayMode. Prefabs sigue reservado para tareas futuras.
+PlayMode. En M1, Prefabs quedó reservado para tareas futuras.
 M2 añade `Scripts/Runtime/Interaction`, cuatro materiales de cajas y extiende el
 generador/escena de M1. Usa el asset de input existente con Interact, Drop y Throw.
 Ver `Docs/M2.md` en la raíz.
@@ -48,6 +48,14 @@ ADR 0008. Los tests ya tienen sus assemblies; no añadir NUnit al código Runtim
 M7 añade ColdStorage para Fridge/Freezer abiertos, FoodPreservationProfile en
 Domain y FoodPreservationSettings en `ScriptableObjects/Food`. El único reloj
 integra conservación por temperatura real durante enfriamiento/calentamiento;
-Pickup e input se conservan. Ver `Docs/M7.md` y ADR 0009. Sin electricidad ni M8.
+Pickup e input se conservan. Ver `Docs/M7.md` y ADR 0009. Sin electricidad.
+
+M8 añade `Runtime/Economy`, tres `IngredientProduct` en ScriptableObjects/Economy,
+tres prefabs físicos inactivos en Prefabs/Food y estación de compra greybox.
+Compras y ventas comparten el PaymentLedger M6; cada unidad comprada crea su
+FoodState y se registra en el único FoodSimulation M7. Las 18 provisiones gratuitas
+quedan bajo opt-in explícito de DevelopmentIngredientSupply, desactivadas por defecto.
+La escena configura 1000 céntimos de desarrollo; primera provisión con 0 € pendiente
+de diseño. Ver `Docs/M8.md` y ADR 0010. No hay inventario ni otro milestone.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

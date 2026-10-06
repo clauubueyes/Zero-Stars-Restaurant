@@ -7,7 +7,8 @@ M5 añade montaje libre y transporte de platos; M5 y su feedback están aprobado
 M6 añade un cliente activo, pedidos, entrega física, evaluación y pago; aprobado en
 `9335899`. El polish añade snap de montaje y transporte visible de ventas.
 M1–M6/polish están aprobados en `144cca5`. M7 añade almacenamiento físico y
-conservación térmica; pendiente de aceptación manual. M8 no implementado.
+conservación térmica; validado en `8872f0d`. M8 añade compras físicas y
+reinversión con el mismo ledger, sin inventario ni otro reloj.
 
 ## Dependencias y responsabilidades
 
@@ -81,7 +82,8 @@ ScriptableObjects FoodDefinition. M4 añade un material de plancha y cuatro carn
 M5 añade dos definiciones de reconocimiento, un material de bandeja, tres
 estaciones y diez suministros. M6 añade dos materiales, configuración de servicio
 y una raíz CustomerServiceZone. El polish conserva objetos/fileIDs/GUID, reubica
-estaciones/obstáculos y añade un anchor al cliente. Sin prefabs propios.
+estaciones/obstáculos y añade un anchor al cliente. M8 añade tres prefabs de
+ingredientes, tres productos configurables y estación greybox; reutiliza materiales.
 
 ## Assemblies y tests al implementar
 
@@ -346,3 +348,19 @@ Añadir una nota corta en `Docs/Decisions/NNNN-nombre.md` para cambios de depend
 pipeline, persistencia, límites entre sistemas o representación del estado que
 afecten al trabajo posterior. Incluir contexto, decisión y consecuencias. No hace
 falta un ADR para cada campo, componente o cambio de color.
+
+## Economía y adquisiciones M8
+
+IngredientPurchaseButton reutiliza E/Interactable y referencia una estación local.
+IngredientProduct configura precio entero y prefab raíz inactivo. La estación
+comparte el PaymentLedger de CustomerServiceLoop con las ventas, comprueba fondos y
+salida física y prepara una nueva FoodItem antes de activar. TryInitialize crea
+FoodState una sola vez; FoodSimulation.Register deduplica el registro. TrySpend
+valida IDs de compra/unidad y descuenta una vez; un fallo retira la unidad provisional.
+No se escribe estado en assets ni se crea inventario o un driver alimentario adicional.
+
+DevelopmentIngredientSupply retira las fixtures gratuitas de la simulación y las
+desactiva antes de su Awake, salvo opt-in explícito de desarrollo. La escena configura
+1000 céntimos iniciales de desarrollo; el valor por defecto del código continúa en 0.
+La primera provisión con saldo 0 es deuda de diseño. Ver [M8](M8.md) y
+[ADR 0010](Decisions/0010-economy-ingredient-procurement.md).

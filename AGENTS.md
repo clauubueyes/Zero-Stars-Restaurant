@@ -19,7 +19,9 @@
   evaluación independiente de calidad y pago; ver `Docs/M6.md` y ADR 0007.
   M1–M6, polish y entrega tolerante están aprobados en `144cca5`.
   M7 añade almacenamiento físico y conservación térmica; ver `Docs/M7.md` y ADR 0009.
-  M8 y los sistemas posteriores no están implementados.
+  M7 está validado en `8872f0d`. M8 implementa economía y compras físicas en
+  `feature/economy-procurement`; ver `Docs/M8.md` y ADR 0010.
+  Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -104,8 +106,18 @@
   fuera del almacenamiento. FoodState integra cruces de umbrales; nunca usar flags
   isInFridge/isFrozen para deterioro, recrear estado o restaurar frescura/contaminación.
   La API sin perfil conserva tasa M3; asignar explícitamente el perfil de conservación
-  al reloj de escenas con almacenamiento. No implementar electricidad/economía/M8
-  sin autorización expresa. Ver Docs/M7.md y ADR 0009.
+  al reloj de escenas con almacenamiento. Ver Docs/M7.md y ADR 0009.
+- M8 extiende el mismo PaymentLedger M6 con TrySpend en céntimos e IDs de compra/unidad,
+  sin duplicar balances. IngredientProduct configura precio/prefab inactivo;
+  la estación prepara FoodState propio, registra en el único FoodSimulation,
+  cobra una vez y activa la unidad. Fondos insuficientes o salida ocupada no
+  crean objetos ni mutan saldo. TryInitialize no restaura estado existente.
+  DevelopmentIngredientSupply desactiva/desregistra toda provisión gratuita por
+  defecto; solo habilitarla explícitamente para desarrollo/testing.
+  Saldo de código 0; escena configura 1000 céntimos de desarrollo. La primera
+  provisión con 0 € es deuda de diseño, sin mecánica inventada. No implementar
+  electricidad, supermercado, inventario, robo, préstamos ni otro milestone
+  sin autorización expresa. Ver Docs/M8.md y ADR 0010.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.

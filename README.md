@@ -1,7 +1,7 @@
 # Zero Star Restaurant
 
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
-en Unity. El jugador comienza con **0 €**, un local casi vacío y **sin electricidad**.
+en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.
 El objetivo es conseguir que el negocio sobreviva mediante sistemas combinables.
 
 M1 permite caminar, mirar y saltar en un restaurante greybox. M2 añade interacción
@@ -14,7 +14,10 @@ evaluación y pago en céntimos; validado por el usuario en `9335899`.
 El polish añade snap contextual, agarre coherente del plato y salida visible del
 cliente con la venta. M1–M6 y polish están aprobados en `144cca5`.
 M7 añade Fridge/Freezer físicos y conservación por temperatura real, con el mismo
-reloj e identidad; pendiente de aceptación manual.
+reloj e identidad; validado por el usuario en `8872f0d`.
+M8 añade compras físicas y reinversión con el mismo saldo M6, en
+`feature/economy-procurement`. La escena usa **10 € de desarrollo** configurables;
+la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
@@ -34,21 +37,27 @@ La escena de plantilla
 6. Mirar una caja a menos de 3 m: **E** la recoge, **G** la suelta y **botón derecho
    del ratón** la lanza. El texto provisional muestra objeto, acción y binding.
    Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
-7. Ir al banco de pruebas a la izquierda del spawn (`FoodTestZone`): dos porciones
-   de carne, pan y queso usan las mismas acciones M2. Mirar o sostener comida
-   muestra frescura, temperatura, condición, edad y contaminación. El Inspector
-   de FoodTestZone permite avanzar tiempo solo de comida; ver [M3](Docs/M3.md).
-8. Coger una carne de la mesa `CookingPrepBench` y soltarla sobre la superficie
-   rojiza `GrillHotSurface`, a la izquierda del local. Temperatura y cocción
-   avanzan por presencia física; retirarla pausa cocción y permite enfriamiento.
-   Ver [M4](Docs/M4.md) para colocación, tiempos y pruebas de rechazo.
+7. Ir a la estación sobre `FoodTestBench`, a la izquierda del spawn. Mirar un
+   botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)** o
+   **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger con E y
+   retirarla antes de comprar otra. Saldo y rechazo son visibles. Sin fondos o
+   con salida ocupada no se cobra ni se crea comida. Ver [M8](Docs/M8.md).
+   Las antiguas provisiones gratuitas están desactivadas; solo para desarrollo,
+   seleccionar FoodTestZone y usar el menú contextual de DevelopmentIngredientSupply
+   **Development: enable free ingredient fixtures**. Las guías M3–M7 que usan
+   fixtures requieren ese opt-in explícito.
+8. Llevar la carne comprada a la superficie rojiza `GrillHotSurface`, a la izquierda
+   del local, y soltarla con G. Temperatura y cocción avanzan por presencia física;
+   retirarla Cooked pausa cocción y permite enfriamiento. El mismo FoodSimulation
+   permite adelantar solo comida desde Inspector. Ver [M4](Docs/M4.md).
 9. Las tres bandejas `AssemblyStation1/2/3` están junto a la plancha, al fondo.
    Sostener comida, mirar bandeja/pila y **clic izquierdo** para colocar la misma
    unidad encima. También se pueden depositar, reorganizar y retirar con E/G. Mirar la
    pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
    E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
-10. Al entrar el cliente, el panel derecho muestra pedido y saldo **€0.00**.
+10. Al entrar el cliente, el panel derecho muestra pedido y el saldo de sesión
+    (inicialmente **€10.00** en esta escena de desarrollo).
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
     `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
     y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
@@ -89,8 +98,9 @@ material, prefab o interfaz.
 
 Una pequeña escena permitirá coger una porción, cocinarla con una fuente de calor
 no eléctrica, montar un plato, entregarlo a un cliente placeholder y cobrar una
-única vez. Las provisiones iniciales son una fixture limitada de desarrollo para
-probar ese ciclo con saldo cero; su obtención será una tarea posterior.
+única vez. M8 amplía el loop: **dinero → comprar unidades físicas → conservar/cocinar
+→ vender → reinvertir**. Provisiones gratuitas solo bajo opt-in de desarrollo.
+Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 
 ## Documentación
 
@@ -116,6 +126,8 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión sobre snap, agarre y retirada de ventas](Docs/Decisions/0008-vertical-slice-polish.md).
 - [M7: Fridge/Freezer, conservación, pruebas y límites](Docs/M7.md).
 - [Decisión sobre almacenamiento y política térmica](Docs/Decisions/0009-food-storage-refrigeration.md).
+- [M8: economía, compras físicas, pruebas y recorrido manual](Docs/M8.md).
+- [Decisión sobre adquisiciones y deuda del inicio con 0 €](Docs/Decisions/0010-economy-ingredient-procurement.md).
 
 `main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -126,4 +138,5 @@ M5 parte de M4 aprobado (`d7eb2bf`) en `feature/dish-assembly`.
 M6 parte de M5 y feedback aprobados (`6a3ca72`) en `feature/customer-service-loop`.
 Su polish parte de M6 aprobado (`9335899`) en `fix/vertical-slice-polish`.
 M7 parte del slice/polish aprobado (`144cca5`) en `feature/food-storage-refrigeration`.
+M8 parte de M7 aprobado (`8872f0d`) en `feature/economy-procurement`.
 Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.

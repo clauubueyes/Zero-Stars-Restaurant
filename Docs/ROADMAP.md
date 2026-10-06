@@ -13,8 +13,11 @@ rechazo por Raw/Burnt/calidad: ahora calidad y corrección se informan separadam
 y solo la coincidencia estructural controla aceptación/pago. Ver ADR 0007.
 M1–M6, polish y entrega tolerante aprobados en **`144cca5`**. La petición de M7
 autoriza exclusivamente **Food Storage & Refrigeration**, implementado en
-`feature/food-storage-refrigeration` y pendiente de aceptación manual; ver [M7](M7.md).
-No autoriza electricidad, economía/compras ni M8.
+`feature/food-storage-refrigeration` y validado en **`8872f0d`**; ver [M7](M7.md).
+La nueva tarea autoriza **M8: Economy & Ingredient Procurement**, en
+`feature/economy-procurement` desde ese commit. Ver [M8](M8.md) y ADR 0010.
+No autoriza otros milestones ni electricidad, supermercado, inventario o nuevas
+mecánicas de clientes.
 
 ## Experiencia objetivo
 
@@ -50,18 +53,17 @@ primera persona y da feedback visible para cada acción o rechazo.
   ni cambian el saldo. Entrega/pago deben ser una operación coherente sin estados
   parciales si se repite el input.
 
-La sesión comienza siempre con saldo 0 y suministro eléctrico desconectado.
-Para no bloquear la primera venta, la escena de desarrollo incluye una pequeña
-provisión gratuita, un plato y una fuente de calor **no eléctrica** (por ejemplo,
-hornillo de gas placeholder). Son una fixture provisional para probar el ciclo,
-no una compra, un generador ni una implementación del sistema eléctrico. La fuente
-de calor se representa con geometría simple, sin fuego animado ni shaders.
-La luz ambiental de desarrollo permite ver el local y no representa suministro
-eléctrico del negocio. En una partida nueva se restaura la fixture y el saldo cero.
+La visión final comienza con saldo **0 €**, local vacío y sin electricidad.
+M8 permite un saldo inicial configurable **exclusivamente de desarrollo** (1000
+céntimos en la escena), sobre el único ledger M6. Los ingredientes normales se
+compran como unidades físicas; toda provisión gratuita anterior requiere opt-in
+explícito de desarrollo/testing. Una nueva sesión restaura solo el saldo configurado;
+no existen compras ni estado persistentes en assets.
 
-La obtención real de ingredientes/equipamiento, el combustible y su coste son un
-milestone posterior. Esta elección permite comprobar el slice con el estado
-inicial del concepto sin regalar dinero o conectar electricidad de forma implícita.
+La plancha y Fridge/Freezer activos, junto con iluminación ambiental, siguen siendo
+fixtures térmicas/de visibilidad del prototipo, sin lógica eléctrica. La primera
+provisión jugable con 0 € queda deliberadamente pendiente de diseño. M8 no inventa
+ninguna vía para obtenerla. Combustible y equipamiento siguen fuera del alcance.
 
 ## Milestones verificables
 
@@ -80,17 +82,19 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M6 · `feature/customer-service-loop` | Un cliente móvil por ruta, pedido, entrega física, evaluación separada y pago. | Enter → Order → Wait → Receive → Evaluate → Pay/Reject → Leave; pedido con ID independiente y menú configurable/forzable. Solo Dish final suelto/intacto apoyado se evalúa. Coincidencia paga 500/650 céntimos una vez; con el polish el vendido viaja visible con el cliente, se desregistra y destruye al llegar a salida. Incorrecto/Custom conserva plato y cierra visita sin cobrar. Calidad no afecta pago. Recibo con IDs/ingredientes/frescura/cocción/contaminación/coste, saldo 0 inicial y siguiente cliente con delay. Tests Domain, físicos e integración/regresiones según M6.md y VERTICAL-SLICE-POLISH.md. |
 | Polish · `fix/vertical-slice-polish` | Corrección del flujo M1–M6, desde `9335899`. | Clic contextual conserva la Food sostenida y la apila con bounds; E permite retirar. F sigue confirmando; todas las partes resuelven el mismo Pickup del Dish, también Custom. Venta conserva mismo agregado y recibo; impide recogida/reventa/doble pago, limpia al salir. Prep/Grill/Assembly próximos y pasillo despejado hacia Delivery. Generador reproducible. Sin cambios Domain ni M7. |
 | M7 · `feature/food-storage-refrigeration` | Fridge y Freezer físicos, entornos fríos y conservación por temperatura real. | Enfriamiento progresivo a +4/−18 °C y calentamiento al retirar; tasas 1/0.1/0.001 según temperatura real. Edad, ID, FoodState, frescura, contaminación y cocción se conservan. E/G/E usa física existente; único FoodSimulation, integración analítica de exposición y regresiones M1–M6. Sin inventario, puertas funcionales, electricidad, compras ni M8; ver M7.md y ADR 0009. |
-| M8 · `fix/vertical-slice-integration` | Ciclo completo y revisión de fallos, sin sistemas nuevos. | Ejecutar el recorrido de abajo, repetir desde una nueva sesión y comprobar que las vistas son sustituibles. Console sin errores propios; build de desarrollo local si están instalados sus módulos. |
+| M8 · `feature/economy-procurement` | Compras físicas y loop económico con el saldo M6. | Comprar Bun/Raw Beef Patty/Cheese en céntimos configurables: cargo único, unidad real con ID/FoodState propio y registro en el único FoodSimulation M7. Fondos insuficientes o salida ocupada: no crear/cobrar. Fixtures gratuitas solo desarrollo/testing; saldo de desarrollo configurable y deuda de 0 € documentada. Conservar/cocinar/montar/vender unidades compradas, pago M6 único y reinversión. Tests Domain, PlayMode, escena y regresiones M1–M7; ver M8.md y ADR 0010. Sin otros milestones. |
 
 ## Recorrido de aceptación del slice
 
-1. Abrir `PrototypeRestaurant` cuando exista; iniciar Play y comprobar 0 € y la
-   condición de suministro desconectado. No debe hacer falta un sistema eléctrico
+1. Abrir `PrototypeRestaurant`; iniciar Play y comprobar 10 € de desarrollo
+   (o el saldo configurado) y provisiones gratuitas desactivadas. No debe hacer falta un sistema eléctrico
    completo para comprobar esta condición de la fixture.
-2. Leer el pedido del cliente. Recoger y soltar una porción; su identidad/estado
+2. Leer el pedido del cliente. Comprar ingredientes con E en la estación,
+   retirándolos de OUTPUT antes de la siguiente compra. Comprobar el gasto.
+   Recoger y soltar una porción; su identidad/estado
    permanece estable y solo existe en una ubicación.
 3. Dejar una caja, ingrediente o bandeja sin confirmar en DeliveryPad: se ignora,
-   pedido sigue esperando y saldo cero. Entregar un Dish incorrecto o Custom: se
+   pedido sigue esperando y saldo sin cambios. Entregar un Dish incorrecto o Custom: se
    rechaza, conserva plato, no cobra y el cliente sale; llega otro tras el intervalo.
 4. Cocinar una porción real, retirarla Cooked y montar el pedido con clic izquierdo
    mirando bandeja/pila mientras se sostiene cada ingrediente. E/G siguen disponibles.
@@ -103,8 +107,10 @@ dividirlo manteniendo un resultado comprobable en cada paso.
    llevando el mismo plato y ambos se
    retiran al llegar a salida. Consultas repetidas
    no vuelven a pagar. Retirar un rechazado antes de ofrecerlo a otro cliente.
-6. Detener y volver a iniciar Play: nueva sesión con 0 €, pedido y provisiones
-   restaurados, sin cambios persistentes en los ScriptableObjects.
+6. Detener y volver a iniciar Play: saldo de desarrollo configurado y sin
+   provisiones gratuitas. No persisten compras ni ventas. Poner saldo inicial 0:
+   compras fallan sin crear objetos; la primera provisión sigue pendiente de diseño.
+   No cambian los ScriptableObjects.
 7. Cambiar solo la geometría/material de un placeholder (por ejemplo esfera por
    cubo en Visual) y repetir una entrega válida; las reglas no cambian.
 
@@ -116,7 +122,7 @@ colliders y feedback. No sustituir este recorrido por tests triviales.
 
 El orden siguiente es orientativo y se revisará con evidencia del prototipo:
 
-1. **Bucle de supervivencia:** obtención de provisiones con 0 €, precios de compra,
+1. **Bucle de supervivencia:** obtención de provisiones con 0 €, balance de precios M8,
    combustible, reposición y sistema mínimo de electricidad. Comprobar que existe
    una vía jugable para realizar la primera venta sin dinero inicial.
 2. **Profundidad de cocina:** más ingredientes, factores de deterioro, almacenamiento, herramientas
