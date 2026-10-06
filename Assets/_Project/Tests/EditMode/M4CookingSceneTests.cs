@@ -37,14 +37,17 @@ namespace ZeroStarRestaurant.Tests
             var driver = new SerializedObject(Components<FoodSimulation>().Single());
             Assert.That(driver.FindProperty("_heatSources").arraySize, Is.EqualTo(1));
             Assert.That(driver.FindProperty("_heatSources").GetArrayElementAtIndex(0).objectReferenceValue, Is.EqualTo(grill));
-            Assert.That(driver.FindProperty("_foods").arraySize, Is.EqualTo(8));
+            Assert.That(driver.FindProperty("_foods").arraySize, Is.EqualTo(Components<FoodItem>().Length));
         }
 
         [Test]
         public void OnlyBeefIsCookableAndCookingFixturesCoverColdRottenAndContaminatedUnits()
         {
             FoodItem[] foods = Components<FoodItem>();
-            Assert.That(foods, Has.Length.EqualTo(8));
+            // Preserve M3/M4's eight fixtures while M5 adds assembly supplies.
+            FoodItem[] baseline = _scene.GetRootGameObjects().Where(root => root.name == "FoodTestZone" || root.name == "CookingTestZone")
+                .SelectMany(root => root.GetComponentsInChildren<FoodItem>()).ToArray();
+            Assert.That(baseline, Has.Length.EqualTo(8));
             foreach (FoodItem food in foods)
                 Assert.That(food.Definition.CreateProfile().IsCookable, Is.EqualTo(food.Definition.Id == "food.raw_beef_patty"));
             FoodItem[] fixtures = _scene.GetRootGameObjects().Single(root => root.name == "CookingTestZone")

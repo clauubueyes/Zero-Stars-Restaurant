@@ -12,6 +12,7 @@ using ZeroStarRestaurant.Player;
 using ZeroStarRestaurant.Interaction;
 using ZeroStarRestaurant.Food;
 using ZeroStarRestaurant.Cooking;
+using ZeroStarRestaurant.Dishes;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -131,6 +132,12 @@ namespace ZeroStarRestaurant.Editor
                 Wire(feedback, "_interaction", interaction, "_input", input);
                 FoodInspectionFeedback foodFeedback = player.AddComponent<FoodInspectionFeedback>();
                 Wire(foodFeedback, "_interaction", interaction, "_carry", carry);
+                DishInspectionFeedback dishFeedback = player.AddComponent<DishInspectionFeedback>();
+                var dishFeedbackData = new SerializedObject(dishFeedback);
+                dishFeedbackData.FindProperty("_interaction").objectReferenceValue = interaction;
+                dishFeedbackData.FindProperty("_detector").objectReferenceValue = detector;
+                dishFeedbackData.FindProperty("_carry").objectReferenceValue = carry;
+                dishFeedbackData.ApplyModifiedPropertiesWithoutUndo();
 
                 var pickups = new GameObject("PhysicalTestObjects");
                 CreatePickup(pickups.transform, "Light box (0.5 kg)", -1.8f, 0.45f, 0.5f,
@@ -190,6 +197,28 @@ namespace ZeroStarRestaurant.Editor
                         new Vector3(-5.8f + index * 0.5f, 0.91f, -2.3f)));
                 }
                 FoodSimulation foodSimulation = foodZone.AddComponent<FoodSimulation>();
+                var assemblyZone = new GameObject("AssemblyTestZone");
+                CreateBox(assemblyZone.transform, "AssemblyWorkbench", new Vector3(-3.2f, 0.45f, 4.8f),
+                    new Vector3(4.8f, 0.9f, 1.5f), volume);
+                CreateBox(assemblyZone.transform, "AssemblySupplyBench", new Vector3(3.3f, 0.4f, 4.9f),
+                    new Vector3(3f, 0.8f, 1.5f), volume);
+                for (int index = 0; index < 6; index++)
+                    foods.Add(CreateFood(assemblyZone.transform, "Bun - Assembly supply " + (index + 1), 0f,
+                        new Vector3(0.4f, 0.22f, 0.4f), 0.08f, bunMaterial, bun, 0f, 100f, 21f, false,
+                        new Vector3(2.4f + index % 3 * 0.6f, 0.96f, index < 3 ? 4.5f : 5.1f)));
+                for (int index = 0; index < 4; index++)
+                    foods.Add(CreateFood(assemblyZone.transform, "Cheese - Assembly supply " + (index + 1), 0f,
+                        new Vector3(0.32f, 0.06f, 0.32f), 0.025f, cheeseMaterial, cheese, 0f, 100f, 21f, false,
+                        new Vector3(4.2f + index % 2 * 0.4f, 0.88f, index < 2 ? 4.5f : 5.1f)));
+                DishDefinition[] dishDefinitions =
+                {
+                    GetOrCreateDishDefinition("Hamburger", "dish.hamburger", "Hamburger", new[] { bun, beef, bun }),
+                    GetOrCreateDishDefinition("Cheeseburger", "dish.cheeseburger", "Cheeseburger", new[] { bun, beef, cheese, bun })
+                };
+                Material trayMaterial = GetOrCreateMaterial("DishTray", new Color(0.7f, 0.85f, 0.85f));
+                for (int index = 0; index < 3; index++)
+                    CreateAssemblyStation(assemblyZone.transform, index + 1, new Vector3(-4.7f + index * 1.5f, 0f, 4.8f),
+                        foodSimulation, dishDefinitions, trayMaterial);
                 var simulationData = new SerializedObject(foodSimulation);
                 SerializedProperty foodReferences = simulationData.FindProperty("_foods");
                 foodReferences.arraySize = foods.Count;
@@ -327,6 +356,53 @@ namespace ZeroStarRestaurant.Editor
             definition.CreateProfile();
             AssetDatabase.CreateAsset(definition, path);
             return definition;
+        }
+
+        private static DishDefinition GetOrCreateDishDefinition(string assetName, string id, string displayName, FoodDefinition[] ingredients)
+        {
+            const string folder = "Assets/_Project/ScriptableObjects/Dishes";
+            if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/_Project/ScriptableObjects", "Dishes");
+            string path = folder + "/" + assetName + ".asset";
+            DishDefinition existing = AssetDatabase.LoadAssetAtPath<DishDefinition>(path);
+            if (existing != null) { existing.CreateProfile(); return existing; }
+            var definition = ScriptableObject.CreateInstance<DishDefinition>();
+            definition.name = assetName;
+            var data = new SerializedObject(definition);
+            data.FindProperty("_id").stringValue = id;
+            data.FindProperty("_displayName").stringValue = displayName;
+            SerializedProperty refs = data.FindProperty("_orderedIngredients");
+            refs.arraySize = ingredients.Length;
+            for (int index = 0; index < ingredients.Length; index++) refs.GetArrayElementAtIndex(index).objectReferenceValue = ingredients[index];
+            data.ApplyModifiedPropertiesWithoutUndo();
+            definition.CreateProfile(); AssetDatabase.CreateAsset(definition, path);
+            return definition;
+        }
+
+        private static void CreateAssemblyStation(Transform parent, int number, Vector3 position, FoodSimulation simulation,
+            DishDefinition[] definitions, Material material)
+        {
+            var station = new GameObject("AssemblyStation" + number);
+            station.transform.SetParent(parent, false); station.transform.localPosition = position;
+            var tray = new GameObject("DraftTray" + number, typeof(Rigidbody), typeof(BoxCollider), typeof(DishItem));
+            tray.transform.SetParent(station.transform, false); tray.transform.localPosition = new Vector3(0f, 0.935f, 0f);
+            tray.GetComponent<Rigidbody>().isKinematic = true; tray.GetComponent<Rigidbody>().useGravity = false;
+            tray.GetComponent<BoxCollider>().size = new Vector3(0.7f, 0.045f, 0.7f);
+            GameObject visual = CreateBox(tray.transform, "TrayVisual", Vector3.zero, new Vector3(0.7f, 0.045f, 0.7f), material);
+            UnityEngine.Object.DestroyImmediate(visual.GetComponent<BoxCollider>());
+            CreateBox(station.transform, "FinalizeTab", new Vector3(0.55f, 0.94f, 0f), new Vector3(0.15f, 0.06f, 0.25f), material);
+            var sensorObject = new GameObject("AssemblyVolume", typeof(BoxCollider));
+            sensorObject.transform.SetParent(station.transform, false); sensorObject.transform.localPosition = new Vector3(0f, 1.49f, 0f);
+            BoxCollider sensor = sensorObject.GetComponent<BoxCollider>(); sensor.isTrigger = true;
+            sensor.size = new Vector3(0.85f, 1.1f, 0.85f);
+            AssemblySurface surface = station.AddComponent<AssemblySurface>();
+            var data = new SerializedObject(surface);
+            data.FindProperty("_dish").objectReferenceValue = tray.GetComponent<DishItem>();
+            data.FindProperty("_assemblyZone").objectReferenceValue = sensor;
+            data.FindProperty("_simulation").objectReferenceValue = simulation;
+            data.FindProperty("_displayName").stringValue = "Assembly " + number;
+            SerializedProperty profiles = data.FindProperty("_definitions"); profiles.arraySize = definitions.Length;
+            for (int index = 0; index < definitions.Length; index++) profiles.GetArrayElementAtIndex(index).objectReferenceValue = definitions[index];
+            data.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

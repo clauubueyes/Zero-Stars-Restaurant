@@ -60,9 +60,9 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(beef[0].Definition, Is.SameAs(beef[1].Definition));
             float[] freshness = beef.Select(f => new SerializedObject(f).FindProperty("_initialFreshnessPercent").floatValue).ToArray();
             Assert.That(freshness, Is.EquivalentTo(new[] { 100f, 6f }));
-            FoodItem bun = Components<FoodItem>().Single(f => f.Definition.Id == "food.bun");
+            FoodItem bun = M3Foods().Single(f => f.Definition.Id == "food.bun");
             Assert.That(new SerializedObject(bun).FindProperty("_initialTemperatureCelsius").floatValue, Is.EqualTo(5f));
-            FoodItem cheese = Components<FoodItem>().Single(f => f.Definition.Id == "food.cheese");
+            FoodItem cheese = M3Foods().Single(f => f.Definition.Id == "food.cheese");
             Assert.That(new SerializedObject(cheese).FindProperty("_initiallyContaminated").boolValue, Is.True);
         }
 
