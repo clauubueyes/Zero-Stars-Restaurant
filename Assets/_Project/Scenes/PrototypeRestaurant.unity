@@ -2474,6 +2474,7 @@ GameObject:
   - component: {fileID: 923074285}
   - component: {fileID: 923074284}
   - component: {fileID: 923074283}
+  - component: {fileID: 999000001}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2496,6 +2497,7 @@ MonoBehaviour:
   _interaction: {fileID: 923074287}
   _detector: {fileID: 923074288}
   _carry: {fileID: 923074289}
+  _assembly: {fileID: 999000001}
 --- !u!114 &923074284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7738,6 +7740,26 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
   _heightBand: 0.02
   _stackAlignmentTolerance: 0.18
+--- !u!114 &999000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923074282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faaa805d6bfa4f5583d1539220765c25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishAssemblyInteraction
+  _interaction: {fileID: 923074287}
+  _detector: {fileID: 923074288}
+  _carry: {fileID: 923074289}
+  _inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  _surfaces:
+  - {fileID: 2133772344}
+  - {fileID: 1744261941}
+  - {fileID: 1504888345}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

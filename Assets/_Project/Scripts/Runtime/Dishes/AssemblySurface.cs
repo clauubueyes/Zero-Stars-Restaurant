@@ -19,7 +19,8 @@ namespace ZeroStarRestaurant.Dishes
         private readonly List<FoodItem> _ingredients = new List<FoodItem>();
         public DishItem Dish => _dish;
         public DishProfile PreviewDefinition => _dish != null && _dish.State != null ? _dish.State.Recognize(_profiles) : null;
-        public override string ActionLabel => "Finalize dish";
+        public override string DisplayName => PreviewDefinition?.DisplayName ?? "Custom Dish";
+        public override string ActionLabel => "Finalize";
 
         private void Awake()
         {

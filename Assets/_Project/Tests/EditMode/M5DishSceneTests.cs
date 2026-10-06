@@ -51,6 +51,15 @@ namespace ZeroStarRestaurant.Tests
             var feedback = new SerializedObject(Components<DishInspectionFeedback>().Single());
             Assert.That(feedback.FindProperty("_detector").objectReferenceValue, Is.EqualTo(Components<InteractionDetector>().Single()));
             Assert.That(feedback.FindProperty("_carry").objectReferenceValue, Is.EqualTo(Components<PhysicalCarry>().Single()));
+            var assembly = Components<DishAssemblyInteraction>().Single();
+            Assert.That(feedback.FindProperty("_assembly").objectReferenceValue, Is.EqualTo(assembly));
+            var assemblyData = new SerializedObject(assembly);
+            Assert.That(assemblyData.FindProperty("_surfaces").arraySize, Is.EqualTo(3));
+            for (int index = 0; index < 3; index++)
+                Assert.That(assemblyData.FindProperty("_surfaces").GetArrayElementAtIndex(index).objectReferenceValue,
+                    Is.InstanceOf<AssemblySurface>());
+            var actions = (UnityEngine.InputSystem.InputActionAsset)assemblyData.FindProperty("_inputActions").objectReferenceValue;
+            Assert.That(actions.FindAction("Player/FinalizeDish").bindings.Single().path, Is.EqualTo("<Keyboard>/f"));
         }
     }
 }

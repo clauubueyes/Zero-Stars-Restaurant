@@ -57,7 +57,7 @@ namespace ZeroStarRestaurant.Editor
             if (actions == null || actions.FindAction("Player/Move") == null ||
                 actions.FindAction("Player/Look") == null || actions.FindAction("Player/Jump") == null ||
                 actions.FindAction("Player/Interact") == null || actions.FindAction("Player/Drop") == null ||
-                actions.FindAction("Player/Throw") == null)
+                actions.FindAction("Player/Throw") == null || actions.FindAction("Player/FinalizeDish") == null)
                 throw new InvalidOperationException("The existing Player input actions are required.");
 
             Material floor = GetOrCreateMaterial("GreyboxFloor", new Color(0.25f, 0.27f, 0.29f));
@@ -133,10 +133,18 @@ namespace ZeroStarRestaurant.Editor
                 FoodInspectionFeedback foodFeedback = player.AddComponent<FoodInspectionFeedback>();
                 Wire(foodFeedback, "_interaction", interaction, "_carry", carry);
                 DishInspectionFeedback dishFeedback = player.AddComponent<DishInspectionFeedback>();
+                DishAssemblyInteraction assemblyInput = player.AddComponent<DishAssemblyInteraction>();
+                var assemblyInputData = new SerializedObject(assemblyInput);
+                assemblyInputData.FindProperty("_interaction").objectReferenceValue = interaction;
+                assemblyInputData.FindProperty("_detector").objectReferenceValue = detector;
+                assemblyInputData.FindProperty("_carry").objectReferenceValue = carry;
+                assemblyInputData.FindProperty("_inputActions").objectReferenceValue = actions;
+                assemblyInputData.ApplyModifiedPropertiesWithoutUndo();
                 var dishFeedbackData = new SerializedObject(dishFeedback);
                 dishFeedbackData.FindProperty("_interaction").objectReferenceValue = interaction;
                 dishFeedbackData.FindProperty("_detector").objectReferenceValue = detector;
                 dishFeedbackData.FindProperty("_carry").objectReferenceValue = carry;
+                dishFeedbackData.FindProperty("_assembly").objectReferenceValue = assemblyInput;
                 dishFeedbackData.ApplyModifiedPropertiesWithoutUndo();
 
                 var pickups = new GameObject("PhysicalTestObjects");
@@ -216,9 +224,16 @@ namespace ZeroStarRestaurant.Editor
                     GetOrCreateDishDefinition("Cheeseburger", "dish.cheeseburger", "Cheeseburger", new[] { bun, beef, cheese, bun })
                 };
                 Material trayMaterial = GetOrCreateMaterial("DishTray", new Color(0.7f, 0.85f, 0.85f));
+                var assemblySurfaces = new List<AssemblySurface>();
                 for (int index = 0; index < 3; index++)
-                    CreateAssemblyStation(assemblyZone.transform, index + 1, new Vector3(-4.7f + index * 1.5f, 0f, 4.8f),
-                        foodSimulation, dishDefinitions, trayMaterial);
+                    assemblySurfaces.Add(CreateAssemblyStation(assemblyZone.transform, index + 1, new Vector3(-4.7f + index * 1.5f, 0f, 4.8f),
+                        foodSimulation, dishDefinitions, trayMaterial));
+                assemblyInputData.Update();
+                SerializedProperty surfaces = assemblyInputData.FindProperty("_surfaces");
+                surfaces.arraySize = assemblySurfaces.Count;
+                for (int index = 0; index < assemblySurfaces.Count; index++)
+                    surfaces.GetArrayElementAtIndex(index).objectReferenceValue = assemblySurfaces[index];
+                assemblyInputData.ApplyModifiedPropertiesWithoutUndo();
                 var simulationData = new SerializedObject(foodSimulation);
                 SerializedProperty foodReferences = simulationData.FindProperty("_foods");
                 foodReferences.arraySize = foods.Count;
@@ -378,7 +393,7 @@ namespace ZeroStarRestaurant.Editor
             return definition;
         }
 
-        private static void CreateAssemblyStation(Transform parent, int number, Vector3 position, FoodSimulation simulation,
+        private static AssemblySurface CreateAssemblyStation(Transform parent, int number, Vector3 position, FoodSimulation simulation,
             DishDefinition[] definitions, Material material)
         {
             var station = new GameObject("AssemblyStation" + number);
@@ -403,6 +418,7 @@ namespace ZeroStarRestaurant.Editor
             SerializedProperty profiles = data.FindProperty("_definitions"); profiles.arraySize = definitions.Length;
             for (int index = 0; index < definitions.Length; index++) profiles.GetArrayElementAtIndex(index).objectReferenceValue = definitions[index];
             data.ApplyModifiedPropertiesWithoutUndo();
+            return surface;
         }
     }
 }

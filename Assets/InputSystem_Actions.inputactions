@@ -6,6 +6,15 @@
             "id": "df70fa95-8a34-4494-b137-73ab6b9c7d37",
             "actions": [
                 {
+                    "name": "FinalizeDish",
+                    "type": "Button",
+                    "id": "2d6d8ee2-4c05-4bf4-baa9-b2aa5acd51ae",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Move",
                     "type": "Value",
                     "id": "351f2ccd-1f9f-44bf-9bec-d62ac5c5f408",
@@ -106,6 +115,17 @@
                 }
             ],
             "bindings": [
+                {
+                    "name": "",
+                    "id": "10353a5e-f57a-4c6e-a726-865de489d5c9",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "FinalizeDish",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
                 {
                     "name": "",
                     "id": "75009724-f069-4d96-aabd-5b78c0e94c6f",
