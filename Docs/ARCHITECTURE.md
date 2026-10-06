@@ -4,7 +4,8 @@ Estado: M1 implementa jugador FPS; M2 interacción genérica y agarre físico;
 M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
 adaptadores Unity e inspección. M4 añade fuente física y cocción térmica.
 M5 añade montaje libre y transporte de platos; M5 y su feedback están aprobados.
-M6 añade un cliente activo, pedidos, entrega física, evaluación y pago. M7 pendiente.
+M6 añade un cliente activo, pedidos, entrega física, evaluación y pago; aprobado en
+`9335899`. El polish añade snap de montaje y transporte visible de ventas. M7 pendiente.
 
 ## Dependencias y responsabilidades
 
@@ -77,7 +78,8 @@ cajas físicas y tres de alimentos, todos URP/Lit simples. M3 crea tres
 ScriptableObjects FoodDefinition. M4 añade un material de plancha y cuatro carnes.
 M5 añade dos definiciones de reconocimiento, un material de bandeja, tres
 estaciones y diez suministros. M6 añade dos materiales, configuración de servicio
-y una raíz CustomerServiceZone; conserva toda la geometría M1–M5. Sin prefabs propios.
+y una raíz CustomerServiceZone. El polish conserva objetos/fileIDs/GUID, reubica
+estaciones/obstáculos y añade un anchor al cliente. Sin prefabs propios.
 
 ## Assemblies y tests al implementar
 
@@ -205,6 +207,7 @@ DishDefinition → DishProfile (secuencia de IDs, requisito de pila)
 FoodState      → Guid de unidad y pertenencia exclusiva de montaje
 DishState      → referencias ordenadas a FoodState + consultas agregadas vivas
 AssemblySurface → consulta física + orden aproximado → composición de borrador
+PlaceIngredient / clic → DishAssemblyInteraction → AssemblySurface → snap por bounds
 F / E sobre bandeja → confirmar → DishItem con proxy físico + Pickup genérico
 FoodSimulation → mismas unidades originales, único reloj antes/después de confirmar
 ```
@@ -218,12 +221,24 @@ lleva el conjunto. No hay sustitución por prefab de hamburguesa, inventario o
 save system. IDs de unidades/platos son distintos de IDs de definiciones.
 Ver [ADR 0006](Decisions/0006-physical-dish-assembly.md) y [M5](M5.md).
 
+El snap pertenece solo al adaptador AssemblySurface: exige una Food real sostenida
+registrada en su reloj, hueco libre dentro del sensor y pertenencia válida. El
+coordinador revalida el primer hit/alcance sin atravesar obstáculos. M2 libera el
+agarre, se colocan los bounds sobre bandeja/pila y se anulan velocidades de salida;
+la unidad sigue dinámica y extraíble con E. No cambia FoodState ni se crean unidades.
+El proxy final abarca los colliders de todos los ingredientes; colliders/Pickup hijos
+se retiran. PhysicalCarry acepta una elevación mínima configurable en Pickup (-90°
+por defecto, 5° para platos), y una tolerancia de aproximación inicial decreciente
+para levantar desde el suelo sin liberar prematuramente. No conoce tipos de comida.
+Fuerza, velocidad, comprobaciones de espacio y tether normal M2 permanecen activos.
+
 ## Servicio M6
 
 ```text
 CustomerServiceConfiguration → OrderOffer (DishProfile + precio en céntimos)
 CustomerVisit → OrderState (IDs distintos y estado de cada visita/pedido)
 CustomerMovement ← ruta explícita, sin reglas de alimentos
+CustomerDishCarrier ← mismo Dish vendido → anchor local hasta salida
 DeliveryZone → DishItem final, suelto, intacto, apoyado y suficientemente lento
 CustomerServiceLoop → OrderDelivery → OrderEvaluation + PaymentLedger
 OrderEvaluation → DishSnapshot → IngredientSnapshot de unidades originales
@@ -247,11 +262,15 @@ solo tras validar IDs/duplicados/overflow modifica saldo, marca vendido y cierra
 pedido. PaymentLedger usa long en céntimos, sin conocer alimentos/cocción. Un fallo
 de transacción deja pedido y plato disponibles. No hay soporte multihilo/persistencia.
 
-DishState mantiene referencias vivas M5 hasta la venta. Las snapshots de M6 son
+DishState mantiene referencias vivas M5 incluso vendido, hasta la salida. Las snapshots de M6 son
 evidencia histórica inmutable del instante de entrega, con los mismos IDs, perfiles,
 estado y coste, independiente del posterior deterioro o destrucción. Después de
-cobrar, Runtime desregistra los FoodItems del único FoodSimulation, desactiva y
-destruye el agregado. No quedan objetos vendidos ni referencias Unity en recibos.
+cobrar, CustomerDishCarrier vincula el mismo agregado al anchor del cliente,
+retira su Pickup y colisiones y lo mantiene visible/cinemático. FoodSimulation
+sigue siendo el único reloj. Al completar salida, CustomerServiceLoop desregistra
+las unidades, desactiva/destruye el plato y oculta el cliente reutilizable. Cancelar
+servicio también limpia la venta. Rechazos no se vinculan ni se destruyen.
+No quedan referencias Unity en recibos.
 Los IDs procesados se conservan en el ledger de la sesión para impedir doble pago.
 
 DeliveryZone consulta volumen actual, ignora ingredientes/cajas/borradores/manos
@@ -259,6 +278,8 @@ ocupadas y exige apoyo en el pad. Una colocación rechazada se registra hasta re
 o recoger el plato: evita venderlo involuntariamente al siguiente cliente. No exige
 una nueva tecla, input o dependencia. Ver [ADR 0007](Decisions/0007-customer-delivery-payment.md)
 y [M6](M6.md).
+Ver [ADR 0008](Decisions/0008-vertical-slice-polish.md) y
+[polish y validación actual](VERTICAL-SLICE-POLISH.md) para estos cambios Runtime.
 
 ## Convenciones prácticas
 

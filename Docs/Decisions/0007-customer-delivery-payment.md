@@ -1,6 +1,10 @@
 # ADR 0007: cliente, entrega física y transacción de pago M6
 
-Fecha: 2026-10-06. Estado: implementada; aceptación manual M6 pendiente.
+Fecha: 2026-10-06. Estado: M6 aprobado por el usuario en `9335899`.
+La [ADR 0008](0008-vertical-slice-polish.md) sustituye exclusivamente la retirada
+física inmediata por transporte visible hasta la salida; la transacción Domain
+y separación entre corrección y calidad permanecen intactas. Las decisiones de
+esta página describen la entrega original M6.
 
 ## Contexto
 

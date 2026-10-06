@@ -87,9 +87,17 @@
   aceptación ni pago. Precios de configuración en céntimos enteros; saldo de sesión
   empieza en cero. OrderDelivery cierra/paga una vez, DishState.IsSold evita reventa.
   Evaluación conserva evidencia inmutable de entrega con IDs originales; el plato
-  vivo M5 mantiene sus referencias hasta la venta. Desregistrar alimentos vendidos
-  del único FoodSimulation antes de destruir el agregado. Rechazo conserva el plato
+  vivo M5 mantiene sus referencias incluso después de la venta hasta la salida.
+  CustomerDishCarrier vincula el mismo Dish a un anchor del cliente, retira Pickup
+  y colisiones; desregistrar del único FoodSimulation y destruir solo al llegar a
+  salida (o cancelar servicio). Rechazo conserva el plato
   y termina la visita; retirar/recoger antes de ofrecerlo al siguiente cliente.
+- Polish desde M6 aprobado `9335899`: clic izquierdo PlaceIngredient coloca la
+  Food sostenida sobre la pila con bounds, sin clones ni cambios de estado. Snap
+  solo pertenece a AssemblySurface; E/G y Throw derecho siguen siendo genéricos.
+  Finalizar usa un proxy único; el agarre elevado configurable evita depender de
+  qué ingrediente se enfoca. Ver Docs/VERTICAL-SLICE-POLISH.md y ADR 0008.
+  No continuar con M7 sin autorización expresa.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.

@@ -112,6 +112,11 @@ CustomerServiceZone; reutiliza CustomerService.asset, definiciones y materiales.
 Validar entrega física suelta, correcto/incorrecto, calidad separada, venta una vez,
 retirada del reloj y siguiente cliente. El recibo conserva datos del instante de
 entrega; el plato rechazado sigue vivo. No confundirlos ni avanzar comida desde NPCs.
+Para el polish desde M6 aprobado `9335899`, seguir
+[el recorrido vigente](VERTICAL-SLICE-POLISH.md): clic izquierdo sobre montaje,
+finalización, recogida desde cualquier parte, entrega y salida visible con plato.
+La retirada del reloj ocurre al completar la salida, no al pagar. Las instrucciones
+de posición antiguas en M4–M6 son históricas; el generador ahora usa estaciones próximas.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

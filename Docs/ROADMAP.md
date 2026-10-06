@@ -1,6 +1,8 @@
 # Vertical slice y roadmap
 
-Estado actual: **M0–M5 y feedback aprobados; M6 implementado, aceptación manual pendiente**.
+Estado actual: **M0–M6 aprobados por el usuario; M6 aprobado en `9335899`**.
+El [polish del slice](VERTICAL-SLICE-POLISH.md) mejora snap, agarre, transporte de
+ventas y greybox en `fix/vertical-slice-polish`; su comprobación manual está pendiente.
 Ver [M1](M1.md), [M2](M2.md), [M3](M3.md), [M4](M4.md), [M5](M5.md) y [M6](M6.md).
 La petición aprobada de M6 amplía su alcance a Customer Order → Delivery → Payment
 y sustituye la división anterior M6 pedido/M7 entrega-pago. También sustituye el
@@ -69,7 +71,8 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M3 · `feature/food-state` | Tres definiciones y cuatro alimentos físicos; Domain independiente de Unity, deterioro/temperatura e inspección provisional. | Dos porciones comparten definición pero no estado; recoger/soltar/lanzar conserva identidad y no muta el asset. Frescura 0–100 y transiciones por umbrales; temperatura por unidad y grandes saltos temporales deterministas. Fixture fresca/envejecida/fría/contaminada y aceleración solo de desarrollo. Tests EditMode/PlayMode y regresión M1/M2 según M3.md; sin cocción. |
 | M4 · `feature/basic-cooking` | Plancha física con varias porciones, temperatura y cocción continua separada de deterioro. | Raw → Undercooked → Cooked → Overcooked → Burnt por dosis térmica configurable; carne cocinable, pan/queso no. Calentamiento hacia plancha y enfriamiento hacia ambiente; retirar pausa dosis, volver conserva estado. Zona física sin registros obsoletos/duplicados; tests de saltos grandes, umbrales, contaminación, carne podrida, ciclo de vida y regresiones M1–M3 según M4.md. Sin platos. |
 | M5 · `feature/dish-assembly` | Montaje físico libre, identidad y estado real por ingrediente; reconocimiento data-driven y plato final manipulable. | Añadir/retirar/reorganizar por colocación, pertenencia exclusiva e IDs propios; pila ordenada reconoce Hamburger/Cheeseburger, otras combinaciones son Custom Dish. Confirmar no permite vacío ni duplicación; conserva referencias, estado, orden y datos agregados vivos. Proxy físico transporta sin dispersar ingredientes. Tests Domain/PlayMode e integración Pickup→Cooking→Assembly según M5.md; sin clientes/pedidos/pagos. |
-| M6 · `feature/customer-service-loop` | Un cliente móvil por ruta, pedido, entrega física, evaluación separada y pago. | Enter → Order → Wait → Receive → Evaluate → Pay/Reject → Leave; pedido con ID independiente y menú configurable/forzable. Solo Dish final suelto/intacto apoyado se evalúa. Coincidencia paga 500/650 céntimos una vez, retira originales del reloj y destruye vendido; incorrecto/Custom conserva plato y cierra visita sin cobrar. Calidad no afecta pago. Recibo con IDs/ingredientes/frescura/cocción/contaminación/coste, saldo 0 inicial y siguiente cliente con delay. Tests Domain, físicos e integración/regresiones según M6.md. |
+| M6 · `feature/customer-service-loop` | Un cliente móvil por ruta, pedido, entrega física, evaluación separada y pago. | Enter → Order → Wait → Receive → Evaluate → Pay/Reject → Leave; pedido con ID independiente y menú configurable/forzable. Solo Dish final suelto/intacto apoyado se evalúa. Coincidencia paga 500/650 céntimos una vez; con el polish el vendido viaja visible con el cliente, se desregistra y destruye al llegar a salida. Incorrecto/Custom conserva plato y cierra visita sin cobrar. Calidad no afecta pago. Recibo con IDs/ingredientes/frescura/cocción/contaminación/coste, saldo 0 inicial y siguiente cliente con delay. Tests Domain, físicos e integración/regresiones según M6.md y VERTICAL-SLICE-POLISH.md. |
+| Polish · `fix/vertical-slice-polish` | Corrección del flujo M1–M6, desde `9335899`. | Clic contextual conserva la Food sostenida y la apila con bounds; E permite retirar. F sigue confirmando; todas las partes resuelven el mismo Pickup del Dish, también Custom. Venta conserva mismo agregado y recibo; impide recogida/reventa/doble pago, limpia al salir. Prep/Grill/Assembly próximos y pasillo despejado hacia Delivery. Generador reproducible. Sin cambios Domain ni M7. |
 | M7 · por acordar | Trabajo posterior exclusivamente con nueva autorización. | Entrega/pago básicos están en M6. No se anticipan reputación, seguridad alimentaria, colas, stock, guardado u otros sistemas. |
 | M8 · `fix/vertical-slice-integration` | Ciclo completo y revisión de fallos, sin sistemas nuevos. | Ejecutar el recorrido de abajo, repetir desde una nueva sesión y comprobar que las vistas son sustituibles. Console sin errores propios; build de desarrollo local si están instalados sus módulos. |
 
@@ -83,11 +86,14 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 3. Dejar una caja, ingrediente o bandeja sin confirmar en DeliveryPad: se ignora,
    pedido sigue esperando y saldo cero. Entregar un Dish incorrecto o Custom: se
    rechaza, conserva plato, no cobra y el cliente sale; llega otro tras el intervalo.
-4. Cocinar una porción real, retirarla Cooked y montar el pedido. Probar por separado
+4. Cocinar una porción real, retirarla Cooked y montar el pedido con clic izquierdo
+   mirando bandeja/pila mientras se sostiene cada ingrediente. E/G siguen disponibles.
+   Probar por separado
    Burnt, Rotten cocinado y contaminado dentro de un Dish estructuralmente correcto:
    Correct order YES; estado peligroso visible por separado, pago completo.
 5. Confirmar F, recoger E, llevar físicamente al pad verde y depositar G. Correcto
-   cobra 5 € o 6,50 € según menú; vendido se retira y cliente sale. Consultas repetidas
+   cobra 5 € o 6,50 € según menú; cliente sale llevando el mismo plato y ambos se
+   retiran al llegar a salida. Consultas repetidas
    no vuelven a pagar. Retirar un rechazado antes de ofrecerlo a otro cliente.
 6. Detener y volver a iniciar Play: nueva sesión con 0 €, pedido y provisiones
    restaurados, sin cambios persistentes en los ScriptableObjects.

@@ -10,7 +10,9 @@ alimentos con estado independiente, deterioro temporal y temperatura, inspeccion
 con feedback de desarrollo. M4 añade una plancha física con cocción térmica;
 M5 añade montaje libre, reconocimiento de platos y transporte agregado.
 M6 cierra el ciclo con un cliente activo, pedido visible, entrega física,
-evaluación y pago en céntimos. M7 sigue pendiente.
+evaluación y pago en céntimos; validado por el usuario en `9335899`.
+El polish añade snap contextual, agarre coherente del plato y salida visible del
+cliente con la venta. M7 sigue pendiente.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
@@ -38,18 +40,22 @@ La escena de plantilla
    rojiza `GrillHotSurface`, a la izquierda del local. Temperatura y cocción
    avanzan por presencia física; retirarla pausa cocción y permite enfriamiento.
    Ver [M4](Docs/M4.md) para colocación, tiempos y pruebas de rechazo.
-9. Las tres bandejas `AssemblyStation1/2/3` están en el banco del fondo izquierdo.
-   Depositar ingredientes reales, reorganizarlos y retirarlos con E/G. Mirar la
+9. Las tres bandejas `AssemblyStation1/2/3` están junto a la plancha, al fondo.
+   Sostener comida, mirar bandeja/pila y **clic izquierdo** para colocar la misma
+   unidad encima. También se pueden depositar, reorganizar y retirar con E/G. Mirar la
    pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
    E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
 10. Al entrar el cliente, el panel derecho muestra pedido y saldo **€0.00**.
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
-    `CustomerServiceZone/DeliveryPad`, mirar ligeramente hacia arriba para elevar
-    el conjunto y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
+    `CustomerServiceZone/DeliveryPad`, centrar el conjunto elevado sobre el verde
+    y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
     **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
-    Calidad no afecta al cobro M6. Resultado visible; el cliente sale y el siguiente
+    Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
+    se limpia en la salida y el siguiente
     aparece 3 s después de completar la salida. Ver [M6](Docs/M6.md) para casos y límites.
+    Seguir [las pruebas actuales del polish](Docs/VERTICAL-SLICE-POLISH.md) para
+    posiciones, snap, transporte visible y pruebas de rechazo.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -93,6 +99,8 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión sobre composición física e identidad](Docs/Decisions/0006-physical-dish-assembly.md).
 - [M6: cliente, pedido, entrega, evaluación, pago y comprobación](Docs/M6.md).
 - [Decisión sobre transacción y separación de calidad](Docs/Decisions/0007-customer-delivery-payment.md).
+- [Polish del slice: controles, distribución, archivos, tests y validación](Docs/VERTICAL-SLICE-POLISH.md).
+- [Decisión sobre snap, agarre y retirada de ventas](Docs/Decisions/0008-vertical-slice-polish.md).
 
 `main` conserva el proyecto original como baseline. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -101,4 +109,5 @@ M3 parte de M2 aprobado (`14e0575`) en `feature/food-state`.
 M4 parte de M3 aprobado (`307174a`) en `feature/basic-cooking`.
 M5 parte de M4 aprobado (`d7eb2bf`) en `feature/dish-assembly`.
 M6 parte de M5 y feedback aprobados (`6a3ca72`) en `feature/customer-service-loop`.
+Su polish parte de M6 aprobado (`9335899`) en `fix/vertical-slice-polish`.
 No hay remoto configurado y no se ha integrado en main; los commits son locales.

@@ -40,6 +40,10 @@ M6 añade `Scripts/Domain/Customers`, `Orders`, `Economy` y adaptadores en
 configura menú, precios y tiempos; dos materiales simples y `CustomerServiceZone`
 añaden cliente de primitivas, ruta y pad de entrega. Sin generación automática de
 comida ni otro reloj. Ver `Docs/M6.md` y ADR 0007. Sin sistemas M7.
-Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
+Polish del slice desde M6 aprobado `9335899`: colocación rápida en AssemblySurface
+con clic izquierdo, agarre del Dish desde cualquier parte y CustomerDishCarrier
+transportando la misma venta hasta la salida. Greybox compacto Prep → Grill →
+Assembly → Delivery, sin cambios Domain. Ver `Docs/VERTICAL-SLICE-POLISH.md` y
+ADR 0008. Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.
