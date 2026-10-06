@@ -2483,6 +2483,7 @@ GameObject:
   - component: {fileID: 923074284}
   - component: {fileID: 923074283}
   - component: {fileID: 999000001}
+  - component: {fileID: 999000002}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4959,6 +4960,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1504888344}
   - component: {fileID: 1504888345}
+  - component: {fileID: 1504888346}
   m_Layer: 0
   m_Name: AssemblyStation3
   m_TagString: Untagged
@@ -5960,6 +5962,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1744261940}
   - component: {fileID: 1744261941}
+  - component: {fileID: 1744261942}
   m_Layer: 0
   m_Name: AssemblyStation2
   m_TagString: Untagged
@@ -7723,6 +7726,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2133772343}
   - component: {fileID: 2133772344}
+  - component: {fileID: 2133772345}
   m_Layer: 0
   m_Name: AssemblyStation1
   m_TagString: Untagged
@@ -7790,6 +7794,7 @@ MonoBehaviour:
   - {fileID: 2133772344}
   - {fileID: 1744261941}
   - {fileID: 1504888345}
+  _physicalAssembly: {fileID: 999000002}
 --- !u!1 &999010001
 GameObject:
   m_ObjectHideFlags: 0
@@ -13832,3 +13837,63 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayFeedback
   _day: {fileID: 1163158816}
+--- !u!114 &999000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923074282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 251c46be43d9411ab1ba320c704d5b79, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.PhysicalDishAssembly
+  _simulation: {fileID: 1710634242}
+  _definitions:
+  - {fileID: 11400000, guid: 3ba00c66be0433a4783a5c9ab3dc4456, type: 2}
+  - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
+  _contactTolerance: 0.025
+  _alignmentTolerance: 0.18
+--- !u!114 &1504888346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1504888343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
+  _surface: {fileID: 1504888345}
+  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
+--- !u!114 &1744261942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744261939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
+  _surface: {fileID: 1744261941}
+  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
+--- !u!114 &2133772345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133772342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
+  _surface: {fileID: 2133772344}
+  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
