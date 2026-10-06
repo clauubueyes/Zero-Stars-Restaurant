@@ -15,6 +15,7 @@ namespace ZeroStarRestaurant.Dishes
         [SerializeField] private PhysicalCarry _carry;
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private AssemblySurface[] _surfaces = Array.Empty<AssemblySurface>();
+        [SerializeField] private PhysicalDishAssembly _physicalAssembly;
         private InputActionAsset _ownedActions;
         private InputAction _finalize, _place, _interact, _drop, _throw;
         private bool _hadControl;
@@ -49,8 +50,7 @@ namespace ZeroStarRestaurant.Dishes
             if (!_hadControl) { _hadControl = true; return; } // The click recapturing the cursor never places food.
             // M2 wins simultaneous requests: dropping an ingredient must not also finalize it.
             if (_interact.WasPressedThisFrame() || _drop.WasPressedThisFrame() || _throw.WasPressedThisFrame()) return;
-            if (_place.WasPressedThisFrame()) TryPlace();
-            else if (_finalize.WasPressedThisFrame()) TryFinalize();
+            if (_finalize.WasPressedThisFrame()) TryFinalize();
         }
 
         public AssemblySurface FindFocusedSurface()
@@ -81,16 +81,28 @@ namespace ZeroStarRestaurant.Dishes
         {
             if (!IsDraft(surface)) return string.Empty;
             if (_carry != null && _carry.HasHeldObject)
-                return surface.CanPlaceHeld(_carry) ? "[" + PlaceBinding + "] Place " + _carry.HeldName + " on stack" :
-                    "Place/drop held object first (snap blocked or not food)";
+                return "Release LMB / drop held object first";
             if (!surface.CanInteract(new InteractionContext(transform, _carry))) return "Place ingredients on this tray";
             return "[" + FinalizeBinding + "] Finalize " + surface.DisplayName;
         }
 
         public bool TryFinalize()
         {
+            if (!isActiveAndEnabled || _detector == null) return false;
             AssemblySurface surface = FindFocusedSurface(); // Fresh hit, composition and ownership at intent time.
-            return surface != null && surface.TryInteract(new InteractionContext(transform, _carry));
+            if (surface != null) return surface.TryInteract(new InteractionContext(transform, _carry));
+            if (_carry != null && _carry.HasHeldObject) return false;
+            FoodItem food = _detector.Detect()?.GetComponentInParent<FoodItem>();
+            return _physicalAssembly != null && _physicalAssembly.TryFinalize(food, out _);
+        }
+
+        public string PhysicalConfirmationPrompt()
+        {
+            if (!isActiveAndEnabled || _detector == null || _physicalAssembly == null ||
+                (_carry != null && _carry.HasHeldObject) || FindFocusedSurface() != null) return null;
+            FoodItem food = _detector.Detect()?.GetComponentInParent<FoodItem>();
+            string name = _physicalAssembly.PreviewName(food);
+            return name != null ? "Recognized: " + name + "\n[" + FinalizeBinding + "] Finalize " + name : null;
         }
 
         public bool TryPlace()

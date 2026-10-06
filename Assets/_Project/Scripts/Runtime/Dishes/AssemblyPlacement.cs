@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ZeroStarRestaurant.Dishes
 {
-    // Geometry for the assembly-only snap. No food state, input or recipe rules.
+    // Collider geometry shared by physical assembly and legacy station placement. No food-state rules.
     internal static class AssemblyPlacement
     {
         public static bool TryBounds(Rigidbody body, Quaternion rotation, out Bounds bounds)

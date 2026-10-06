@@ -33,7 +33,12 @@ namespace ZeroStarRestaurant.Dishes
                     dish = surface != null ? surface.Dish : target.GetComponentInParent<DishItem>();
                 }
             }
-            if (dish == null || dish.State == null) return;
+            if (dish == null || dish.State == null)
+            {
+                string preview = _assembly != null ? _assembly.PhysicalConfirmationPrompt() : null;
+                if (preview != null) GUI.Box(new Rect(Screen.width / 2f - 260f, Screen.height / 2f - 100f, 520f, 72f), preview);
+                return;
+            }
             if (_style == null)
                 _style = new GUIStyle(GUI.skin.label) { fontSize = 15, wordWrap = true };
             DishState state = dish.State;

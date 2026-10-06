@@ -57,6 +57,7 @@ namespace ZeroStarRestaurant.Dishes
             transform.SetParent(null, true);
             foreach (FoodItem food in ingredients)
             {
+                food.CaptureThermalGeometry();
                 food.GetComponent<Pickup>().enabled = false;
                 Rigidbody ingredientBody = food.GetComponent<Rigidbody>();
                 ingredientBody.linearVelocity = Vector3.zero; ingredientBody.angularVelocity = Vector3.zero;

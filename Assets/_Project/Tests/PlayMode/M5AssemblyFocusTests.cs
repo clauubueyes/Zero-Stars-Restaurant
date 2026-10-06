@@ -141,7 +141,7 @@ namespace ZeroStarRestaurant.Tests
             _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
             _view.LookAt(_surface.Dish.transform.position); Physics.SyncTransforms();
             Assert.That(_assembly.FindFocusedSurface(), Is.SameAs(_surface));
-            Assert.That(_assembly.ConfirmationPrompt(_surface), Does.Contain("Place Bun on stack"));
+            Assert.That(_assembly.ConfirmationPrompt(_surface), Does.Contain("Release LMB"));
             var wall = new GameObject("Snap occlusion", typeof(BoxCollider)); SceneManager.MoveGameObjectToScene(wall, _scene);
             wall.transform.position = _view.position + _view.forward * 0.4f; wall.transform.localScale = Vector3.one * 0.25f;
             Physics.SyncTransforms(); Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_carry.HasHeldObject, Is.True);

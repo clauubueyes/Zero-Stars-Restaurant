@@ -25,6 +25,8 @@ namespace ZeroStarRestaurant.Cooking
             Vector3 scale = zone.lossyScale;
             Vector3 halfSize = Vector3.Scale(_effectiveZone.size * 0.5f,
                 new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+            if (food.RetiredGeometryOverlaps(_effectiveZone))
+            { environment = new ThermalEnvironment(_temperatureCelsius, _transferMultiplier, allowsCooking: true); return true; }
             // Query the actual oriented volume each time. No enter/exit registry can become stale,
             // and multiple colliders on a unit still produce a single environment/result.
             Collider[] overlaps = Physics.OverlapBox(zone.TransformPoint(_effectiveZone.center), halfSize,
