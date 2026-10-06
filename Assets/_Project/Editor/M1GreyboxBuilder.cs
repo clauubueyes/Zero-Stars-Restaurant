@@ -59,7 +59,8 @@ namespace ZeroStarRestaurant.Editor
             if (actions == null || actions.FindAction("Player/Move") == null ||
                 actions.FindAction("Player/Look") == null || actions.FindAction("Player/Jump") == null ||
                 actions.FindAction("Player/Interact") == null || actions.FindAction("Player/Drop") == null ||
-                actions.FindAction("Player/Throw") == null || actions.FindAction("Player/FinalizeDish") == null)
+                actions.FindAction("Player/Throw") == null || actions.FindAction("Player/FinalizeDish") == null ||
+                actions.FindAction("Player/PlaceIngredient") == null)
                 throw new InvalidOperationException("The existing Player input actions are required.");
 
             Material floor = GetOrCreateMaterial("GreyboxFloor", new Color(0.25f, 0.27f, 0.29f));

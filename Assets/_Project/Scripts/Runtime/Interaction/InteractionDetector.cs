@@ -34,8 +34,13 @@ namespace ZeroStarRestaurant.Interaction
             }
             if (closest == null)
                 return null;
-            Interactable target = closest.GetComponentInParent<Interactable>();
-            return target != null && target.isActiveAndEnabled ? target : null;
+            // A retired child interactable must not hide the active aggregate owning the collider.
+            for (Transform owner = closest.transform; owner != null; owner = owner.parent)
+            {
+                Interactable target = owner.GetComponent<Interactable>();
+                if (target != null && target.isActiveAndEnabled) return target;
+            }
+            return null;
         }
     }
 }

@@ -8,6 +8,9 @@ namespace ZeroStarRestaurant.Interaction
     {
         private Rigidbody _body;
         private PhysicalCarry _holder;
+        [SerializeField, Range(-90f, 80f)] private float _minimumCarryElevationDegrees = -90f;
+        public float MinimumCarryElevationDegrees => _minimumCarryElevationDegrees;
+        internal void ConfigureCarryElevation(float degrees) => _minimumCarryElevationDegrees = Mathf.Clamp(degrees, -90f, 80f);
         public bool IsHeld => _holder != null;
         public Rigidbody Body => _body != null ? _body : (_body = GetComponent<Rigidbody>());
         public override string ActionLabel => "Pick up";

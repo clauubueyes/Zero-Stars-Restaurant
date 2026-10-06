@@ -15,6 +15,7 @@ namespace ZeroStarRestaurant.Dishes
         [SerializeField] private DishDefinition[] _definitions = Array.Empty<DishDefinition>();
         [SerializeField, Min(0.001f)] private float _heightBand = 0.02f;
         [SerializeField, Min(0f)] private float _stackAlignmentTolerance = 0.18f;
+        [SerializeField, Min(0.001f)] private float _snapGap = 0.004f;
         private DishProfile[] _profiles;
         private readonly List<FoodItem> _ingredients = new List<FoodItem>();
         public DishItem Dish => _dish;
@@ -113,6 +114,50 @@ namespace ZeroStarRestaurant.Dishes
                 if (new Vector2(current.x - first.x, current.z - first.z).magnitude > _stackAlignmentTolerance ||
                     current.y - previous.y < Mathf.Max(0.001f, _heightBand)) return false;
             }
+            return true;
+        }
+
+        public bool CanPlaceHeld(PhysicalCarry carry) => TryPlanPlacement(carry, out _, out _, out _);
+
+        private bool TryPlanPlacement(PhysicalCarry carry, out FoodItem food, out Vector3 position, out Quaternion rotation)
+        {
+            food = null; position = default; rotation = Quaternion.identity;
+            if (!isActiveAndEnabled || _dish == null || !_dish.isActiveAndEnabled || _dish.State == null ||
+                _dish.State.IsFinalized || _dish.State.IsDisposed || _simulation == null || carry == null ||
+                !carry.isActiveAndEnabled || !carry.HasHeldObject || _assemblyZone == null || !_assemblyZone.enabled ||
+                !_assemblyZone.isTrigger || !_assemblyZone.gameObject.activeInHierarchy) return false;
+            food = carry.HeldBody.GetComponent<FoodItem>();
+            if (food == null || !food.isActiveAndEnabled || food.State == null) return false;
+            bool registered = false;
+            foreach (FoodItem unit in _simulation.Foods) if (unit == food) { registered = true; break; }
+            if (!registered) return false;
+            RefreshComposition();
+            Rigidbody body = carry.HeldBody;
+            rotation = _dish.transform.rotation;
+            if (!AssemblyPlacement.TryBounds(body, rotation, out Bounds relative)) return false;
+            BoxCollider tray = _dish.GetComponent<BoxCollider>();
+            if (tray == null || !tray.enabled) return false;
+            float top = tray.bounds.max.y;
+            foreach (FoodItem ingredient in _ingredients)
+                if (ingredient != null && AssemblyPlacement.TryBounds(ingredient.GetComponent<Rigidbody>(), ingredient.transform.rotation, out Bounds item))
+                    top = Mathf.Max(top, ingredient.transform.position.y + item.max.y);
+            position = new Vector3(tray.bounds.center.x - relative.center.x, top + Mathf.Max(0.001f, _snapGap) - relative.min.y,
+                tray.bounds.center.z - relative.center.z);
+            var proposed = new Bounds(relative.center + position, relative.size);
+            return AssemblyPlacement.Fits(_assemblyZone, proposed) && AssemblyPlacement.IsClear(proposed, body);
+        }
+
+        public bool TryPlaceHeld(PhysicalCarry carry)
+        {
+            if (!TryPlanPlacement(carry, out FoodItem food, out Vector3 position, out Quaternion rotation) ||
+                !_dish.State.TryAdd(food.State)) return false; // Claim only after preflight; foreign ownership fails before release.
+            Rigidbody body = carry.HeldBody;
+            carry.Drop(); // Restore settings, claim and player collision pairs through the existing M2 path.
+            body.position = position; body.rotation = rotation;
+            food.transform.SetPositionAndRotation(position, rotation);
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            Physics.SyncTransforms(); body.Sleep();
+            RefreshComposition();
             return true;
         }
 

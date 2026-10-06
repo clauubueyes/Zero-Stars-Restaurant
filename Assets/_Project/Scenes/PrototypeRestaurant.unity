@@ -334,6 +334,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &174214823
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -618,6 +619,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &319756611
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -957,6 +959,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Cheese
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &481813812
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1336,6 +1339,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Cheese
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &515158200
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1505,6 +1509,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: 
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &516864841
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1818,6 +1823,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &681488658
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1989,6 +1995,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: 
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &701367510
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2927,6 +2934,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &954033372
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3097,6 +3105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &981943773
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3381,6 +3390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1084709975
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3552,6 +3562,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: 
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1145943491
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3707,6 +3718,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1160751723
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4469,6 +4481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Cheese
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1377405546
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4641,6 +4654,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1377560376
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4813,6 +4827,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Cheese
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1434215203
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4989,6 +5004,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
   _heightBand: 0.02
   _stackAlignmentTolerance: 0.18
+  _snapGap: 0.004
 --- !u!1 &1539741789
 GameObject:
   m_ObjectHideFlags: 0
@@ -5206,6 +5222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1598217732
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5378,6 +5395,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1605827822
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5983,6 +6001,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
   _heightBand: 0.02
   _stackAlignmentTolerance: 0.18
+  _snapGap: 0.004
 --- !u!1 &1771164586
 GameObject:
   m_ObjectHideFlags: 0
@@ -6035,6 +6054,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1771164589
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6317,6 +6337,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Raw Beef Patty
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1802962712
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6812,6 +6833,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Bun
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &1898323501
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7407,6 +7429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: 
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &2101633753
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7564,6 +7587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Interaction.Pickup
   _displayName: Cheese
+  _minimumCarryElevationDegrees: -90
 --- !u!54 &2110246443
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7740,6 +7764,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
   _heightBand: 0.02
   _stackAlignmentTolerance: 0.18
+  _snapGap: 0.004
 --- !u!114 &999000001
 MonoBehaviour:
   m_ObjectHideFlags: 0

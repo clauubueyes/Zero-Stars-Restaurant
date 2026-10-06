@@ -83,7 +83,8 @@ namespace ZeroStarRestaurant.Dishes
             body.solverIterations = 12; body.maxLinearVelocity = 20f; body.maxAngularVelocity = 10f;
             body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
             gameObject.name = State.DisplayName;
-            gameObject.AddComponent<Pickup>();
+            // Selection may hit any layer of the dish; its safe carry destination stays above the worktop.
+            gameObject.AddComponent<Pickup>().ConfigureCarryElevation(5f);
             return true;
         }
     }

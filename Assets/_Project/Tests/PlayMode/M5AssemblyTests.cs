@@ -270,6 +270,141 @@ namespace ZeroStarRestaurant.Tests
             Assert.That((food.transform.position - surface.Dish.transform.position).magnitude, Is.LessThan(1f));
         }
 
+        private PhysicalCarry SnapCarry(out Transform view)
+        {
+            GameObject actor = Create("Actor", _origin + Vector3.back * 1.95f);
+            CharacterController capsule = actor.AddComponent<CharacterController>();
+            capsule.height = 1.8f; capsule.center = Vector3.up * 0.9f; capsule.radius = 0.3f;
+            view = Create("View", actor.transform.position + Vector3.up * 1.65f).transform;
+            view.SetParent(actor.transform, true);
+            PhysicalCarry carry = actor.AddComponent<PhysicalCarry>();
+            Set(carry, "_actorRoot", actor.transform); Set(carry, "_viewTransform", view);
+            return carry;
+        }
+
+        private AssemblySurface SnapSurface()
+        {
+            Create("Workbench", _origin + Vector3.up * 0.8f).AddComponent<BoxCollider>().size = new Vector3(8f, 0.2f, 1.6f);
+            return Surface(_origin + Vector3.up * 0.9f);
+        }
+
+        [Test]
+        public void QuickPlacementPreservesUnitStateAndReleasesExistingCarryExactlyOnce()
+        {
+            AssemblySurface surface = SnapSurface();
+            FoodItem food = Food(_beef, _origin + new Vector3(1f, 1.02f, 0f), freshness: 74f, contaminated: true);
+            Register(food); food.State.SetTemperature(120.0);
+            food.State.Advance(45.0, new ThermalEnvironment(120.0, allowsCooking: true), 0.0);
+            Assert.That(food.State.Cooking.Stage, Is.EqualTo(CookingStage.Cooked));
+            FoodState state = food.State; Guid id = state.InstanceId;
+            double age = state.AgeSeconds, temperature = state.TemperatureCelsius;
+            double dose = state.Cooking.EquivalentSeconds; float freshness = (float)state.FreshnessPercent;
+            PhysicalCarry carry = SnapCarry(out Transform view); view.LookAt(food.transform.position); Physics.SyncTransforms();
+            Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+            Assert.That(surface.CanPlaceHeld(carry), Is.True);
+            Assert.That(surface.TryPlaceHeld(carry), Is.True);
+            Assert.That(carry.HasHeldObject, Is.False); Assert.That(food.GetComponent<Pickup>().IsHeld, Is.False);
+            Assert.That(food.State, Is.SameAs(state)); Assert.That(state.InstanceId, Is.EqualTo(id));
+            Assert.That(state.AgeSeconds, Is.EqualTo(age)); Assert.That(state.TemperatureCelsius, Is.EqualTo(temperature));
+            Assert.That(state.Cooking.EquivalentSeconds, Is.EqualTo(dose)); Assert.That((float)state.FreshnessPercent, Is.EqualTo(freshness));
+            Assert.That(state.IsContaminated, Is.True);
+            Assert.That(surface.Dish.State.Components, Is.EqualTo(new[] { state })); Assert.That(_simulation.Foods.Count, Is.EqualTo(1));
+            Assert.That(food.GetComponent<Rigidbody>().useGravity, Is.True);
+            Assert.That(food.GetComponent<Rigidbody>().constraints, Is.EqualTo(RigidbodyConstraints.None));
+            Assert.That(surface.TryPlaceHeld(carry), Is.False); Assert.That(surface.Dish.State.Components.Count, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator QuickStackStaysStableSupportsRemovalAndAllFinalPartsResolveOnePickup()
+        {
+            AssemblySurface surface = SnapSurface();
+            FoodItem[] foods = {
+                Food(_bun, _origin + new Vector3(1f, 1.01f, 0f), new Vector3(0.4f, 0.22f, 0.4f)),
+                Food(_beef, _origin + new Vector3(1.6f, 1.01f, 0f)),
+                Food(_cheese, _origin + new Vector3(2.2f, 1.01f, 0f), new Vector3(0.32f, 0.06f, 0.32f)),
+                Food(_bun, _origin + new Vector3(2.8f, 1.01f, 0f), new Vector3(0.4f, 0.22f, 0.4f)) };
+            Register(foods); PhysicalCarry carry = SnapCarry(out Transform view);
+            var context = new InteractionContext(carry.transform, carry);
+            foreach (FoodItem food in foods)
+            {
+                view.LookAt(food.transform.position); Physics.SyncTransforms();
+                Assert.That(food.GetComponent<Pickup>().TryInteract(context), Is.True);
+                Assert.That(surface.TryPlaceHeld(carry), Is.True);
+                for (int frame = 0; frame < 10; frame++) yield return new WaitForFixedUpdate();
+            }
+            for (int frame = 0; frame < 40; frame++) yield return new WaitForFixedUpdate();
+            surface.RefreshComposition();
+            Assert.That(surface.PreviewDefinition.DisplayName, Is.EqualTo("Cheeseburger"));
+            Assert.That(surface.Dish.State.Components, Is.EqualTo(foods.Select(food => food.State).ToArray()));
+            Assert.That(foods.All(food => food.GetComponent<Rigidbody>().linearVelocity.magnitude < 0.05f), Is.True);
+            view.LookAt(foods[3].transform.position);
+            Assert.That(foods[3].GetComponent<Pickup>().TryInteract(context), Is.True);
+            surface.RefreshComposition(); Assert.That(surface.Dish.State.Components.Count, Is.EqualTo(3));
+            Assert.That(surface.TryPlaceHeld(carry), Is.True);
+            Assert.That(surface.TryInteract(context), Is.True);
+            Pickup aggregate = surface.Dish.GetComponent<Pickup>();
+            InteractionDetector detector = carry.gameObject.AddComponent<InteractionDetector>();
+            Set(detector, "_origin", view); Set(detector, "_actorRoot", carry.transform);
+            foreach (FoodItem food in foods)
+            {
+                Assert.That(food.GetComponentsInChildren<Collider>().All(collider => !collider.enabled), Is.True);
+                Vector3 point = food.transform.position;
+                view.position = point + Vector3.back * 2f; view.rotation = Quaternion.identity; Physics.SyncTransforms();
+                Assert.That(detector.Detect(), Is.SameAs(aggregate)); Assert.That(aggregate.DisplayName, Is.EqualTo("Cheeseburger"));
+                view.position = carry.transform.position + Vector3.up * 1.65f; view.LookAt(point);
+                Assert.That(aggregate.TryInteract(context), Is.True, "All visual parts must permit the same safe aggregate pickup.");
+                Assert.That(carry.HeldBody, Is.SameAs(surface.Dish.GetComponent<Rigidbody>())); carry.Drop();
+            }
+        }
+
+        [Test]
+        public void SnapRejectsUnregisteredOversizeAndObstructedFoodWithoutReleasingIt()
+        {
+            AssemblySurface surface = SnapSurface(); FoodItem food = Food(_bun, _origin + new Vector3(1f, 1.02f, 0f));
+            PhysicalCarry carry = SnapCarry(out Transform view); view.LookAt(food.transform.position); Physics.SyncTransforms();
+            Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+            Assert.That(surface.TryPlaceHeld(carry), Is.False); Register(food);
+            GameObject obstacle = Create("Obstacle", _origin + new Vector3(0f, 1.1f, 0f));
+            obstacle.AddComponent<BoxCollider>().size = Vector3.one * 0.3f; Physics.SyncTransforms();
+            Assert.That(surface.TryPlaceHeld(carry), Is.False); Assert.That(carry.HasHeldObject, Is.True);
+            obstacle.SetActive(false); food.transform.localScale = Vector3.one; Physics.SyncTransforms();
+            Assert.That(surface.TryPlaceHeld(carry), Is.False); Assert.That(carry.HasHeldObject, Is.True);
+            Assert.That(surface.Dish.State.Components, Is.Empty);
+        }
+
+        [Test]
+        public void SnapCannotStealAnIngredientClaimedByAnotherDraft()
+        {
+            AssemblySurface surface = SnapSurface(); FoodItem food = Food(_bun, _origin + new Vector3(1f, 1.02f, 0f)); Register(food);
+            using (var other = new DishState())
+            {
+                Assert.That(other.TryAdd(food.State), Is.True);
+                PhysicalCarry carry = SnapCarry(out Transform view); view.LookAt(food.transform.position); Physics.SyncTransforms();
+                Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+                Assert.That(surface.TryPlaceHeld(carry), Is.False); Assert.That(carry.HasHeldObject, Is.True);
+                Assert.That(other.Components, Is.EqualTo(new[] { food.State })); Assert.That(surface.Dish.State.Components, Is.Empty);
+            }
+        }
+
+        [TestCase(3)]
+        [TestCase(6)]
+        public void EveryPartOfCustomCompositionsResolvesTheSameAggregate(int count)
+        {
+            AssemblySurface surface = Surface();
+            FoodItem[] foods = Enumerable.Range(0, count).Select(index => Food(_beef, _origin + Vector3.up * (0.12f + index * 0.14f))).ToArray();
+            Register(foods); surface.RefreshComposition(); Assert.That(surface.TryInteract(EmptyHands), Is.True);
+            Assert.That(surface.Dish.State.DisplayName, Is.EqualTo("Custom Dish"));
+            GameObject observer = Create("Observer", _origin + Vector3.back * 2f);
+            InteractionDetector detector = observer.AddComponent<InteractionDetector>();
+            Pickup aggregate = surface.Dish.GetComponent<Pickup>();
+            foreach (FoodItem food in foods)
+            {
+                Assert.That(detector.Detect(new Ray(food.transform.position + Vector3.back * 2f, Vector3.forward)), Is.SameAs(aggregate));
+                Assert.That(food.GetComponent<Pickup>().enabled, Is.False);
+                Assert.That(food.GetComponentsInChildren<Collider>().All(collider => !collider.enabled), Is.True);
+            }
+        }
+
         private static void Set(object target, string field, object value) => target.GetType()
             .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
     }

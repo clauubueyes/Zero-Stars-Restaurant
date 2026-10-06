@@ -23,6 +23,7 @@ namespace ZeroStarRestaurant.Interaction
         private Rigidbody _body;
         private float _radius;
         private Vector3 _boundsOffset;
+        private float _allowedTargetError;
         private BodySettings _saved;
         private readonly List<CollisionPair> _ignoredPairs = new List<CollisionPair>();
         private Collider[] _objectColliders;
@@ -63,13 +64,18 @@ namespace ZeroStarRestaurant.Interaction
                 _maximumPickupDistance * _maximumPickupDistance)
                 return false;
             float radius = Mathf.Max(0.01f, bounds.extents.magnitude);
-            if (!TryGetTarget(pickup.Body, radius, out _) || !pickup.TryClaim(this))
+            if (!TryGetTarget(pickup, radius, out Vector3 initialTarget) || !pickup.TryClaim(this))
                 return false;
 
             _held = pickup;
             _body = pickup.Body;
             _radius = radius;
             _boundsOffset = bounds.center - _body.position;
+            // Elevated destinations may start farther above a valid floor pickup. Shrink the
+            // acquisition allowance as it approaches; never relax the normal tether again.
+            _allowedTargetError = pickup.MinimumCarryElevationDegrees > -90f
+                ? Mathf.Max(_maximumTargetError, Vector3.Distance(initialTarget, bounds.center) + _clearance)
+                : _maximumTargetError;
             _saved = new BodySettings(_body);
             _body.useGravity = false;
             _body.constraints |= RigidbodyConstraints.FreezeRotation;
@@ -104,34 +110,44 @@ namespace ZeroStarRestaurant.Interaction
         {
             if (!HasHeldObject)
                 return;
-            if (!TryGetTarget(_body, _radius, out Vector3 target))
+            if (!TryGetTarget(_held, _radius, out Vector3 target))
             {
                 Release(false);
                 return;
             }
             Vector3 error = target - (_body.position + _boundsOffset);
-            if (error.sqrMagnitude > _maximumTargetError * _maximumTargetError)
+            if (error.sqrMagnitude > _allowedTargetError * _allowedTargetError)
             {
                 Release(false);
                 return;
             }
+            _allowedTargetError = Mathf.Max(_maximumTargetError, Mathf.Min(_allowedTargetError, error.magnitude + _clearance));
             _body.linearVelocity = CarryPhysics.FollowVelocity(_body.linearVelocity, error,
                 _followGain, _maximumHoldSpeed, _maximumHoldForce, _body.mass, Time.fixedDeltaTime);
         }
 
-        private bool TryGetTarget(Rigidbody item, float radius, out Vector3 target)
+        private bool TryGetTarget(Pickup pickup, float radius, out Vector3 target)
         {
+            Rigidbody item = pickup.Body;
+            Vector3 direction = _viewTransform.forward;
+            float elevation = pickup.MinimumCarryElevationDegrees * Mathf.Deg2Rad;
+            if (direction.y < Mathf.Sin(elevation))
+            {
+                Vector3 horizontal = new Vector3(direction.x, 0f, direction.z);
+                if (horizontal.sqrMagnitude < 0.000001f) horizontal = _actorRoot.forward;
+                direction = horizontal.normalized * Mathf.Cos(elevation) + Vector3.up * Mathf.Sin(elevation);
+            }
             target = _viewTransform.position;
             // Handle overlaps explicitly: sphere sweeps alone do not safely cover their initial volume.
             foreach (Collider obstacle in Physics.OverlapSphere(target, radius, _collisionMask, QueryTriggerInteraction.Ignore))
                 if (IsObstacle(obstacle, item))
                     return false;
             float distance = _holdDistance;
-            foreach (RaycastHit hit in Physics.SphereCastAll(target, radius, _viewTransform.forward,
+            foreach (RaycastHit hit in Physics.SphereCastAll(target, radius, direction,
                          _holdDistance, _collisionMask, QueryTriggerInteraction.Ignore))
                 if (IsObstacle(hit.collider, item))
                     distance = Mathf.Min(distance, Mathf.Max(0f, hit.distance - _clearance));
-            target += _viewTransform.forward * distance;
+            target += direction * distance;
             // Keep the destination volume out of the player's capsule, even when looking down.
             foreach (Collider owner in _actorRoot.GetComponentsInChildren<Collider>())
                 if (owner.enabled && !owner.isTrigger &&

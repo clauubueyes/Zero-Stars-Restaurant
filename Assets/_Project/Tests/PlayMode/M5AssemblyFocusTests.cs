@@ -130,6 +130,55 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
+        public IEnumerator QuickPlacementUsesTheActualFirstHitAndRejectsWallRangeAndDisabledSurface()
+        {
+            FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
+            _player.transform.position = food.transform.position + new Vector3(0f, -food.transform.position.y, -1.5f);
+            _view.LookAt(food.transform.position); Physics.SyncTransforms();
+            Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+            _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
+            _view.LookAt(_surface.Dish.transform.position); Physics.SyncTransforms();
+            Assert.That(_assembly.FindFocusedSurface(), Is.SameAs(_surface));
+            Assert.That(_assembly.ConfirmationPrompt(_surface), Does.Contain("Place Bun on stack"));
+            var wall = new GameObject("Snap occlusion", typeof(BoxCollider)); SceneManager.MoveGameObjectToScene(wall, _scene);
+            wall.transform.position = _view.position + _view.forward * 0.4f; wall.transform.localScale = Vector3.one * 0.25f;
+            Physics.SyncTransforms(); Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_carry.HasHeldObject, Is.True);
+            wall.SetActive(false); _player.transform.position += Vector3.back * 5f; Physics.SyncTransforms();
+            Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_carry.HasHeldObject, Is.True);
+            _player.transform.position += Vector3.forward * 5f; Physics.SyncTransforms();
+            _surface.enabled = false; Assert.That(_assembly.TryPlace(), Is.False); _surface.enabled = true;
+            Assert.That(_assembly.TryPlace(), Is.True); Assert.That(_carry.HasHeldObject, Is.False);
+            Assert.That(_surface.Dish.State.Components.Single(), Is.SameAs(food.State));
+            Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_surface.Dish.State.Components.Count, Is.EqualTo(1));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator MousePlaceBindingReceivesIntentButReleasedCursorCannotPlace()
+        {
+            InputSettings previousSettings = InputSystem.settings;
+            InputSettings testSettings = Object.Instantiate(previousSettings);
+            testSettings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+            testSettings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            testSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate; InputSystem.settings = testSettings;
+            Mouse mouse = InputSystem.AddDevice<Mouse>();
+            var owned = (InputActionAsset)typeof(DishAssemblyInteraction).GetField("_ownedActions", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_assembly);
+            try
+            {
+                InputSystem.EnableDevice(mouse);
+                InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left)); InputSystem.Update();
+                Assert.That(owned.FindAction("Player/PlaceIngredient").IsPressed(), Is.True);
+                Assert.That(owned.FindAction("Player/Throw").IsPressed(), Is.False);
+                typeof(DishAssemblyInteraction).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_assembly, null);
+                Assert.That(_surface.Dish.State.Components, Is.Empty);
+                InputSystem.QueueStateEvent(mouse, new MouseState()); InputSystem.Update();
+                Assert.That(owned.FindAction("Player/PlaceIngredient").IsPressed(), Is.False);
+            }
+            finally { InputSystem.RemoveDevice(mouse); InputSystem.settings = previousSettings; Object.DestroyImmediate(testSettings); }
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator KeyboardFinalizeBindingReceivesIntentButCannotConfirmWithoutGameplayControl()
         {
             yield return StackHamburger();
@@ -173,6 +222,7 @@ namespace ZeroStarRestaurant.Tests
             for (int cycle = 0; cycle < 2; cycle++)
             {
                 Assert.That(owned.FindAction("Player/FinalizeDish").enabled, Is.True);
+                Assert.That(owned.FindAction("Player/PlaceIngredient").enabled, Is.True);
                 _assembly.enabled = false; Assert.That(owned.enabled, Is.False);
                 Assert.That(shared.enabled, Is.EqualTo(sharedEnabled));
                 _assembly.enabled = true;

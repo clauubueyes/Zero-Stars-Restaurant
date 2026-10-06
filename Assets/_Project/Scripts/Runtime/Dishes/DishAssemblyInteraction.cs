@@ -16,8 +16,10 @@ namespace ZeroStarRestaurant.Dishes
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private AssemblySurface[] _surfaces = Array.Empty<AssemblySurface>();
         private InputActionAsset _ownedActions;
-        private InputAction _finalize, _interact, _drop, _throw;
+        private InputAction _finalize, _place, _interact, _drop, _throw;
+        private bool _hadControl;
         public string FinalizeBinding => _finalize != null ? _finalize.GetBindingDisplayString(group: "Keyboard&Mouse") : "?";
+        public string PlaceBinding => _place != null ? _place.GetBindingDisplayString(group: "Keyboard&Mouse") : "?";
 
         private void Awake()
         {
@@ -26,26 +28,29 @@ namespace ZeroStarRestaurant.Dishes
             _ownedActions = Instantiate(_inputActions);
             _ownedActions.bindingMask = InputBinding.MaskByGroup("Keyboard&Mouse");
             _finalize = _ownedActions.FindAction("Player/FinalizeDish");
+            _place = _ownedActions.FindAction("Player/PlaceIngredient");
             _interact = _ownedActions.FindAction("Player/Interact");
             _drop = _ownedActions.FindAction("Player/Drop");
             _throw = _ownedActions.FindAction("Player/Throw");
-            if (_finalize == null || _interact == null || _drop == null || _throw == null)
-            { Debug.LogError("Dish assembly needs FinalizeDish and M2 intent actions.", this); enabled = false; }
+            if (_finalize == null || _place == null || _interact == null || _drop == null || _throw == null)
+            { Debug.LogError("Dish assembly needs FinalizeDish, PlaceIngredient and M2 intent actions.", this); enabled = false; }
         }
 
         private void OnEnable()
         {
-            if (_finalize == null || _interact == null || _drop == null || _throw == null) return;
-            _finalize.Enable(); _interact.Enable(); _drop.Enable(); _throw.Enable();
+            if (_finalize == null || _place == null || _interact == null || _drop == null || _throw == null) return;
+            _finalize.Enable(); _place.Enable(); _interact.Enable(); _drop.Enable(); _throw.Enable();
         }
-        private void OnDisable() => _ownedActions?.Disable();
+        private void OnDisable() { _ownedActions?.Disable(); _hadControl = false; }
         private void OnDestroy() { if (_ownedActions != null) Destroy(_ownedActions); }
         private void Update()
         {
-            if (_interaction == null || !_interaction.HasControl || _finalize == null) return;
+            if (_interaction == null || !_interaction.HasControl || _finalize == null) { _hadControl = false; return; }
+            if (!_hadControl) { _hadControl = true; return; } // The click recapturing the cursor never places food.
             // M2 wins simultaneous requests: dropping an ingredient must not also finalize it.
-            if (_finalize.WasPressedThisFrame() && !_interact.WasPressedThisFrame() &&
-                !_drop.WasPressedThisFrame() && !_throw.WasPressedThisFrame()) TryFinalize();
+            if (_interact.WasPressedThisFrame() || _drop.WasPressedThisFrame() || _throw.WasPressedThisFrame()) return;
+            if (_place.WasPressedThisFrame()) TryPlace();
+            else if (_finalize.WasPressedThisFrame()) TryFinalize();
         }
 
         public AssemblySurface FindFocusedSurface()
@@ -75,7 +80,9 @@ namespace ZeroStarRestaurant.Dishes
         public string ConfirmationPrompt(AssemblySurface surface)
         {
             if (!IsDraft(surface)) return string.Empty;
-            if (_carry != null && _carry.HasHeldObject) return "[" + FinalizeBinding + "] Finalize " + surface.DisplayName + " (place/drop held object first)";
+            if (_carry != null && _carry.HasHeldObject)
+                return surface.CanPlaceHeld(_carry) ? "[" + PlaceBinding + "] Place " + _carry.HeldName + " on stack" :
+                    "Place/drop held object first (snap blocked or not food)";
             if (!surface.CanInteract(new InteractionContext(transform, _carry))) return "Place ingredients on this tray";
             return "[" + FinalizeBinding + "] Finalize " + surface.DisplayName;
         }
@@ -84,6 +91,14 @@ namespace ZeroStarRestaurant.Dishes
         {
             AssemblySurface surface = FindFocusedSurface(); // Fresh hit, composition and ownership at intent time.
             return surface != null && surface.TryInteract(new InteractionContext(transform, _carry));
+        }
+
+        public bool TryPlace()
+        {
+            // Release any previous draft's claim on this held unit before selecting the current first hit.
+            foreach (AssemblySurface candidate in _surfaces) if (candidate != null) candidate.RefreshComposition();
+            AssemblySurface surface = FindFocusedSurface();
+            return surface != null && surface.TryPlaceHeld(_carry);
         }
     }
 }
