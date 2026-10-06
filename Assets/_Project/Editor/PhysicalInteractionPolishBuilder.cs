@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Dishes;
 using ZeroStarRestaurant.Food;
+using ZeroStarRestaurant.Interaction;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -72,6 +73,9 @@ namespace ZeroStarRestaurant.Editor
             }
             var inputData = new SerializedObject(input);
             inputData.FindProperty("_physicalAssembly").objectReferenceValue = physical; inputData.ApplyModifiedPropertiesWithoutUndo();
+            var physicalInputData = new SerializedObject(Components<InteractionInput>().Single());
+            physicalInputData.FindProperty("_assembly").objectReferenceValue = input;
+            physicalInputData.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(scene);
         }
     }

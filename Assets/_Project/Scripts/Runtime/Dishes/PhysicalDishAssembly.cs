@@ -106,6 +106,57 @@ namespace ZeroStarRestaurant.Dishes
                 return Compose(preview, FindStack(focus)) ? preview.Recognize(Profiles())?.DisplayName ?? "Custom Dish" : null;
         }
 
+        public bool CanPlaceHeld(PhysicalCarry carry, RaycastHit hit, float maximumDistance) =>
+            TryPlanPlacement(carry, hit, maximumDistance, out _, out _, out _);
+
+        private bool TryPlanPlacement(PhysicalCarry carry, RaycastHit hit, float maximumDistance,
+            out FoodItem food, out Vector3 position, out Quaternion rotation)
+        {
+            food = null; position = default; rotation = Quaternion.identity;
+            if (!isActiveAndEnabled || _simulation == null || carry == null || !carry.HasHeldObject ||
+                hit.collider == null || !hit.collider.enabled || !hit.collider.gameObject.activeInHierarchy || hit.collider.isTrigger) return false;
+            Rigidbody body = carry.HeldBody;
+            food = body.GetComponent<FoodItem>();
+            if (food == null || !food.isActiveAndEnabled || food.State == null || !Contains(_simulation.Foods, food)) return false;
+            DishItem targetDish = hit.collider.GetComponentInParent<DishItem>();
+            if (targetDish != null && (targetDish.State == null || targetDish.State.IsFinalized)) return false;
+            FoodItem target = hit.collider.GetComponentInParent<FoodItem>();
+            Vector3 center = hit.point;
+            float top = hit.point.y;
+            rotation = Quaternion.Euler(0, body.rotation.eulerAngles.y, 0);
+            using (var preflight = new DishState())
+            {
+                if (target != null)
+                {
+                    IReadOnlyList<FoodItem> stack = FindStack(target);
+                    if (!Compose(preflight, stack)) return false;
+                    BoundsFor(stack[0], out Bounds bottom); center = bottom.center;
+                    top = bottom.max.y;
+                    foreach (FoodItem ingredient in stack)
+                    { BoundsFor(ingredient, out Bounds bounds); top = Mathf.Max(top, bounds.max.y); }
+                    rotation = Quaternion.Euler(0, stack[0].transform.eulerAngles.y, 0);
+                }
+                else if (hit.normal.y < .9f || hit.collider.GetComponentInParent<CharacterController>() != null) return false;
+                if (!preflight.TryAdd(food.State)) return false;
+            }
+            if (!AssemblyPlacement.TryBounds(body, rotation, out Bounds relative)) return false;
+            position = new Vector3(center.x - relative.center.x, top + .004f - relative.min.y, center.z - relative.center.z);
+            return Vector3.Distance(body.position, position) <= maximumDistance &&
+                AssemblyPlacement.IsClear(new Bounds(relative.center + position, relative.size), body);
+        }
+
+        public bool TryPlaceHeld(PhysicalCarry carry, RaycastHit hit, float maximumDistance)
+        {
+            if (!TryPlanPlacement(carry, hit, maximumDistance, out FoodItem food, out Vector3 position, out Quaternion rotation)) return false;
+            Rigidbody body = carry.HeldBody;
+            carry.Drop();
+            body.position = position; body.rotation = rotation;
+            food.transform.SetPositionAndRotation(position, rotation);
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            Physics.SyncTransforms(); body.Sleep();
+            return true;
+        }
+
         public bool TryFinalize(FoodItem focus, out DishItem dish)
         {
             dish = null;

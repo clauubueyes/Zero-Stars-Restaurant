@@ -16,6 +16,7 @@ namespace ZeroStarRestaurant.Dishes
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private AssemblySurface[] _surfaces = Array.Empty<AssemblySurface>();
         [SerializeField] private PhysicalDishAssembly _physicalAssembly;
+        [SerializeField, Min(0f)] private float _maximumAssistDistance = 1f;
         private InputActionAsset _ownedActions;
         private InputAction _finalize, _place, _interact, _drop, _throw;
         private bool _hadControl;
@@ -81,7 +82,8 @@ namespace ZeroStarRestaurant.Dishes
         {
             if (!IsDraft(surface)) return string.Empty;
             if (_carry != null && _carry.HasHeldObject)
-                return "Release LMB / drop held object first";
+                return _carry.IsSteadyForPlacement && surface.CanPlaceHeld(_carry, _maximumAssistDistance) ?
+                    "Release LMB to place on stack" : "Release LMB / drop held object first";
             if (!surface.CanInteract(new InteractionContext(transform, _carry))) return "Place ingredients on this tray";
             return "[" + FinalizeBinding + "] Finalize " + surface.DisplayName;
         }
@@ -111,6 +113,33 @@ namespace ZeroStarRestaurant.Dishes
             foreach (AssemblySurface candidate in _surfaces) if (candidate != null) candidate.RefreshComposition();
             AssemblySurface surface = FindFocusedSurface();
             return surface != null && surface.TryPlaceHeld(_carry);
+        }
+
+        public string AssistedPlacementPrompt
+        {
+            get
+            {
+                if (!CanAssist(out AssemblySurface surface, out RaycastHit hit)) return null;
+                bool available = surface != null ? surface.CanPlaceHeld(_carry, _maximumAssistDistance) :
+                    _physicalAssembly != null && _physicalAssembly.CanPlaceHeld(_carry, hit, _maximumAssistDistance);
+                return available ? "Release LMB to place on surface/stack" : null;
+            }
+        }
+
+        private bool CanAssist(out AssemblySurface surface, out RaycastHit hit)
+        {
+            surface = null; hit = default;
+            if (!isActiveAndEnabled || _carry == null || !_carry.IsSteadyForPlacement || _detector == null) return false;
+            foreach (AssemblySurface candidate in _surfaces) if (candidate != null) candidate.RefreshComposition();
+            surface = FindFocusedSurface();
+            return surface != null || _detector.TryDetectHit(out hit, _carry.HeldBody);
+        }
+
+        public bool TryAssistRelease()
+        {
+            if (!CanAssist(out AssemblySurface surface, out RaycastHit hit)) return false;
+            return surface != null ? surface.TryPlaceHeld(_carry, _maximumAssistDistance) :
+                _physicalAssembly != null && _physicalAssembly.TryPlaceHeld(_carry, hit, _maximumAssistDistance);
         }
     }
 }

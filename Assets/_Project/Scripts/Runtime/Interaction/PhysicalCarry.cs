@@ -17,6 +17,8 @@ namespace ZeroStarRestaurant.Interaction
         [SerializeField, Min(0f)] private float _maximumDropSpeed = 2f;
         [SerializeField, Min(0.1f)] private float _maximumThrowSpeed = 12f;
         [SerializeField, Min(0.01f)] private float _clearance = 0.04f;
+        [SerializeField, Min(0f), Tooltip("Faster hand gestures release freely instead of assisting ingredient placement.")]
+        private float _maximumAssistedHandSpeed = 1.5f;
         [SerializeField] private LayerMask _collisionMask = ~0;
 
         private Pickup _held;
@@ -44,6 +46,7 @@ namespace ZeroStarRestaurant.Interaction
         }
         public Rigidbody HeldBody => HasHeldObject ? _body : null;
         public string HeldName => HasHeldObject ? _held.DisplayName : string.Empty;
+        public bool IsSteadyForPlacement => HasHeldObject && _handVelocity.magnitude <= _maximumAssistedHandSpeed;
 
         public bool TryPickUp(Pickup pickup)
         {

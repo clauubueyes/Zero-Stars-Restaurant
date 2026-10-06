@@ -127,6 +127,8 @@ namespace ZeroStarRestaurant.Dishes
         }
 
         public bool CanPlaceHeld(PhysicalCarry carry) => TryPlanPlacement(carry, out _, out _, out _);
+        public bool CanPlaceHeld(PhysicalCarry carry, float maximumDistance) =>
+            TryPlanPlacement(carry, out _, out Vector3 position, out _) && Vector3.Distance(carry.HeldBody.position, position) <= maximumDistance;
 
         private bool TryPlanPlacement(PhysicalCarry carry, out FoodItem food, out Vector3 position, out Quaternion rotation)
         {
@@ -156,9 +158,10 @@ namespace ZeroStarRestaurant.Dishes
             return AssemblyPlacement.Fits(_assemblyZone, proposed) && AssemblyPlacement.IsClear(proposed, body);
         }
 
-        public bool TryPlaceHeld(PhysicalCarry carry)
+        public bool TryPlaceHeld(PhysicalCarry carry, float maximumDistance = float.PositiveInfinity)
         {
             if (!TryPlanPlacement(carry, out FoodItem food, out Vector3 position, out Quaternion rotation) ||
+                Vector3.Distance(carry.HeldBody.position, position) > maximumDistance ||
                 !_dish.State.TryAdd(food.State)) return false; // Claim only after preflight; foreign ownership fails before release.
             Rigidbody body = carry.HeldBody;
             carry.Drop(); // Restore settings, claim and player collision pairs through the existing M2 path.

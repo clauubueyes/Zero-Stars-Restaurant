@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ZeroStarRestaurant.Dishes;
 
 namespace ZeroStarRestaurant.Interaction
 {
@@ -8,6 +9,7 @@ namespace ZeroStarRestaurant.Interaction
     {
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private PlayerInteraction _interaction;
+        [SerializeField] private DishAssemblyInteraction _assembly;
         private InputActionAsset _ownedActions;
         private InputAction _interact;
         private InputAction _drop;
@@ -15,6 +17,7 @@ namespace ZeroStarRestaurant.Interaction
         private InputAction _physicalHold;
         private bool _mouseHolding, _hadControl;
         public bool IsMouseHolding => _mouseHolding && _interaction != null && _interaction.HasHeldObject;
+        public string AssistedPlacementPrompt => IsMouseHolding && _assembly != null ? _assembly.AssistedPlacementPrompt : null;
 
         public string InteractBinding => BindingLabel(_interact);
         public string DropBinding => BindingLabel(_drop);
@@ -89,7 +92,11 @@ namespace ZeroStarRestaurant.Interaction
         private bool UpdateMouseHold(bool canGrab)
         {
             if (_mouseHolding && !_physicalHold.IsPressed())
-            { _interaction.ReleaseFromMouse(); _mouseHolding = false; return true; }
+            {
+                if (_drop.WasPressedThisFrame()) _interaction.Drop();
+                else if (_assembly == null || !_assembly.TryAssistRelease()) _interaction.ReleaseFromMouse();
+                _mouseHolding = false; return true;
+            }
             if (!canGrab || !_physicalHold.WasPressedThisFrame()) return false;
             _mouseHolding = _interaction.HasHeldObject || _interaction.TryGrabPhysical();
             return _mouseHolding;
