@@ -9,6 +9,8 @@ M6 añade un cliente activo, pedidos, entrega física, evaluación y pago; aprob
 M1–M6/polish están aprobados en `144cca5`. M7 añade almacenamiento físico y
 conservación térmica; validado en `8872f0d`. M8 añade compras físicas y
 reinversión con el mismo ledger, sin inventario ni otro reloj.
+M9 está validado en `aa146c3`; separa cocina y zona pública. M10 usa sus cuatro
+QueuePoints para clientes FIFO físicos con un único pedido activo y paciencia de debug.
 
 ## Dependencias y responsabilidades
 
@@ -303,7 +305,8 @@ estado y coste, independiente del posterior deterioro o destrucción. Después d
 cobrar, CustomerDishCarrier vincula el mismo agregado al anchor del cliente,
 retira su Pickup y colisiones y lo mantiene visible/cinemático. FoodSimulation
 sigue siendo el único reloj. Al completar salida, CustomerServiceLoop desregistra
-las unidades, desactiva/destruye el plato y oculta el cliente reutilizable. Cancelar
+las unidades y desactiva/destruye el plato. M10 retira también el NPC admitido y
+libera su reserva para avanzar la cola; las fixtures M6 aún reutilizan un cliente. Cancelar
 servicio también limpia la venta. Rechazos no se vinculan ni se destruyen.
 No quedan referencias Unity en recibos.
 Los IDs procesados se conservan en el ledger de la sesión para impedir doble pago.
@@ -321,6 +324,14 @@ Ver [ADR 0008](Decisions/0008-vertical-slice-polish.md) y
 [polish y validación actual](VERTICAL-SLICE-POLISH.md) para estos cambios Runtime.
 
 ## Convenciones prácticas
+
+M10 mantiene las reservas e identidades en `CustomerQueueState`/`QueuedCustomerState`
+(Domain). `CustomerQueueController` adapta admisión, recorrido por puntos y retiro;
+`QueuedCustomer` vincula cada estado a su Movement/Carrier. `CustomerServiceLoop`
+es el único driver, con pasos fijos de 0.05 s y remanente. Crea el pedido solo al
+llegar la cabeza a Service Position y conserva su ID en CustomerVisit. Los pedidos
+tienen IDs propios. La paciencia restante llega a cero sin alterar el servicio;
+el HUD muestra estado, plaza y espera individual. Ver [ADR 0012](Decisions/0012-customer-queue-and-patience.md).
 
 - Código y nombres técnicos en inglés; documentación y explicaciones en español.
 - Namespace raíz `ZeroStarRestaurant`; subnamespaces por responsabilidad y feature.

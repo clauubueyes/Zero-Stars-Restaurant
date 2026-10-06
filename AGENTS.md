@@ -23,7 +23,9 @@
   `feature/economy-procurement`; ver `Docs/M8.md` y ADR 0010.
   M8 está validado en `c12d408`. M9 reorganiza el greybox y el recorrido del
   cliente único en `feature/restaurant-layout-service-flow`; ver `Docs/M9.md`
-  y ADR 0011. QueuePoints solo reserva espacio; no hay múltiples clientes.
+  y ADR 0011. M9 está validado en `aa146c3`. M10 implementa cuatro reservas FIFO
+  físicas (incluida atención) en `feature/customer-queue`; ver `Docs/M10.md` y
+  ADR 0012. Solo Service Position tiene pedido; paciencia cero es debug.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -122,13 +124,22 @@
   electricidad, supermercado, inventario, robo, préstamos ni otro milestone
   sin autorización expresa. Ver Docs/M8.md y ADR 0010.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
-  M9 conserva los objetos/referencias M1–M8: cocina al norte del mostrador
+- M10: CustomerQueueState reserva plazas antes de entrar y libera la cabeza solo
+  al completar Exit. Un único CustomerServiceLoop avanza clientes en pasos fijos;
+  no añadir Update a la cola. El cliente tiene ID propio desde admisión y
+  CustomerVisit conserva ese ID; OrderState tiene otro ID. Solo la cabeza llegada
+  a Service Position recibe/paga por M6. Conservar rutas públicas M9, reservas
+  exclusivas, plato original hasta Exit y limpieza al cancelar sin resetear ledger.
+  Patience cuenta espera detenida/Order/Wait, se pausa andando y en resultado/salida;
+  cero no abandona ni penaliza. No ampliar a pedidos simultáneos, empleados,
+  reputación o navegación sin autorización.
+- M9 conserva los objetos/referencias M1–M8: cocina al norte del mostrador
   continuo, clientes al sur, entrada oeste y salida este. CustomerMovement admite
   departurePath explícito y conserva el retorno M6 si está vacío. QueuePoints
-  contiene cuatro puntos pasivos; no anticipar lógica de cola/múltiples clientes.
+  contiene cuatro marcadores sin scripts; M10 los referencia desde su controlador.
   Cajas/obstáculos de tests permanecen inactivos y recuperables; el opt-in de
   DevelopmentIngredientSupply activa también el soporte de fixtures apartado.
-  Rebuild aplica M9; Apply M9 adapta una escena cerrada sin recrear objetos.
+  Rebuild aplica M9 y M10; sus instaladores adaptan una escena cerrada conservando objetos.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.
 - Crear interfaces y assemblies solo cuando una dependencia real lo necesite.

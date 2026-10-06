@@ -17,7 +17,8 @@ M7 añade Fridge/Freezer físicos y conservación por temperatura real, con el m
 reloj e identidad; validado por el usuario en `8872f0d`.
 M8 añade compras físicas y reinversión con el mismo saldo M6, validado en `c12d408`.
 M9 reorganiza cocina y zona pública, con mostrador continuo, entrada/salida
-separadas y cuatro QueuePoints pasivos. Sigue un único cliente activo.
+separadas y cuatro QueuePoints; validado en `aa146c3`. M10 conecta una cola
+física FIFO de hasta cuatro clientes, un solo pedido activo y paciencia de debug.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -59,15 +60,17 @@ La escena de plantilla
    pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
    E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
-10. Al entrar el cliente, el panel derecho muestra pedido y el saldo de sesión
+10. Al llegar la cabeza de cola a Service Position, el panel derecho muestra pedido y el saldo de sesión
     (inicialmente **€10.00** en esta escena de desarrollo).
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
     `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
     y **G** para depositarlo desde el pase de cocina. Se evalúa al reposar: Hamburger paga
     **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
     Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
-    sale por la puerta este sin atravesar la cocina; se limpia en la salida y el siguiente
-    aparece 3 s después de completar la salida. Ver [M6](Docs/M6.md) para casos y límites.
+    sale por la puerta este sin atravesar la cocina; se limpia en la salida y los demás
+    avanzan una plaza. Puede entrar otro por Entrance cuando hay espacio. El panel
+    de cola muestra espera y paciencia por cliente; cero solo informa.
+    Ver [M10](Docs/M10.md) para probar varias ventas y [M6](Docs/M6.md) para el pipeline.
     Seguir [las pruebas actuales del polish](Docs/VERTICAL-SLICE-POLISH.md) para
     snap, transporte visible y pruebas de rechazo. Las posiciones vigentes y el
     loop comprar → almacenar → cocinar → montar → entregar → cobrar están en [M9](Docs/M9.md).
@@ -83,9 +86,9 @@ La escena de plantilla
     lento congelado. Edad sigue avanzando. Ver [M7](Docs/M7.md) para medirlo con
     los botones del único FoodSimulation y comprobar límites/identidad.
 
-La zona pública queda al sur del mostrador; cliente único entra por la puerta
-oeste, espera en el primer QueuePoint y sale por la puerta este. Los otros tres
-puntos solo preparan espacio para una cola futura. El jugador empieza en cocina.
+La zona pública queda al sur del mostrador; los clientes entran por la puerta
+oeste y salen por la puerta este. Los cuatro QueuePoints forman la cola M10:
+el primero es Service Position. El jugador empieza en cocina.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -138,6 +141,8 @@ Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 - [Decisión sobre adquisiciones y deuda del inicio con 0 €](Docs/Decisions/0010-economy-ingredient-procurement.md).
 - [M9: distribución, recorridos, pruebas y comprobación manual](Docs/M9.md).
 - [Decisión sobre distribución y servicio](Docs/Decisions/0011-restaurant-layout-service-flow.md).
+- [M10: cola física, paciencia, pruebas y secuencia manual](Docs/M10.md).
+- [Decisión sobre reservas de cola e identidad](Docs/Decisions/0012-customer-queue-and-patience.md).
 
 `main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -150,4 +155,6 @@ Su polish parte de M6 aprobado (`9335899`) en `fix/vertical-slice-polish`.
 M7 parte del slice/polish aprobado (`144cca5`) en `feature/food-storage-refrigeration`.
 M8 parte de M7 aprobado (`8872f0d`) en `feature/economy-procurement`.
 M9 parte de M8 validado (`c12d408`) en `feature/restaurant-layout-service-flow`.
+M10 parte de M9 validado (`aa146c3`) en `feature/customer-queue`: hasta cuatro
+clientes físicos, un pedido activo, paciencia de debug y avance FIFO al completar Exit.
 Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.

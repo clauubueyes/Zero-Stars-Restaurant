@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M9. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M10. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -63,5 +63,11 @@ continuo, puertas de entrada/salida y cuatro QueuePoints pasivos. Storage,
 Procurement, Prep, Grill, Assembly y pase forman un recorrido de trabajo.
 El único cliente usa una salida explícita; las fixtures/cajas de tests quedan
 apartadas o bajo opt-in. Ver `Docs/M9.md` y ADR 0011. No hay lógica de cola.
+
+M9 está validado en `aa146c3`. M10 conecta cuatro plazas FIFO con movimiento
+determinista: la primera es Service Position, solo ella tiene pedido. Cada
+cliente tiene identidad y paciencia independientes; cero solo informa. Se
+reutilizan entrega, evaluación, ledger y transporte M6. Ver `Docs/M10.md` y
+ADR 0012. Sin pedidos simultáneos ni navegación compleja.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.
