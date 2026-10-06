@@ -2,7 +2,8 @@
 
 Estado: M1 implementa jugador FPS; M2 interacción genérica y agarre físico;
 M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
-adaptadores Unity e inspección. Los sistemas de cocción/restaurante siguen pendientes.
+adaptadores Unity e inspección. M4 añade fuente física y cocción térmica.
+Los sistemas de platos/restaurante siguen pendientes.
 
 ## Dependencias y responsabilidades
 
@@ -70,9 +71,10 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-M1–M3 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
+M1–M4 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
 cajas físicas y tres de alimentos, todos URP/Lit simples. M3 crea tres
-ScriptableObjects FoodDefinition. Todavía no hay prefabs propios.
+ScriptableObjects FoodDefinition. M4 añade un material de plancha y cuatro carnes.
+Todavía no hay prefabs propios.
 
 ## Assemblies y tests al implementar
 
@@ -170,6 +172,28 @@ El feedback de comida conoce ambos adaptadores para presentar datos. Los
 componentes de interacción y el modelo de alimento no consultan su representación.
 Ver [ADR 0004](Decisions/0004-food-state-and-time.md) y [M3](M3.md), incluyendo
 responsabilidad única sobre tiempo y separación entre deterioro y futura cocción.
+
+## Cocción M4
+
+```text
+GrillHeatSource → consulta física del volumen efectivo → ThermalEnvironment
+FoodSimulation → resuelve entorno único → FoodState.Advance(tiempo, entorno)
+FoodState      → temperatura + deterioro + CookingState (dosis independiente)
+FoodDefinition → CookingProfile opcional, inmutable en la sesión
+FoodInspectionFeedback ← frescura / temperatura / condición / etapa / progreso
+```
+
+La plancha no conoce IDs concretos ni avanza tiempo. El driver conserva referencias
+explícitas y evita duplicar unidades en su lista; solo debe existir un propietario
+temporal por unidad. Comida inactiva conserva el envejecimiento M3 y se aproxima
+al ambiente, sin recibir calor de la plancha. No hay registro persistente de contactos.
+
+La dosis integra una tasa térmica por encima del mínimo durante el calentamiento
+exponencial, con resultados equivalentes al segmentar un entorno constante.
+Retirar pausa dosis y enfría gradualmente; recolocar continúa desde el mismo estado.
+No hay cocción residual en este prototipo. Cocinar no recupera frescura ni limpia
+contaminación. M2 permanece genérico: no se modifican sus scripts ni input.
+Ver [ADR 0005](Decisions/0005-thermal-cooking.md) y [M4](M4.md).
 
 ## Convenciones prácticas
 

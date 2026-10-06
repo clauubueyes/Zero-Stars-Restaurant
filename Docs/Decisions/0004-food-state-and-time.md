@@ -1,6 +1,7 @@
 # ADR 0004: definición, estado y tiempo de alimentos M3
 
-Fecha: 2026-10-06. Estado: aceptada para implementar M3; aceptación manual pendiente.
+Fecha: 2026-10-06. Estado: aceptada; M3 validado por el usuario en `307174a`.
+M4 amplía térmica/cocción mediante [ADR 0005](0005-thermal-cooking.md).
 
 ## Contexto
 

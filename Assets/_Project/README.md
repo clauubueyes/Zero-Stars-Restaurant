@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M3. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M4. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -25,8 +25,12 @@ generador/escena de M1. Usa el asset de input existente con Interact, Drop y Thr
 Ver `Docs/M2.md` en la raíz.
 M3 incorpora reglas en `Scripts/Domain/Food`, adaptadores en `Scripts/Runtime/Food`,
 tres definiciones en `ScriptableObjects/Food`, tres materiales y una zona con cuatro
-alimentos. Estado, Pickup y representación siguen separados; no hay cocina.
+alimentos. Estado, Pickup y representación siguen separados.
 Ver `Docs/M3.md` y ADR 0004 en la raíz.
+M4 añade `Scripts/Domain/Cooking`, `Scripts/Runtime/Cooking`, plancha de primitivas,
+cuatro carnes adicionales y un material de superficie. FoodSimulation es el único
+driver temporal; fuentes térmicas solo describen el entorno por contacto físico.
+Ver `Docs/M4.md` y ADR 0005 en la raíz. No hay platos ni M5.
 Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.
