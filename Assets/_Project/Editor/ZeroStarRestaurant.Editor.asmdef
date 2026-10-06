@@ -3,6 +3,7 @@
     "rootNamespace": "ZeroStarRestaurant.Editor",
     "references": [
         "ZeroStarRestaurant.Runtime",
+        "ZeroStarRestaurant.Domain",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.Runtime"
     ],
