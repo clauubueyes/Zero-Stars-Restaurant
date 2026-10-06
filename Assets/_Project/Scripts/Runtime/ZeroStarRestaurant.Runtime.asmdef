@@ -1,0 +1,6 @@
+{
+    "name": "ZeroStarRestaurant.Runtime",
+    "rootNamespace": "ZeroStarRestaurant",
+    "references": ["Unity.InputSystem"],
+    "autoReferenced": true
+}
