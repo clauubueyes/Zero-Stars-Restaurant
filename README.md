@@ -8,7 +8,8 @@ M1 permite caminar, mirar y saltar en un restaurante greybox. M2 añade interacc
 genérica y cuatro cajas físicas para coger, transportar, soltar y lanzar. M3 añade
 alimentos con estado independiente, deterioro temporal y temperatura, inspeccionables
 con feedback de desarrollo. M4 añade una plancha física con cocción térmica;
-platos y los demás sistemas siguen pendientes.
+M5 añade montaje libre, reconocimiento de platos y transporte agregado.
+Clientes, pedidos y pagos siguen pendientes.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
@@ -36,6 +37,10 @@ La escena de plantilla
    rojiza `GrillHotSurface`, a la izquierda del local. Temperatura y cocción
    avanzan por presencia física; retirarla pausa cocción y permite enfriamiento.
    Ver [M4](Docs/M4.md) para colocación, tiempos y pruebas de rechazo.
+9. Las tres bandejas `AssemblyStation1/2/3` están en el banco del fondo izquierdo.
+   Depositar ingredientes reales, reorganizarlos y retirarlos con M2; apuntar a
+   bandeja/pestaña lateral y pulsar E confirma. El plato final se recoge con E.
+   Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -75,10 +80,13 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión sobre estado de alimento y tiempo](Docs/Decisions/0004-food-state-and-time.md).
 - [M4: plancha, cocción térmica, validación y límites](Docs/M4.md).
 - [Decisión sobre fuente térmica y cocción](Docs/Decisions/0005-thermal-cooking.md).
+- [M5: montaje, reconocimiento, transporte y validación](Docs/M5.md).
+- [Decisión sobre composición física e identidad](Docs/Decisions/0006-physical-dish-assembly.md).
 
 `main` conserva el proyecto original como baseline. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
 M2 parte de M1 aprobado en `feature/world-interaction`.
 M3 parte de M2 aprobado (`14e0575`) en `feature/food-state`.
 M4 parte de M3 aprobado (`307174a`) en `feature/basic-cooking`.
+M5 parte de M4 aprobado (`d7eb2bf`) en `feature/dish-assembly`.
 No hay remoto configurado y no se ha integrado en main; los commits son locales.

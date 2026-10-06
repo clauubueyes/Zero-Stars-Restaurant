@@ -1,8 +1,9 @@
 # Vertical slice y roadmap
 
-Estado actual: **M0–M3 aprobados; M4 implementado, aceptación manual pendiente**.
-Ver [M1](M1.md), [M2](M2.md), [M3](M3.md) y [M4 y su validación](M4.md).
-M5–M8 siguen pendientes.
+Estado actual: **M0–M4 aprobados; M5 implementado, aceptación manual pendiente**.
+Ver [M1](M1.md), [M2](M2.md), [M3](M3.md), [M4](M4.md) y [M5 y su validación](M5.md).
+M6–M8 siguen pendientes. La subdivisión siguiente sigue siendo M6 pedido,
+M7 entrega/pago y M8 integración; esta tarea no las implementa.
 
 ## Experiencia objetivo
 
@@ -27,7 +28,10 @@ primera persona y da feedback visible para cada acción o rechazo.
   Se aproxima el intercambio exponencial, sin fluidos, cortes, energía conservada
   o contactos de precisión; ver [ADR 0005](Decisions/0005-thermal-cooking.md).
 - Montaje libre por contenido: un plato admite porciones que el jugador deposita;
-  no exige una secuencia de receta, slots exactos ni una malla concreta. Para este
+  no exige receta, slots exactos ni una malla concreta. M5 reconoce pilas aproximadas
+  Hamburger/Cheeseburger por datos, y permite Custom Dish para cualquier otra
+  composición no vacía; orden/pila y transporte según [ADR 0006](Decisions/0006-physical-dish-assembly.md).
+  Reconocer no aplica aún criterios de pedido o comestibilidad. Para este
   pedido basta contener una porción cocinada del tipo solicitado y que todas las
   porciones del plato sean comestibles. Raw y Burnt se rechazan.
 - Pedido fijo de desarrollo, con importe configurable; valor inicial de prueba
@@ -61,7 +65,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M2 · `feature/world-interaction` | Contrato genérico, raycast de alcance limitado y feedback; coger/transportar/soltar/lanzar cuatro cajas físicas. | Mostrar prompt y bindings solo con control/objetivo válido; paredes y alcance bloquean la acción; un agarre exclusivo; caminar/mirar sosteniendo; comparar masas/tamaños; limitar velocidades y liberar si falta espacio seguro o desaparece el objeto. Interact pasa de Hold a pulsación; Drop/Throw configurables. Tests deterministas, física PlayMode y aceptación manual según M2.md. |
 | M3 · `feature/food-state` | Tres definiciones y cuatro alimentos físicos; Domain independiente de Unity, deterioro/temperatura e inspección provisional. | Dos porciones comparten definición pero no estado; recoger/soltar/lanzar conserva identidad y no muta el asset. Frescura 0–100 y transiciones por umbrales; temperatura por unidad y grandes saltos temporales deterministas. Fixture fresca/envejecida/fría/contaminada y aceleración solo de desarrollo. Tests EditMode/PlayMode y regresión M1/M2 según M3.md; sin cocción. |
 | M4 · `feature/basic-cooking` | Plancha física con varias porciones, temperatura y cocción continua separada de deterioro. | Raw → Undercooked → Cooked → Overcooked → Burnt por dosis térmica configurable; carne cocinable, pan/queso no. Calentamiento hacia plancha y enfriamiento hacia ambiente; retirar pausa dosis, volver conserva estado. Zona física sin registros obsoletos/duplicados; tests de saltos grandes, umbrales, contaminación, carne podrida, ciclo de vida y regresiones M1–M3 según M4.md. Sin platos. |
-| M5 · `feature/dish-assembly` | Plato con colección de porciones y montaje por interacción. | Una porción pasa de mano/estación al plato sin duplicarse; retirar conserva estado; plato vacío no entregable. Montar dos porciones en distinto orden conserva los mismos datos. Tests de pertenencia y composición. |
+| M5 · `feature/dish-assembly` | Montaje físico libre, identidad y estado real por ingrediente; reconocimiento data-driven y plato final manipulable. | Añadir/retirar/reorganizar por colocación, pertenencia exclusiva e IDs propios; pila ordenada reconoce Hamburger/Cheeseburger, otras combinaciones son Custom Dish. Confirmar no permite vacío ni duplicación; conserva referencias, estado, orden y datos agregados vivos. Proxy físico transporta sin dispersar ingredientes. Tests Domain/PlayMode e integración Pickup→Cooking→Assembly según M5.md; sin clientes/pedidos/pagos. |
 | M6 · `feature/customer-order` | Cliente estático y un pedido legible con requisito e importe. | Consultar pedido desde primera persona; validar por datos: vacío/Raw/Burnt fallan y contenido comestible que satisface el pedido pasa. No requiere navegación ni IA. Tests de predicado de aceptación. |
 | M7 · `feature/delivery-payment` | Entrega, cierre del pedido y saldo visible. | Inicio 0; entrega válida suma 500 céntimos, consume la entrega y cierra el pedido; volver a pulsar no duplica pago. Rechazo conserva plato/pedido/saldo. Test de entrega/pago y reentrada o doble solicitud. |
 | M8 · `fix/vertical-slice-integration` | Ciclo completo y revisión de fallos, sin sistemas nuevos. | Ejecutar el recorrido de abajo, repetir desde una nueva sesión y comprobar que las vistas son sustituibles. Console sin errores propios; build de desarrollo local si están instalados sus módulos. |

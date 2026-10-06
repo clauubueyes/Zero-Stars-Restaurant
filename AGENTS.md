@@ -9,11 +9,12 @@
   sanitarias, crimen, policía, empleados y eventos dinámicos.
 - Primer vertical slice:
   `Player → Interaction → Food → Cooking → Dish Assembly → Customer Order → Delivery → Payment`.
-- M0–M3 están aprobados. M1 añade jugador FPS y escena greybox; ver `Docs/M1.md`.
+- M0–M4 están aprobados. M1 añade jugador FPS y escena greybox; ver `Docs/M1.md`.
   M2 añade interacción genérica y Pickup físico; ver `Docs/M2.md` y ADR 0003.
   M3 añade alimentos, estado independiente, deterioro y temperatura; ver `Docs/M3.md`
   y ADR 0004. M4 añade plancha física y cocción térmica independiente; ver `Docs/M4.md`
-  y ADR 0005. M5 y los sistemas posteriores no están implementados.
+  y ADR 0005. M5 añade composición libre, reconocimiento y plato agregado; ver
+  `Docs/M5.md` y ADR 0006. M6 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -75,6 +76,10 @@
   Pickup no conoce comida. FoodCondition describe deterioro, no cocción. Domain
   recibe tiempo explícito; evitar avanzar una unidad dos veces desde drivers distintos.
   Preservar IDs de definiciones y no reordenar valores de categoría serializados.
+  FoodState.InstanceId identifica unidades concretas, separado de definición/Unity.
+  DishState contiene referencias originales, con pertenencia exclusiva y orden.
+  Confirmar bloquea composición pero conserva estado vivo; el agregado físico no
+  recrea alimentos. Reconocimiento no implica comestibilidad. Respetar ADR 0006.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.

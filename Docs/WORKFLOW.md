@@ -98,6 +98,9 @@ se configura en Inspector y no cambia la física ni el input de M1/M2.
 Para M4, seguir [cocción térmica y plancha](M4.md). El mismo driver avanza tiempo,
 temperatura y cocción una vez; la plancha no tiene un segundo reloj. Reconstruir
 reutiliza configuración de assets; los controles de Inspector son de desarrollo.
+Para M5, seguir [montaje físico y plato agregado](M5.md). El generador añade tres
+estaciones y provisiones, preserva definiciones y GUID existentes. Confirmar no
+crea copias de alimentos ni otro driver. Revisar pertenencia, orden y transporte.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

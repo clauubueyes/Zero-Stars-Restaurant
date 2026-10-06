@@ -3,7 +3,8 @@
 Estado: M1 implementa jugador FPS; M2 interacción genérica y agarre físico;
 M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
 adaptadores Unity e inspección. M4 añade fuente física y cocción térmica.
-Los sistemas de platos/restaurante siguen pendientes.
+M5 añade montaje libre y transporte de platos. Los sistemas de clientes/pedidos
+y pagos siguen pendientes.
 
 ## Dependencias y responsabilidades
 
@@ -71,10 +72,11 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-M1–M4 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
+M1–M5 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
 cajas físicas y tres de alimentos, todos URP/Lit simples. M3 crea tres
 ScriptableObjects FoodDefinition. M4 añade un material de plancha y cuatro carnes.
-Todavía no hay prefabs propios.
+M5 añade dos definiciones de reconocimiento, un material de bandeja, tres
+estaciones y diez suministros. Todavía no hay prefabs propios.
 
 ## Assemblies y tests al implementar
 
@@ -194,6 +196,26 @@ Retirar pausa dosis y enfría gradualmente; recolocar continúa desde el mismo e
 No hay cocción residual en este prototipo. Cocinar no recupera frescura ni limpia
 contaminación. M2 permanece genérico: no se modifican sus scripts ni input.
 Ver [ADR 0005](Decisions/0005-thermal-cooking.md) y [M4](M4.md).
+
+## Platos y montaje M5
+
+```text
+DishDefinition → DishProfile (secuencia de IDs, requisito de pila)
+FoodState      → Guid de unidad y pertenencia exclusiva de montaje
+DishState      → referencias ordenadas a FoodState + consultas agregadas vivas
+AssemblySurface → consulta física + orden aproximado → composición de borrador
+E (M2)          → confirmar → DishItem con proxy físico + Pickup genérico
+FoodSimulation → mismas unidades originales, único reloj antes/después de confirmar
+```
+
+DishState es independiente de FoodState; sus componentes son referencias reales,
+sin snapshots desconectados. Reconocimiento usa secuencia exacta y alineación
+aproximada, sin reglas comerciales. Confirmar asigna identidad pública al plato,
+congela composición/orden y mantiene estados vivos. FoodItem originales siguen
+existiendo como hijos del agregado con físicas individuales retiradas; el proxy
+lleva el conjunto. No hay sustitución por prefab de hamburguesa, inventario o
+save system. IDs de unidades/platos son distintos de IDs de definiciones.
+Ver [ADR 0006](Decisions/0006-physical-dish-assembly.md) y [M5](M5.md).
 
 ## Convenciones prácticas
 

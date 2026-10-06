@@ -1,6 +1,7 @@
 # ADR 0005: cocción térmica y fuente física M4
 
-Fecha: 2026-10-06. Estado: implementada; aceptación manual pendiente.
+Fecha: 2026-10-06. Estado: aceptada; M4 validado por el usuario en `d7eb2bf`.
+M5 conserva sus unidades/tiempo según [ADR 0006](0006-physical-dish-assembly.md).
 
 ## Contexto
 
