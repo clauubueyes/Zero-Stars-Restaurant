@@ -17,8 +17,9 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | `Editor` | Herramientas que solo se ejecutan en el Editor. |
 
 Las carpetas vacías contienen `.gitkeep` para que existan también tras clonar.
-No hay escenas, prefabs, materiales, código de gameplay ni tests nuevos todavía.
-Las carpetas de tests necesitan un assembly de tests antes de añadir C# con NUnit;
-las instrucciones están en `Docs/ARCHITECTURE.md` en la raíz del repositorio.
+M1 incluye `Scenes/PrototypeRestaurant.unity`, tres materiales greybox, controlador
+FPS en `Scripts/Runtime/Player`, generador de escena en Editor y tests EditMode y
+PlayMode. Domain, Prefabs y ScriptableObjects siguen reservados para tareas futuras.
+Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

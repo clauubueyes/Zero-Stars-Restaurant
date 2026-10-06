@@ -9,9 +9,10 @@
   sanitarias, crimen, policía, empleados y eventos dinámicos.
 - Primer vertical slice:
   `Player → Interaction → Food → Cooking → Dish Assembly → Customer Order → Delivery → Payment`.
-- La preparación inicial solo incluye estructura y documentación. Implementar el
-  siguiente milestone cuando forme parte de la tarea solicitada, sin anticipar
-  todos los sistemas del roadmap.
+- M0 prepara estructura y documentación. M1 añade jugador FPS y escena greybox;
+  ver `Docs/M1.md`. M2 y los sistemas posteriores no están implementados.
+  Implementar el siguiente milestone solo cuando forme parte de la tarea
+  solicitada, sin anticipar todos los sistemas del roadmap.
 
 ## Inspeccionar antes de editar
 

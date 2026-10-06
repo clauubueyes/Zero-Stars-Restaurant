@@ -15,12 +15,13 @@ y conservarlos antes de cambiar de rama. No hacer stash, reset o limpieza autom�
 para conseguir un árbol vacío.
 
 ```powershell
-git switch main
-git switch -c feature/player-controller
+git switch -c feature/player-controller feature/project-foundation
 ```
 
-La preparación inicial está en `feature/project-foundation`. Integrarla cuando
-se haya revisado antes de iniciar M1 desde main. Esta entrega no hace merge ni push.
+La foundation aprobada está en `feature/project-foundation`. M1 parte directamente
+de ella, sin integrar en main. Para tareas posteriores, usar la rama o commit
+aprobado que incluya sus dependencias; partir de main solo cuando ya las contenga.
+No hacer merge o push salvo autorización de la tarea.
 No hay remoto, CI ni protección de ramas del servidor configurados: la estabilidad
 de main depende de seguir este flujo local hasta conectar un remoto.
 
@@ -53,7 +54,7 @@ No usar exclusiones generales de `.meta`, `.asset`, `.dll` o modelos como sustit
 de excluir directorios generados: algunos de esos archivos pueden ser fuentes.
 No se necesita Git LFS para este prototipo de primitivas.
 
-## Comprobar esta entrega en Unity
+## Comprobar la foundation en Unity
 
 1. Usar Unity 6000.5.3f1. Si el Editor ya está abierto, esperar a que actualice el
    Project; usar **Assets > Refresh** si es necesario.
@@ -73,6 +74,10 @@ No se necesita Git LFS para este prototipo de primitivas.
 Referencia de Unity para metas: [uso de control de versiones externo](https://docs.unity.cn/2022.1/Documentation/Manual/ExternalVersionControlSystemSupport.html).
 
 ## Validar los milestones de gameplay
+
+Para M1, seguir [las instrucciones de jugador y greybox](M1.md). Hay pruebas
+propias en ambos modos del Test Runner. El generador no se ejecuta automáticamente
+al importar el proyecto y no cambia las escenas de Build Settings.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

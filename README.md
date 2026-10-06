@@ -4,8 +4,9 @@ Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollad
 en Unity. El jugador comienza con **0 €**, un local casi vacío y **sin electricidad**.
 El objetivo es conseguir que el negocio sobreviva mediante sistemas combinables.
 
-Esta entrega prepara el repositorio, la estructura y el plan. El gameplay aún no
-está implementado: al abrir `SampleScene` se ve la escena vacía de la plantilla URP.
+M1 permite caminar, mirar y saltar en un restaurante greybox. No hay todavía
+interacción con objetos ni sistemas de restaurante. La escena de plantilla
+`SampleScene` permanece separada y conservada.
 
 ## Abrir el proyecto
 
@@ -15,8 +16,11 @@ está implementado: al abrir `SampleScene` se ve la escena vacía de la plantill
    durante una tarea de gameplay.
 3. Esperar a la importación y restauración de paquetes. Un clon limpio requiere
    acceso al registro de Unity o una caché válida de esos paquetes.
-4. Abrir `Assets/Scenes/SampleScene.unity` y revisar la Console.
-5. En Project, comprobar `Assets/_Project`; las carpetas de trabajo están listas.
+4. Abrir `Assets/_Project/Scenes/PrototypeRestaurant.unity` y revisar la Console.
+5. Pulsar Play y enfocar Game: **WASD** mueve, **ratón** mira, **Espacio** salta,
+   **Escape** libera el cursor y **clic izquierdo en Game** vuelve a capturarlo.
+   Con el cursor libre se suspenden movimiento voluntario y mirada; la gravedad
+   sigue activa. Detener Play también libera el cursor.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -49,7 +53,8 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Flujo Git y comprobaciones en Unity](Docs/WORKFLOW.md).
 - [Decisión arquitectónica inicial](Docs/Decisions/0001-prototype-foundation.md).
 - [Inventario de cambios y validación de esta entrega](Docs/FOUNDATION.md).
+- [M1: pruebas, controles, configuración y reconstrucción del greybox](Docs/M1.md).
 
-`main` conserva el proyecto original como baseline. La preparación está en
-`feature/project-foundation`, con commits separados. No hay remoto configurado;
-los commits de esta entrega son locales.
+`main` conserva el proyecto original como baseline. La foundation está en
+`feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
+No hay remoto configurado y no se ha integrado en main; los commits son locales.

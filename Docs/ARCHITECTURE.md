@@ -1,7 +1,8 @@
 # Arquitectura y convenciones
 
-Estado: plan de implementación. Esta entrega crea carpetas, no clases de gameplay
-ni assemblies vacíos. Aplicar estas separaciones cuando aparezcan reglas reales.
+Estado: M1 implementa adaptadores Unity de jugador, escena greybox y pruebas.
+Domain no tiene clases todavía; las separaciones de negocio descritas aquí se
+aplicarán cuando aparezcan sus reglas reales.
 
 ## Dependencias y responsabilidades
 
@@ -69,32 +70,39 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-Las escenas, prefabs y materiales propios se crearán a partir de M1; no existe
-todavía `PrototypeRestaurant.unity`.
+M1 incluye `PrototypeRestaurant.unity` y tres materiales simples URP/Lit. Todavía
+no hay prefabs ni ScriptableObjects propios.
 
 ## Assemblies y tests al implementar
 
-Por ahora no hay `.asmdef`. Los únicos scripts son los del tutorial, que permanecen
-en assemblies predefinidos de Unity. La separación por carpetas es una convención;
-su cumplimiento aún no se fuerza con el compilador.
+M1 introduce assemblies Runtime, Editor y de tests por una necesidad real: las
+pruebas y el generador deben referenciar el controlador sin depender de
+Assembly-CSharp. Runtime referencia Unity.InputSystem; Editor referencia Runtime,
+Input System y URP y solo compila para Editor. Los scripts del tutorial permanecen
+en sus assemblies predefinidos. Los assemblies de tests son TestAssemblies y no
+se incluyen en builds normales del jugador.
 
-Al introducir las primeras reglas y sus tests (previsto M3), crear únicamente:
+Al introducir las primeras reglas de negocio (previsto M3):
 
 - `ZeroStarRestaurant.Domain`: bajo Domain, `noEngineReferences: true`, sin
   referencias a Runtime o paquetes del Editor.
-- `ZeroStarRestaurant.Runtime`: bajo Runtime, referencia a Domain y al assembly
-  `Unity.InputSystem` solo si su código usa esas APIs. Mover juntos código y metas
-  si hubo scripts Runtime durante M1/M2.
-- `ZeroStarRestaurant.Tests.EditMode`: assembly de tests Editor que referencia
-  Domain; añadir Runtime solo cuando se prueben adaptadores. Crearlo con la
-  herramienta de assemblies de tests del Test Runner y revisar el JSON generado.
-- `ZeroStarRestaurant.Tests.PlayMode`: cuando haya una prueba de integración
-  necesaria, marcado como test assembly y con referencias concretas al juego.
+- Añadir a `ZeroStarRestaurant.Runtime` una referencia a Domain cuando use sus
+  reglas. No mover los scripts M1 ni regenerar sus GUID.
+- Ampliar `ZeroStarRestaurant.Tests.EditMode` con una referencia a Domain para
+  sus pruebas. Ya prueba referencias, entrada y geometría de la escena M1.
+- Mantener `ZeroStarRestaurant.Tests.PlayMode` para pruebas de integración. M1
+  comprueba física nativa y el ciclo de activación del input.
 
 Los assemblies de tests no se incluyen en builds de jugador. No añadir NUnit a
 Assembly-CSharp, ni depender de Assembly-CSharp desde un assembly de tests:
-primero separar el código bajo prueba. Si se añade un asmdef a Editor en el futuro,
-limitarlo a la plataforma Editor; no hacer que Runtime lo referencie.
+primero separar el código bajo prueba. Mantener el asmdef de Editor limitado a la
+plataforma Editor; no hacer que Runtime lo referencie.
+
+En M1, `FirstPersonController` adapta input/mirada/cursor y llama a
+`FirstPersonMotor.Step(movement, jumpPressed, deltaTime)`. Motor adapta intención
+a CharacterController con gravedad y salto, sin conocer cámara, modelos o input.
+Ambos son Runtime porque dependen de Unity; no se inventan clases Domain para
+física del motor. Ver [ADR 0002](Decisions/0002-first-person-greybox.md).
 
 Referencia técnica: [assemblies en Unity](https://docs.unity.com/en-us/engine/6000.0/manual/programming-environment/script-compilation/assembly-definition-files).
 
