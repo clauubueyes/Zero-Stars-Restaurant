@@ -39,6 +39,13 @@ finalizado manipulable como unidad, sin destruir ingredientes para generar otro 
   No escanea toda la escena ni permite coger/confirmar a través de paredes: E usa
   detector y alcance M2 existentes. Se añade solo `Pickup.IsHeld`, consulta genérica
   del agarre; no se introduce Food/Dish en controlador, input o portador M2.
+- Corrección de aceptación manual: `DishAssemblyInteraction` resuelve la estación
+  del ingrediente del primer hit por pertenencia real y referencias explícitas a
+  superficies. No atraviesa geometría para buscar bandejas. El panel destaca
+  reconocimiento/confirmación fuera del scroll. Player/FinalizeDish (F) es intención
+  secundaria de montaje: E conserva retirada/reorganización de ingredientes y
+  también confirma apuntando directamente a bandeja/pestaña. Los nombres de estas
+  acciones usan el reconocimiento actual. M2 sigue sin conocer Food/Dish.
 - Orden físico: centro de masa del Rigidbody proyectado al espacio local del sensor,
   altura ascendente en bandas de 2 cm; empate por x, z e ID de unidad. Para reconocer
   una pila, los centros laterales deben quedar a <=18 cm del componente inferior y

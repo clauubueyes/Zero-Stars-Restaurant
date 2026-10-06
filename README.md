@@ -38,8 +38,9 @@ La escena de plantilla
    avanzan por presencia física; retirarla pausa cocción y permite enfriamiento.
    Ver [M4](Docs/M4.md) para colocación, tiempos y pruebas de rechazo.
 9. Las tres bandejas `AssemblyStation1/2/3` están en el banco del fondo izquierdo.
-   Depositar ingredientes reales, reorganizarlos y retirarlos con M2; apuntar a
-   bandeja/pestaña lateral y pulsar E confirma. El plato final se recoge con E.
+   Depositar ingredientes reales, reorganizarlos y retirarlos con E/G. Mirar la
+   pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
+   E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
