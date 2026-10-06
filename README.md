@@ -19,6 +19,8 @@ M8 añade compras físicas y reinversión con el mismo saldo M6, validado en `c1
 M9 reorganiza cocina y zona pública, con mostrador continuo, entrada/salida
 separadas y cuatro QueuePoints; validado en `aa146c3`. M10 conecta una cola
 física FIFO de hasta cuatro clientes, un solo pedido activo y paciencia de debug.
+M10 está validado en `bd8d33c`. M11 añade jornada y reloj del mundo: apertura,
+cierre sin nuevas entradas, final al vaciarse y siguiente día conservando estados.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -90,6 +92,15 @@ La zona pública queda al sur del mostrador; los clientes entran por la puerta
 oeste y salen por la puerta este. Los cuatro QueuePoints forman la cola M10:
 el primero es Service Position. El jugador empieza en cocina.
 
+M11 inicia Day 1 a las 09:00, abre a las 09:00 y cierra a las 17:00; velocidad
+de mundo 60 (ocho minutos de horario). El HUD muestra día/hora/fase. Solo Open
+admite clientes nuevos; los que ya están dentro terminan después del cierre.
+En `CustomerServiceZone`, usar el menú contextual de RestaurantDayController
+**Development: Start Day / Next Day** cuando quede Closed. El mismo componente
+permite pausa/resume del reloj para desarrollo. Hora del mundo y FoodSimulation
+tienen velocidades independientes; Next Day no avanza una noche ni resetea comida
+o saldo. Ver [M11](Docs/M11.md) para configuración y prueba de dos días consecutivos.
+
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
 **Unity Test Framework 1.7.0** instalado. El inventario completo está en
@@ -143,6 +154,8 @@ Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 - [Decisión sobre distribución y servicio](Docs/Decisions/0011-restaurant-layout-service-flow.md).
 - [M10: cola física, paciencia, pruebas y secuencia manual](Docs/M10.md).
 - [Decisión sobre reservas de cola e identidad](Docs/Decisions/0012-customer-queue-and-patience.md).
+- [M11: jornada, reloj, pruebas y dos días consecutivos](Docs/M11.md).
+- [Decisión sobre tiempo del mundo y simulación](Docs/Decisions/0013-restaurant-day-and-world-time.md).
 
 `main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -157,4 +170,5 @@ M8 parte de M7 aprobado (`8872f0d`) en `feature/economy-procurement`.
 M9 parte de M8 validado (`c12d408`) en `feature/restaurant-layout-service-flow`.
 M10 parte de M9 validado (`aa146c3`) en `feature/customer-queue`: hasta cuatro
 clientes físicos, un pedido activo, paciencia de debug y avance FIFO al completar Exit.
+M11 parte de M10 validado (`bd8d33c`) en `feature/restaurant-day`.
 Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.

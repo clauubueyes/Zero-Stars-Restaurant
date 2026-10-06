@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M10. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M11. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -69,5 +69,10 @@ determinista: la primera es Service Position, solo ella tiene pedido. Cada
 cliente tiene identidad y paciencia independientes; cero solo informa. Se
 reutilizan entrega, evaluación, ledger y transporte M6. Ver `Docs/M10.md` y
 ADR 0012. Sin pedidos simultáneos ni navegación compleja.
+
+M10 está validado en `bd8d33c`. M11 añade `Domain/Time` y `Runtime/Time` para
+GameTime/RestaurantDay, apertura y cierre de admisiones. La cola existente
+termina antes de Closed. Next Day conserva ledger, comida y resto del restaurante;
+FoodSimulation no cambia ni recibe tiempo del mundo. Ver `Docs/M11.md` y ADR 0013.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

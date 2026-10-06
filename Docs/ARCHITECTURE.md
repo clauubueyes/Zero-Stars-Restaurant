@@ -11,6 +11,8 @@ conservación térmica; validado en `8872f0d`. M8 añade compras físicas y
 reinversión con el mismo ledger, sin inventario ni otro reloj.
 M9 está validado en `aa146c3`; separa cocina y zona pública. M10 usa sus cuatro
 QueuePoints para clientes FIFO físicos con un único pedido activo y paciencia de debug.
+M10 validado en `bd8d33c`. M11 añade GameTime/RestaurantDay para la jornada;
+el reloj del mundo controla únicamente el horario y no avanza alimentos.
 
 ## Dependencias y responsabilidades
 
@@ -324,6 +326,15 @@ Ver [ADR 0008](Decisions/0008-vertical-slice-polish.md) y
 [polish y validación actual](VERTICAL-SLICE-POLISH.md) para estos cambios Runtime.
 
 ## Convenciones prácticas
+
+M11 usa GameTime/RestaurantDay en Domain y RestaurantDayController en Runtime,
+con referencias locales mutuas a la cola. Su Update corre antes del servicio y
+convierte segundos de simulación en segundos del mundo con velocidad configurable.
+La cola consulta Open para toda admisión y notifica su ocupación al completar
+Exit. Closing sigue sirviendo a clientes admitidos; Closed permite iniciar el
+siguiente día sin recrear ledger, FoodState o DishState. La pausa es únicamente
+del reloj del mundo. FoodSimulation conserva su tiempo/driver independiente;
+no hay salto alimentario nocturno. Ver [ADR 0013](Decisions/0013-restaurant-day-and-world-time.md).
 
 M10 mantiene las reservas e identidades en `CustomerQueueState`/`QueuedCustomerState`
 (Domain). `CustomerQueueController` adapta admisión, recorrido por puntos y retiro;

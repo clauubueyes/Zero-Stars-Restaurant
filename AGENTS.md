@@ -26,6 +26,8 @@
   y ADR 0011. M9 está validado en `aa146c3`. M10 implementa cuatro reservas FIFO
   físicas (incluida atención) en `feature/customer-queue`; ver `Docs/M10.md` y
   ADR 0012. Solo Service Position tiene pedido; paciencia cero es debug.
+  M10 está validado en `bd8d33c`. M11 añade tiempo del mundo y jornada en
+  `feature/restaurant-day`; ver `Docs/M11.md` y ADR 0013.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -139,11 +141,20 @@
   contiene cuatro marcadores sin scripts; M10 los referencia desde su controlador.
   Cajas/obstáculos de tests permanecen inactivos y recuperables; el opt-in de
   DevelopmentIngredientSupply activa también el soporte de fixtures apartado.
-  Rebuild aplica M9 y M10; sus instaladores adaptan una escena cerrada conservando objetos.
+  Rebuild aplica M9–M11; sus instaladores adaptan una escena cerrada conservando objetos.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.
 - Crear interfaces y assemblies solo cuando una dependencia real lo necesite.
   No añadir código NUnit a las carpetas reservadas sin su assembly de tests.
+- M11: GameTime/RestaurantDay son Domain sin Unity. RestaurantDayController
+  avanza únicamente el reloj del mundo antes del servicio; velocidad/pausa del
+  mundo no afectan FoodSimulation, clientes ni Time.timeScale. FoodSimulation
+  conserva su único Update/driver y tiempo de simulación M3–M10: nunca avanzar
+  FoodState desde la jornada ni aplicar velocidad del mundo a alimentos.
+  Solo Open admite; Closing conserva clientes/pedidos hasta Exit, y ocupación
+  cero termina el día. Next Day cambia número/hora y delay de admisión, sin
+  recargar/resetear dinero, comida, platos, recibos o contador de clientes.
+  No simular una noche, calendario, facturas, sueño o guardado sin autorización.
 - Convenciones: C# y nombres técnicos en inglés; documentación en español;
   namespace `ZeroStarRestaurant`, con subnamespaces según responsabilidad;
   PascalCase para tipos/métodos, `_camelCase` para campos privados.

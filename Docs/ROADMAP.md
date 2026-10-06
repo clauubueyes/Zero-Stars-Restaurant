@@ -16,11 +16,12 @@ autoriza exclusivamente **Food Storage & Refrigeration**, implementado en
 `feature/food-storage-refrigeration` y validado en **`8872f0d`**; ver [M7](M7.md).
 **M8: Economy & Ingredient Procurement** está validado en **`c12d408`**.
 Ver [M8](M8.md) y ADR 0010. **M9: Restaurant Layout & Service Flow** está validado
-en **`aa146c3`**; ver [M9](M9.md) y ADR 0011. La tarea actual autoriza **M10:
-Customer Queue** desde ese commit, en `feature/customer-queue`: cuatro clientes
-físicos, un pedido activo, avance FIFO y paciencia de debug. Ver [M10](M10.md)
-y ADR 0012. No se autoriza electricidad, supermercado, inventario, empleados,
-mesas, pedidos simultáneos, reputación ni navegación compleja.
+en **`aa146c3`**; ver [M9](M9.md) y ADR 0011. **M10: Customer Queue** está validado
+en **`bd8d33c`**; ver [M10](M10.md) y ADR 0012. La tarea actual autoriza **M11:
+Restaurant Day & Game Time**, en `feature/restaurant-day`: jornada, apertura,
+cierre de nuevas admisiones, final al vaciarse y siguiente día sin resetear
+restaurante. Ver [M11](M11.md) y ADR 0013. No se autoriza electricidad, facturas,
+alquiler, sueño, calendario, eventos, reputación ni guardado.
 
 ## Experiencia objetivo
 
@@ -88,12 +89,15 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M8 · `feature/economy-procurement` | Compras físicas y loop económico con el saldo M6. | Comprar Bun/Raw Beef Patty/Cheese en céntimos configurables: cargo único, unidad real con ID/FoodState propio y registro en el único FoodSimulation M7. Fondos insuficientes o salida ocupada: no crear/cobrar. Fixtures gratuitas solo desarrollo/testing; saldo de desarrollo configurable y deuda de 0 € documentada. Conservar/cocinar/montar/vender unidades compradas, pago M6 único y reinversión. Tests Domain, PlayMode, escena y regresiones M1–M7; ver M8.md y ADR 0010. Sin otros milestones. |
 | M9 · `feature/restaurant-layout-service-flow` | Distribución espacial de restaurante y recorrido del cliente único. | Cocina al norte: Storage → Prep → Grill → Assembly → Delivery, con Procurement física y pase accesibles. Mostrador sólido separa zona pública: Entrance → futura Queue → Counter → Exit, por puertas y ruta sin atravesar cocina. Cuatro QueuePoints pasivos; fixtures de tests conservadas fuera del gameplay normal. Mantener referencias/GUID y sistemas M1–M8, ejecutar regresiones y comprobar manualmente comprar → almacenar → cocinar → montar → entregar → cobrar; ver M9.md y ADR 0011. Sin múltiples clientes ni arte definitivo. |
 | M10 · `feature/customer-queue` | Cola física FIFO de cuatro clientes y paciencia de debug. | Entrance → Queue → Service Position → Order/Wait → Receive → Exit. Reservas únicas desde entrada hasta salida; al terminar avanza el resto y admite otro. Solo la cabeza llegada tiene pedido/recibe comida; IDs independientes y pipeline M6 de evaluación/pago único/transporte intacto. Paciencia configurable por unidad, cero sin penalización. Movimiento determinista público sin NavMesh; tests de aforo, avance, salida, relevo, identidad, pago y regresiones M1–M9; ver M10.md y ADR 0012. |
+| M11 · `feature/restaurant-day` | Tiempo del mundo y jornada con apertura/cierre. | Día/hora/minuto, horario y velocidad configurables, pausa/resume de desarrollo. Solo Open admite; Closing permite terminar visitas admitidas y finaliza con restaurante vacío. Next Day conserva dinero/comida/estados; único driver FoodSimulation independiente del mundo, sin salto nocturno. HUD mínimo, tests de límites temporales, entrada bloqueada, clientes terminando, dos jornadas consecutivas y regresiones M1–M10; ver M11.md y ADR 0013. |
 
 ## Recorrido de aceptación del slice
 
 M10 añade la comprobación de cola: cuatro reservas únicas, atención exclusiva
 de la cabeza, avance al completar Exit y entrada del siguiente sin atravesar
 cocina. Ver la secuencia de dos ventas, rechazo y paciencia cero en [M10](M10.md).
+M11 añade horario y dos jornadas consecutivas en [M11](M11.md): cerrar admisiones,
+terminar clientes y empezar otro día conservando saldo y estados alimentarios.
 
 1. Abrir `PrototypeRestaurant`; iniciar Play y comprobar 10 € de desarrollo
    (o el saldo configurado) y provisiones gratuitas desactivadas. No debe hacer falta un sistema eléctrico
