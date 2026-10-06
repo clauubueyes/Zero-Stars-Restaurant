@@ -112,8 +112,10 @@
   Finalizar usa un proxy único; el agarre elevado configurable evita depender de
   qué ingrediente se enfoca. Ver Docs/VERTICAL-SLICE-POLISH.md y ADR 0008.
 - El polish físico desde `0c81923` sustituye ese clic por hold/release exclusivo
-  de Pickup; E conserva acciones contextuales y F confirma. Snap/Throw siguen
-  como APIs de desarrollo, sin dispararse por clic en gameplay. PhysicalDishAssembly
+  de Pickup; E conserva acciones contextuales y F confirma. Las APIs de snap/Throw
+  se conservan; Throw queda para desarrollo. La colocación asistida actúa al soltar clic con
+  mano tranquila mirando apoyo/pila cercana; gesto rápido y G liberan libremente.
+  El press solo agarra y F confirma. PhysicalDishAssembly
   reconoce una pila conectada con apoyo físico fuera de AssemblySurface, conserva
   estados originales y reutiliza DishItem/M6. DishTraySupply repone un prefab vacío
   solo con salida libre; nunca clonar comida vendida. FoodItem conserva geometría

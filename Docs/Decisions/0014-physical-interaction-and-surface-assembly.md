@@ -29,3 +29,13 @@ El montaje depende de contacto físico y tolerancias configurables; no recoge
 ingredientes sueltos de un área grande. Los apoyos vacíos de las estaciones siguen
 fijos. Las APIs de snap/Throw históricas quedan para pruebas y desarrollo.
 El cambio no incluye M12, recetas nuevas ni persistencia.
+
+## Ajuste solicitado: mantener facilidad de montaje
+
+El usuario valida hold/release y solicita conservar autoensamblaje. El press sigue
+agarrando; release intenta colocación asistida solo con mano tranquila y apoyo/pila
+cercana, usando el primer hit sólido y validando obstáculos/pertenencia. Las bandejas
+usan el snap M5; otros apoyos alinean bounds sobre la pila sin crear comida ni cambiar
+FoodState. G y gestos rápidos conservan liberación libre. F sigue confirmando.
+InteractionInput referencia explícitamente DishAssemblyInteraction para decidir la
+colocación en el momento de release; no hay otro driver ni búsqueda global.

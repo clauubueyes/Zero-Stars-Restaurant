@@ -61,7 +61,9 @@ La escena de plantilla
    retirarla Cooked pausa cocción y permite enfriamiento. El mismo FoodSimulation
    permite adelantar solo comida desde Inspector. Ver [M4](Docs/M4.md).
 9. Apilar ingredientes soltándolos físicamente sobre encimera, mesa, bandeja o
-   Grill. Mirar la pila muestra `Recognized: Hamburger`/`Cheeseburger`/`Custom Dish`;
+   Grill. **Soltar clic con la mano tranquila apuntando a la pila** coloca y centra
+   el ingrediente automáticamente; G permite soltar libremente y un gesto rápido
+   conserva el lanzamiento natural. Mirar la pila muestra `Recognized: Hamburger`/`Cheeseburger`/`Custom Dish`;
    **F** confirma con manos libres. El plato final se recoge manteniendo clic.
    Las tres estaciones `AssemblyStation1/2/3` reponen una bandeja vacía al retirar
    el plato, esperando si el espacio está bloqueado. Grill sigue calentando solo

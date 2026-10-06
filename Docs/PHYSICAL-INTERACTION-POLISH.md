@@ -8,6 +8,16 @@ este cambio no implementa M12, electricidad, inventario ni recetas nuevas.
 - Mantener **clic izquierdo** sobre Pickup recoge y sostiene el objeto físico.
   Soltarlo libera el objeto, restaura gravedad/constraints/colisiones y conserva
   su velocidad física. Mover jugador/cámara permite lanzarlo sin impulso añadido.
+- A petición del usuario, se conserva **colocación asistida al soltar**: con mano
+  tranquila, mirar una bandeja, superficie horizontal o pila cercana y soltar
+  clic coloca el mismo ingrediente encima, alineado con la pila. El HUD indica
+  `Release LMB to place on surface/stack`. **F** continúa confirmando el Dish;
+  no se finaliza automáticamente al completar una receta.
+- Un gesto rápido mantiene la liberación con impulso. **G** siempre suelta libremente,
+  incluso ante una pila. La ayuda no actúa con obstáculos, salida ocupada, pared,
+  ingrediente ajeno/no registrado ni destino a más de 1 m del ingrediente sostenido.
+  Límite configurable `Maximum Assist Distance`; mano tranquila hasta 1,5 m/s,
+  configurable en `PhysicalCarry/Maximum Assisted Hand Speed`.
 - Con la mano quieta, la velocidad de liberación queda limitada a 2 m/s para que
   la corrección inicial del agarre no se convierta en un lanzamiento. Si el
   destino de la mano se mueve, conserva hasta 6 m/s (límites de PhysicalCarry).
@@ -18,8 +28,9 @@ este cambio no implementa M12, electricidad, inventario ni recetas nuevas.
   se consume; pérdida de control/disable libera el agarre de ratón.
 - El botón derecho ya no dispara Throw desde el adaptador de interacción. La API
   histórica y su binding se conservan para herramientas/tests. PlaceIngredient
-  y TryPlace también se conservan por compatibilidad de desarrollo, pero el clic
-  izquierdo del gameplay no ejecuta snap ni una acción contextual de montaje.
+  y TryPlace se conservan por compatibilidad de desarrollo. El press izquierdo
+  solo agarra; el release puede colocar con ayuda. Compras y confirmación mantienen
+  sus acciones contextuales propias.
 
 ## Montaje y calor
 
@@ -69,8 +80,9 @@ el polish. Repetir instalación no duplica componentes ni cambia GUID.
    retirarlos de OUTPUT manteniendo clic izquierdo. Soltar quieto debe dejar caer;
    desplazar cámara y soltar durante el movimiento debe conservar impulso.
    Escape libera control y objeto; el clic de recaptura no debe recoger ni colocar.
-2. Cocinar la carne sobre Grill. Apilar Bun → Patty → Bun sobre Prep fuera de
-   las bandejas; mirar la pila, comprobar Hamburger y confirmar **F**. Repetir en
+2. Cocinar la carne sobre Grill. Sostener Bun, apuntar a Prep/bandeja y soltar;
+   para Patty y el Bun superior apuntar a la pila y soltar con la mano tranquila:
+   se centran automáticamente encima. Comprobar Hamburger y confirmar **F**. Repetir en
    otra encimera/bandeja, con Cheese para Cheeseburger y una composición Custom.
 3. Apilar y confirmar sobre Grill. El ingrediente dentro de la zona roja sigue
    calentándose/cocinándose, el que queda por encima no recibe calor nuevo por
@@ -92,6 +104,10 @@ del adaptador desactivado, se repitieron las **56 pruebas** de interacción,
 montaje y servicio afectadas, todas correctas. Los XML quedan en
 `TestResults/PhysicalPolishEditMode.xml`, `PhysicalPolishPlayModeFinal.xml` y
 `PhysicalPolishGuarded.xml`; logs correspondientes en `Logs/` (ignorados por Git).
+La ampliación de colocación asistida pasa **194 EditMode y 160 PlayMode** en
+`AssistedAssemblyEditModeFinal.xml` y `AssistedAssemblyPlayMode.xml`; incluye
+centrado de Hamburger/Cheeseburger, bandeja real, rechazo por bloqueo/distancia/
+pertenencia, calor sobre Grill, gesto rápido y G simultáneo con mouse release.
 Sin errores de compilación/importación ni excepciones inesperadas en esas pasadas;
 el licenciamiento registra el diagnóstico de handshake de la máquina y continúa.
 
@@ -119,7 +135,7 @@ Creados (assets con `.meta`):
 Modificados:
 
 - `Assets/_Project/Scripts/Runtime/Interaction/CarryPhysics.cs`, `PhysicalCarry.cs`,
-  `InteractionInput.cs`, `PlayerInteraction.cs`, `InteractionFeedback.cs`.
+  `InteractionInput.cs`, `PlayerInteraction.cs`, `InteractionFeedback.cs`, `InteractionDetector.cs`.
 - `Assets/_Project/Scripts/Runtime/Dishes/AssemblySurface.cs`, `DishItem.cs`,
   `DishAssemblyInteraction.cs`, `DishInspectionFeedback.cs`, `AssemblyPlacement.cs`.
 - `Assets/_Project/Scripts/Runtime/Food/FoodItem.cs`,

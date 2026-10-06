@@ -82,4 +82,6 @@ PhysicalDishAssembly para pilas apoyadas fuera de estaciones, DishTraySupply y
 Prefabs/EmptyDishTray para reposición sin clonar alimentos. Clic izquierdo usa
 hold/release, E acciones contextuales y F confirma. FoodItem conserva geometría
 local de colliders retirados para Grill; FoodSimulation permanece único.
+El release tranquilo sobre apoyo/pila cercana conserva la colocación asistida;
+G y gestos rápidos liberan libremente. No se auto-finaliza una receta.
 Ver `Docs/PHYSICAL-INTERACTION-POLISH.md` y ADR 0014. No implementa M12.

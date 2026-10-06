@@ -373,6 +373,12 @@ crea un prefab vacío cuando el hueco queda libre. Grill consulta geometría loc
 conservada por cada FoodItem tras retirar sus colliders, sin otro reloj ni calor
 automático para todo el agregado. Ver [ADR 0014](Decisions/0014-physical-interaction-and-surface-assembly.md).
 
+La colocación asistida solicitada posteriormente se intenta al soltar el ratón,
+con mano tranquila y apoyo/pila cercana. InteractionInput referencia explícitamente
+DishAssemblyInteraction, que reutiliza el snap de bandeja o bounds sobre un apoyo
+normal. Valida primer hit, distancia, obstáculos y pertenencia antes de liberar.
+G y gestos rápidos mantienen liberación libre; F sigue confirmando.
+
 ## Cuándo documentar una decisión
 
 Añadir una nota corta en `Docs/Decisions/NNNN-nombre.md` para cambios de dependencias,
