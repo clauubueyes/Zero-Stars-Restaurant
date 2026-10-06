@@ -13,6 +13,7 @@ namespace ZeroStarRestaurant.Orders
         [SerializeField] private CustomerServiceLoop _service;
         [SerializeField, Min(0.001f)] private float _placementTolerance = 0.06f;
         [SerializeField, Min(0f)] private float _maximumPlacementSpeed = 0.5f;
+        [SerializeField, Range(0.01f, 1f)] private float _minimumFootprintOverlap = 0.2f;
         private readonly HashSet<DishItem> _processedPlacements = new HashSet<DishItem>();
         private void Awake()
         {
@@ -50,12 +51,22 @@ namespace ZeroStarRestaurant.Orders
                 Rigidbody body = dish.GetComponent<Rigidbody>();
                 Bounds bounds = dish.GetComponent<BoxCollider>().bounds;
                 float bottomGap = bounds.min.y - _support.bounds.max.y;
-                Vector3 local = _zone.transform.InverseTransformPoint(bounds.center) - _zone.center;
-                if (Mathf.Abs(local.x) > _zone.size.x * 0.5f || Mathf.Abs(local.z) > _zone.size.z * 0.5f ||
-                    bottomGap < -_placementTolerance || bottomGap > _placementTolerance ||
+                if (!HasPlacementOverlap(bounds) || bottomGap < -_placementTolerance || bottomGap > _placementTolerance ||
                     body.linearVelocity.sqrMagnitude > _maximumPlacementSpeed * _maximumPlacementSpeed || body.angularVelocity.sqrMagnitude > 4f) continue;
                 if (_service.TryDeliver(dish)) { _processedPlacements.Add(dish); break; }
             }
+        }
+
+        private bool HasPlacementOverlap(Bounds dish)
+        {
+            // Horizontal greybox support: compare footprints, never require the dish's center.
+            // The actual collider must also overlap the trigger queried in Poll.
+            Bounds pad = _support.bounds;
+            float width = Mathf.Max(0f, Mathf.Min(dish.max.x, pad.max.x) - Mathf.Max(dish.min.x, pad.min.x));
+            float depth = Mathf.Max(0f, Mathf.Min(dish.max.z, pad.max.z) - Mathf.Max(dish.min.z, pad.min.z));
+            float smallerArea = Mathf.Min(dish.size.x * dish.size.z, pad.size.x * pad.size.z);
+            // Scale with both small and large dishes, but reject a corner/edge merely grazing the pad.
+            return smallerArea > 0f && width * depth >= smallerArea * Mathf.Clamp(_minimumFootprintOverlap, 0.01f, 1f);
         }
     }
 }

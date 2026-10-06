@@ -488,10 +488,11 @@ namespace ZeroStarRestaurant.Editor
             serviceData.FindProperty("_dishCarrier").objectReferenceValue = carrier;
             serviceData.FindProperty("_foodSimulation").objectReferenceValue = simulation;
             serviceData.ApplyModifiedPropertiesWithoutUndo();
-            GameObject pad = CreateBox(serviceRoot.transform, "DeliveryPad", new Vector3(0f, 1.115f, 0.5f), new Vector3(1.25f, 0.03f, 0.9f), deliveryMaterial);
+            Vector3 deliverySize = new Vector3(1.8f, 0.03f, 1f);
+            GameObject pad = CreateBox(serviceRoot.transform, "DeliveryPad", new Vector3(0f, 1.115f, 0.5f), deliverySize, deliveryMaterial);
             var zoneObject = new GameObject("DeliveryZone", typeof(BoxCollider), typeof(DeliveryZone));
             zoneObject.transform.SetParent(serviceRoot.transform, false); zoneObject.transform.position = new Vector3(0f, 1.65f, 0.5f);
-            BoxCollider sensor = zoneObject.GetComponent<BoxCollider>(); sensor.isTrigger = true; sensor.size = new Vector3(1.25f, 1.04f, 0.9f);
+            BoxCollider sensor = zoneObject.GetComponent<BoxCollider>(); sensor.isTrigger = true; sensor.size = new Vector3(deliverySize.x, 1.04f, deliverySize.z);
             var deliveryData = new SerializedObject(zoneObject.GetComponent<DeliveryZone>());
             deliveryData.FindProperty("_zone").objectReferenceValue = sensor;
             deliveryData.FindProperty("_support").objectReferenceValue = pad.GetComponent<BoxCollider>();

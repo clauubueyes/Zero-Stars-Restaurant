@@ -120,16 +120,94 @@ namespace ZeroStarRestaurant.Tests
         }
         private void Place(DishItem dish)
         {
-            Rigidbody body = dish.GetComponent<Rigidbody>(); body.interpolation = RigidbodyInterpolation.None;
-            dish.transform.position = _pad.transform.position + Vector3.up;
-            Physics.SyncTransforms(); dish.transform.position += Vector3.up * (_pad.bounds.max.y - dish.GetComponent<BoxCollider>().bounds.min.y);
-            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; Physics.SyncTransforms();
-            Assert.That(dish.GetComponent<BoxCollider>().bounds.min.y, Is.EqualTo(_pad.bounds.max.y).Within(0.001f));
+            PlaceAt(dish, Vector2.zero);
             Collider[] hits = Physics.OverlapBox(_delivery.transform.position, _delivery.GetComponent<BoxCollider>().size * 0.5f,
                 Quaternion.identity, ~0, QueryTriggerInteraction.Ignore);
             Assert.That(hits.Any(hit => hit.GetComponentInParent<DishItem>() == dish), Is.True,
                 "Delivery must see the actual proxy. " + dish.GetComponent<BoxCollider>().bounds + " at " + _delivery.transform.position);
             Assert.That(dish.IsIntact, Is.True);
+        }
+        private void PlaceAt(DishItem dish, Vector2 offset, float yaw = 0f)
+        {
+            Rigidbody body = dish.GetComponent<Rigidbody>(); body.interpolation = RigidbodyInterpolation.None;
+            dish.transform.SetPositionAndRotation(_pad.transform.position + new Vector3(offset.x, 1f, offset.y), Quaternion.Euler(0f, yaw, 0f));
+            Physics.SyncTransforms(); dish.transform.position += Vector3.up * (_pad.bounds.max.y - dish.GetComponent<BoxCollider>().bounds.min.y);
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; Physics.SyncTransforms();
+            Assert.That(dish.GetComponent<BoxCollider>().bounds.min.y, Is.EqualTo(_pad.bounds.max.y).Within(0.001f));
+        }
+
+        [TestCase(0f, 0f, true)]
+        [TestCase(0.625f, 0f, true)]
+        [TestCase(-0.625f, 0f, true)]
+        [TestCase(0f, 0.45f, true)]
+        [TestCase(0f, -0.45f, true)]
+        [TestCase(0.78f, 0f, true)]
+        [TestCase(-0.78f, 0f, true)]
+        [TestCase(0f, 0.6f, true)]
+        [TestCase(0f, -0.6f, true)]
+        [TestCase(0.66f, 0.47f, true)]
+        [TestCase(0.95f, 0f, false)]
+        [TestCase(0.9f, 0.75f, false)]
+        [TestCase(1.1f, 0f, false)]
+        [TestCase(0f, 0.9f, false)]
+        public void DeliveryUsesReasonableDishOverlapAtCenterEdgesAndOutside(float x, float z, bool expected)
+        {
+            Ready(); DishItem dish = FinalDish(); PlaceAt(dish, new Vector2(x, z));
+            _delivery.Poll(); _delivery.Poll();
+            Assert.That(_service.Visit.Order.IsCompleted, Is.EqualTo(expected));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(expected ? 500 : 0));
+            if (!expected) Assert.That(dish.gameObject.activeInHierarchy && dish.GetComponent<Pickup>().enabled, Is.True);
+        }
+
+        [TestCase(false, false, 0.5f)]
+        [TestCase(false, false, 1f)]
+        [TestCase(false, false, 2f)]
+        [TestCase(true, false, 0.5f)]
+        [TestCase(true, false, 1f)]
+        [TestCase(true, false, 2f)]
+        [TestCase(false, true, 0.5f)]
+        [TestCase(false, true, 1f)]
+        [TestCase(false, true, 2f)]
+        public void PartialPlacementScalesWithHamburgerCheeseburgerAndCustom(bool cheese, bool custom, float scale)
+        {
+            Ready(cheese ? 1 : 0); DishItem dish = FinalDish(cheese, custom: custom);
+            dish.transform.localScale = Vector3.one * scale; Physics.SyncTransforms();
+            // Center lies beyond the pad edge; only part of the aggregate is on the pad.
+            PlaceAt(dish, new Vector2(_pad.bounds.extents.x + dish.GetComponent<BoxCollider>().bounds.extents.x * 0.3f, 0f));
+            _delivery.Poll(); _delivery.Poll();
+            Assert.That(_service.Visit.Order.IsCompleted, Is.True);
+            Assert.That(_service.LastResult.Accepted, Is.EqualTo(!custom));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(custom ? 0 : cheese ? 650 : 500));
+            if (custom)
+            {
+                Assert.That(_carrier.Dish, Is.Null); Assert.That(dish.State.IsSold, Is.False);
+                GameObject actor = Create("Actor", _pad.transform.position + new Vector3(0, -_pad.transform.position.y, -2.5f));
+                Transform view = Create("View", actor.transform.position + Vector3.up * 1.65f).transform;
+                PhysicalCarry carry = actor.AddComponent<PhysicalCarry>(); Set(carry, "_actorRoot", actor.transform); Set(carry, "_viewTransform", view);
+                view.LookAt(dish.transform.position);
+                Assert.That(dish.GetComponent<Pickup>().TryInteract(new InteractionContext(actor.transform, carry)), Is.True);
+                Assert.That(carry.HeldBody, Is.SameAs(dish.GetComponent<Rigidbody>())); carry.Drop();
+            }
+        }
+
+        [TestCase(0.8f, 0f, 45f, true)]
+        [TestCase(0f, 0.6f, 90f, true)]
+        [TestCase(1.2f, 0.8f, 45f, false)]
+        public void RotatedAggregateUsesPhysicalVolumeInsteadOfItsCenter(float x, float z, float yaw, bool expected)
+        {
+            Ready(); DishItem dish = FinalDish(); PlaceAt(dish, new Vector2(x, z), yaw); _delivery.Poll();
+            Assert.That(_service.Visit.Order.IsCompleted, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void PartialOverlapStillRejectsAnAirborneOrFastPassingDish()
+        {
+            Ready(); DishItem dish = FinalDish(); PlaceAt(dish, new Vector2(0.78f, 0f));
+            Rigidbody body = dish.GetComponent<Rigidbody>(); body.linearVelocity = Vector3.left;
+            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.False);
+            body.linearVelocity = Vector3.zero; body.position += Vector3.up * 0.2f; Physics.SyncTransforms();
+            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.False);
+            PlaceAt(dish, new Vector2(0.78f, 0f)); _delivery.Poll(); Assert.That(_service.LastResult.Accepted, Is.True);
         }
 
         [TestCase(false, 500)]

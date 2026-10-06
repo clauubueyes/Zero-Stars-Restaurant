@@ -43,6 +43,17 @@ namespace ZeroStarRestaurant.Tests
             var sensor = (BoxCollider)delivery.FindProperty("_zone").objectReferenceValue;
             var support = (BoxCollider)delivery.FindProperty("_support").objectReferenceValue;
             Assert.That(sensor.isTrigger, Is.True); Assert.That(support.isTrigger, Is.False);
+            Assert.That(support.bounds.size.x, Is.EqualTo(1.8f).Within(0.001));
+            Assert.That(support.bounds.size.z, Is.EqualTo(1f).Within(0.001));
+            Assert.That(sensor.bounds.min.x, Is.EqualTo(support.bounds.min.x).Within(0.001));
+            Assert.That(sensor.bounds.max.x, Is.EqualTo(support.bounds.max.x).Within(0.001));
+            Assert.That(sensor.bounds.min.z, Is.EqualTo(support.bounds.min.z).Within(0.001));
+            Assert.That(sensor.bounds.max.z, Is.EqualTo(support.bounds.max.z).Within(0.001));
+            Bounds visual = support.GetComponent<Renderer>().bounds;
+            Assert.That(visual.size.x, Is.EqualTo(support.bounds.size.x).Within(0.001));
+            Assert.That(visual.size.y, Is.EqualTo(support.bounds.size.y).Within(0.001));
+            Assert.That(visual.size.z, Is.EqualTo(support.bounds.size.z).Within(0.001));
+            Assert.That(delivery.FindProperty("_minimumFootprintOverlap").floatValue, Is.EqualTo(0.2f));
             BoxCollider counter = Components<BoxCollider>().Single(collider => collider.name == "ServiceCounterVolume");
             Assert.That(support.bounds.min.y, Is.EqualTo(counter.bounds.max.y).Within(0.001));
             Assert.That(new SerializedObject(Components<OrderFeedback>().Single()).FindProperty("_service").objectReferenceValue, Is.SameAs(service));
