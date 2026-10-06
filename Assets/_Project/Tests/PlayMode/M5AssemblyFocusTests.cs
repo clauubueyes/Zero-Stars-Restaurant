@@ -181,6 +181,25 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
+        public IEnumerator SteadyReleaseAssistanceUsesTheExistingTrayAndPreservesTheIngredient()
+        {
+            FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
+            FoodState original = food.State;
+            _player.transform.position = new Vector3(-4.4f, .03f, 2.65f);
+            _view.LookAt(food.transform.position); Physics.SyncTransforms();
+            Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
+            _player.transform.position = _surface.Dish.transform.position + new Vector3(0, -.935f, -1.65f);
+            _view.LookAt(_surface.Dish.transform.position);
+            _carry.HeldBody.position = _surface.Dish.transform.position + Vector3.up * .4f; Physics.SyncTransforms();
+            Assert.That(_assembly.AssistedPlacementPrompt, Does.Contain("place"));
+            Assert.That(_assembly.TryAssistRelease(), Is.True); Assert.That(_carry.HasHeldObject, Is.False);
+            Assert.That(_surface.Dish.State.Components.Single(), Is.SameAs(original));
+            Assert.That(food.transform.position.x, Is.EqualTo(_surface.Dish.transform.position.x).Within(.001));
+            Assert.That(food.transform.position.z, Is.EqualTo(_surface.Dish.transform.position.z).Within(.001));
+            yield return new WaitForFixedUpdate();
+        }
+
+        [UnityTest]
         public IEnumerator KeyboardFinalizeBindingReceivesIntentButCannotConfirmWithoutGameplayControl()
         {
             yield return StackHamburger();

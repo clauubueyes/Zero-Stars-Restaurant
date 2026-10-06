@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Dishes;
 using ZeroStarRestaurant.Editor;
 using ZeroStarRestaurant.Food;
+using ZeroStarRestaurant.Interaction;
 
 namespace ZeroStarRestaurant.Tests
 {
@@ -34,6 +35,8 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(assembly.FindProperty("_simulation").objectReferenceValue, Is.SameAs(Components<FoodSimulation>().Single()));
             var definitions = assembly.FindProperty("_definitions"); Assert.That(definitions.arraySize, Is.EqualTo(2));
             Assert.That(new SerializedObject(Components<DishAssemblyInteraction>().Single()).FindProperty("_physicalAssembly").objectReferenceValue, Is.SameAs(physical));
+            Assert.That(new SerializedObject(Components<InteractionInput>().Single()).FindProperty("_assembly").objectReferenceValue,
+                Is.SameAs(Components<DishAssemblyInteraction>().Single()));
         }
         [Test]
         public void InstallingPolishAgainPreservesSceneObjectsAndGuids()

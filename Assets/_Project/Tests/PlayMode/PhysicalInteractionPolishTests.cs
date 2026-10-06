@@ -185,6 +185,134 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(CarryPhysics.NaturalReleaseVelocity(Vector3.one * 50, Vector3.forward, 2, 6).magnitude, Is.EqualTo(6).Within(.001));
         }
 
+        private PhysicalCarry PlacementCarry(out Transform view, out InteractionDetector detector, out PlayerInteraction interaction)
+        {
+            var actor = Create("Placement Actor"); actor.transform.position += Vector3.back * 1.2f;
+            view = Create("Placement View").transform; view.position = actor.transform.position + Vector3.up;
+            view.SetParent(actor.transform, true); view.LookAt(_origin);
+            var carry = actor.AddComponent<PhysicalCarry>(); Set(carry, "_actorRoot", actor.transform); Set(carry, "_viewTransform", view);
+            detector = actor.AddComponent<InteractionDetector>(); Set(detector, "_actorRoot", actor.transform); Set(detector, "_origin", view);
+            interaction = actor.AddComponent<PlayerInteraction>(); Set(interaction, "_detector", detector); Set(interaction, "_carry", carry);
+            return carry;
+        }
+
+        [TestCase("Counter", false)] [TestCase("Table", true)] [TestCase("Tray", false)] [TestCase("Grill", true)]
+        public void AssistedReleaseAlignsHamburgerAndCheeseburgerOnOrdinarySurfaces(string support, bool cheese)
+        {
+            Support(support); PhysicalCarry carry = PlacementCarry(out Transform view, out InteractionDetector detector, out _);
+            var definitions = new List<FoodDefinition> { _bun, _beef };
+            if (cheese) definitions.Add(_cheese); definitions.Add(_bun);
+            var originals = new List<FoodState>(); FoodItem previous = null;
+            foreach (FoodDefinition definition in definitions)
+            {
+                FoodItem held = Food(definition, .65f, .2f); held.transform.position += Vector3.back * .1f;
+                held.State.Contaminate(); held.State.SetTemperature(40); Physics.SyncTransforms(); originals.Add(held.State);
+                Assert.That(carry.TryPickUp(held.GetComponent<Pickup>()), Is.True);
+                view.LookAt(previous != null ? previous.transform.position : _origin); Physics.SyncTransforms();
+                Assert.That(detector.TryDetectHit(out RaycastHit hit, carry.HeldBody), Is.True);
+                Assert.That(_assembly.CanPlaceHeld(carry, hit, 1), Is.True);
+                Assert.That(_assembly.TryPlaceHeld(carry, hit, 1), Is.True); Assert.That(carry.HasHeldObject, Is.False);
+                Assert.That(held.transform.position.x, Is.EqualTo(_origin.x).Within(.001));
+                Assert.That(held.transform.position.z, Is.EqualTo(_origin.z).Within(.001));
+                Assert.That(held.State, Is.SameAs(originals.Last())); Assert.That(held.State.AgeSeconds, Is.Zero);
+                Assert.That(held.State.TemperatureCelsius, Is.EqualTo(40)); Assert.That(held.State.IsContaminated, Is.True);
+                previous = held;
+            }
+            Assert.That(_assembly.PreviewName(previous), Is.EqualTo(cheese ? "Cheeseburger" : "Hamburger"));
+            Assert.That(_assembly.TryFinalize(previous, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Assert.That(dish.State.Components, Is.EqualTo(originals));
+        }
+
+        [Test]
+        public void AssistedPlacementRejectsObstructionDistanceWallsAndForeignClaimsWithoutReleasing()
+        {
+            Support("Counter"); PhysicalCarry carry = PlacementCarry(out _, out InteractionDetector detector, out _);
+            FoodItem held = Food(_bun, .65f, .2f); Physics.SyncTransforms();
+            Assert.That(carry.TryPickUp(held.GetComponent<Pickup>()), Is.True);
+            Assert.That(detector.TryDetectHit(out RaycastHit hit, carry.HeldBody), Is.True);
+            Assert.That(_assembly.TryPlaceHeld(carry, hit, .05f), Is.False); Assert.That(carry.HasHeldObject, Is.True);
+            using (var foreign = new DishState())
+            {
+                Assert.That(foreign.TryAdd(held.State), Is.True);
+                Assert.That(_assembly.TryPlaceHeld(carry, hit, 1), Is.False); Assert.That(carry.HasHeldObject, Is.True);
+            }
+            var blocker = Create("Placement Blocker"); blocker.transform.position += Vector3.up * .08f;
+            blocker.AddComponent<BoxCollider>().size = new Vector3(.3f, .12f, .3f); Physics.SyncTransforms();
+            Assert.That(_assembly.TryPlaceHeld(carry, hit, 1), Is.False); blocker.SetActive(false);
+            var wall = Create("Wall"); wall.transform.position += Vector3.up * .6f;
+            wall.AddComponent<BoxCollider>().size = new Vector3(.2f, 2, 1); Physics.SyncTransforms();
+            Assert.That(detector.TryDetectHit(out RaycastHit wallHit, carry.HeldBody), Is.True);
+            Assert.That(wallHit.normal.y, Is.LessThan(.9f)); Assert.That(_assembly.TryPlaceHeld(carry, wallHit, 1), Is.False);
+            Assert.That(carry.HasHeldObject, Is.True); carry.Drop();
+        }
+
+        [Test]
+        public void AssistedPattyPlacementOnGrillStillReceivesHeatFromTheSingleFoodDriver()
+        {
+            Support("Grill"); PhysicalCarry carry = PlacementCarry(out _, out InteractionDetector detector, out _);
+            FoodItem held = Food(_beef, .65f, .2f); Physics.SyncTransforms(); FoodState original = held.State;
+            var source = Create("Assisted Grill Heat"); var zone = source.AddComponent<BoxCollider>(); zone.isTrigger = true;
+            zone.center = Vector3.up * .04f; zone.size = new Vector3(1, .08f, 1);
+            var grill = source.AddComponent<GrillHeatSource>(); Set(grill, "_effectiveZone", zone);
+            Set(_simulation, "_heatSources", new HeatSource[] { grill });
+            Assert.That(carry.TryPickUp(held.GetComponent<Pickup>()), Is.True);
+            Assert.That(detector.TryDetectHit(out RaycastHit hit, carry.HeldBody), Is.True);
+            Assert.That(_assembly.TryPlaceHeld(carry, hit, 1), Is.True);
+            Assert.That(original.TemperatureCelsius, Is.EqualTo(21)); Assert.That(original.AgeSeconds, Is.Zero);
+            _simulation.Advance(30); Assert.That(original.TemperatureCelsius, Is.GreaterThan(21));
+            Assert.That(original.Cooking.EquivalentSeconds, Is.GreaterThan(0)); Assert.That(original.AgeSeconds, Is.EqualTo(30));
+            Assert.That(held.State, Is.SameAs(original));
+        }
+
+        [Test]
+        public void MouseReleasePlacesWhenSteadyAndPreservesFastGestureAsAThrow()
+        {
+            Support("Counter"); PhysicalCarry carry = PlacementCarry(out Transform view, out InteractionDetector detector, out PlayerInteraction interaction);
+            var asset = ScriptableObject.CreateInstance<InputActionAsset>(); _objects.Add(asset);
+            var map = asset.AddActionMap("Player");
+            var bindings = new Dictionary<string, string> { { "Interact", "<Keyboard>/e" }, { "Drop", "<Keyboard>/g" },
+                { "Throw", "<Mouse>/rightButton" }, { "PlaceIngredient", "<Mouse>/leftButton" }, { "FinalizeDish", "<Keyboard>/f" } };
+            foreach (var binding in bindings) map.AddAction(binding.Key, InputActionType.Button).AddBinding(binding.Value, groups: "Keyboard&Mouse");
+            var inputObject = Create("Assisted Input"); inputObject.SetActive(false);
+            var assemblyInput = inputObject.AddComponent<DishAssemblyInteraction>();
+            Set(assemblyInput, "_interaction", interaction); Set(assemblyInput, "_detector", detector); Set(assemblyInput, "_carry", carry);
+            Set(assemblyInput, "_inputActions", asset); Set(assemblyInput, "_physicalAssembly", _assembly);
+            var input = inputObject.AddComponent<InteractionInput>(); Set(input, "_inputActions", asset); Set(input, "_interaction", interaction); Set(input, "_assembly", assemblyInput);
+            inputObject.SetActive(true);
+            InputSettings previous = InputSystem.settings; InputSettings settings = Object.Instantiate(previous);
+            settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+            settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus; InputSystem.settings = settings;
+            Mouse mouse = InputSystem.AddDevice<Mouse>(); InputSystem.EnableDevice(mouse);
+            Keyboard keyboard = InputSystem.AddDevice<Keyboard>(); InputSystem.EnableDevice(keyboard);
+            try
+            {
+                FoodItem held = Food(_bun, .65f, .2f); Physics.SyncTransforms();
+                Assert.That(carry.TryPickUp(held.GetComponent<Pickup>()), Is.True);
+                InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left)); InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                view.LookAt(_origin); Assert.That(input.AssistedPlacementPrompt, Does.Contain("place"));
+                InputSystem.QueueStateEvent(mouse, new MouseState()); InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                Assert.That(carry.HasHeldObject, Is.False); Assert.That(held.transform.position.x, Is.EqualTo(_origin.x).Within(.001));
+                FoodItem thrown = Food(_beef, .65f, .2f); Physics.SyncTransforms();
+                Assert.That(carry.TryPickUp(thrown.GetComponent<Pickup>()), Is.True);
+                InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left)); InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                Vector3 position = thrown.transform.position; thrown.GetComponent<Rigidbody>().linearVelocity = Vector3.right * 4;
+                Set(carry, "_handVelocity", Vector3.right * 4);
+                Assert.That(input.AssistedPlacementPrompt, Is.Null);
+                InputSystem.QueueStateEvent(mouse, new MouseState()); InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                Assert.That(carry.HasHeldObject, Is.False); Assert.That(thrown.transform.position, Is.EqualTo(position));
+                Assert.That(thrown.GetComponent<Rigidbody>().linearVelocity, Is.EqualTo(Vector3.right * 4));
+                thrown.gameObject.SetActive(false);
+                FoodItem dropped = Food(_beef, .65f, .2f); Physics.SyncTransforms();
+                Assert.That(carry.TryPickUp(dropped.GetComponent<Pickup>()), Is.True);
+                InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left)); InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                position = dropped.transform.position; Assert.That(input.AssistedPlacementPrompt, Is.Not.Null);
+                InputSystem.QueueStateEvent(mouse, new MouseState()); InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.G));
+                InputSystem.Update(); Invoke(input, "UpdateMouseHold", true);
+                Assert.That(carry.HasHeldObject, Is.False); Assert.That(dropped.transform.position, Is.EqualTo(position), "G bypasses assistance even during mouse release.");
+            }
+            finally { InputSystem.RemoveDevice(mouse); InputSystem.RemoveDevice(keyboard); InputSystem.settings = previous; Object.DestroyImmediate(settings); }
+        }
+
         [Test]
         public void MovingTheCameraGeneratesReleaseMomentumButAcquisitionAloneDoesNot()
         {
