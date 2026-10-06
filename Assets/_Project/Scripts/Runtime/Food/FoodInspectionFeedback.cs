@@ -31,7 +31,10 @@ namespace ZeroStarRestaurant.Food
                 "{0}\nFreshness: {1:0.0}%\nTemperature: {2:0.0}°C\nCondition: {3}\nAge: {4:0} s    Contaminated: {5}",
                 state.Profile.DisplayName, state.FreshnessPercent, state.TemperatureCelsius,
                 state.Condition, state.AgeSeconds, state.IsContaminated ? "Yes" : "No");
-            GUI.Box(new Rect(Screen.width / 2f - 260f, Screen.height / 2f + 84f, 520f, 120f), text, _style);
+            text += state.Cooking == null ? "\nCooking: Not cookable" :
+                string.Format(CultureInfo.InvariantCulture, "\nCooking: {0}\nCook progress: {1:0.0}%",
+                    state.Cooking.Stage, state.Cooking.ProgressPercent);
+            GUI.Box(new Rect(Screen.width / 2f - 260f, Screen.height / 2f + 84f, 520f, 160f), text, _style);
         }
     }
 }

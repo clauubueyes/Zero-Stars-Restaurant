@@ -1,4 +1,5 @@
 using UnityEngine;
+using ZeroStarRestaurant.Cooking;
 
 namespace ZeroStarRestaurant.Food
 {
@@ -14,6 +15,13 @@ namespace ZeroStarRestaurant.Food
         [SerializeField, Range(0f, 100f)] private float _freshMinimumPercent = 80f;
         [SerializeField, Range(0f, 100f)] private float _spoiledAtPercent = 30f;
         [SerializeField, Range(0f, 100f)] private float _rottenAtPercent = 5f;
+        [Header("Cooking capability (independent of freshness)")]
+        [SerializeField] private bool _isCookable;
+        [SerializeField] private float _minimumCookingTemperatureCelsius = 60f;
+        [SerializeField] private float _referenceCookingTemperatureCelsius = 120f;
+        [SerializeField, Min(0.1f)] private float _cookedAtEquivalentSeconds = 45f;
+        [SerializeField, Min(0.1f)] private float _overcookedAtEquivalentSeconds = 65f;
+        [SerializeField, Min(0.1f)] private float _burntAtEquivalentSeconds = 90f;
 
         public string Id => _id;
         public string DisplayName => _displayName;
@@ -22,7 +30,10 @@ namespace ZeroStarRestaurant.Food
         {
             return new FoodProfile(_id, _displayName, _category, _referenceCostCents,
                 _freshnessLifetimeSeconds, _thermalResponseSeconds,
-                _freshMinimumPercent, _spoiledAtPercent, _rottenAtPercent);
+                _freshMinimumPercent, _spoiledAtPercent, _rottenAtPercent,
+                _isCookable ? new CookingProfile(_minimumCookingTemperatureCelsius,
+                    _referenceCookingTemperatureCelsius, _cookedAtEquivalentSeconds,
+                    _overcookedAtEquivalentSeconds, _burntAtEquivalentSeconds) : null);
         }
     }
 }

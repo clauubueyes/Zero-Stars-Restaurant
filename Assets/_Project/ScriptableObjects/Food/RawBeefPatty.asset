@@ -21,3 +21,9 @@ MonoBehaviour:
   _freshMinimumPercent: 80
   _spoiledAtPercent: 30
   _rottenAtPercent: 5
+  _isCookable: 1
+  _minimumCookingTemperatureCelsius: 60
+  _referenceCookingTemperatureCelsius: 120
+  _cookedAtEquivalentSeconds: 45
+  _overcookedAtEquivalentSeconds: 65
+  _burntAtEquivalentSeconds: 90

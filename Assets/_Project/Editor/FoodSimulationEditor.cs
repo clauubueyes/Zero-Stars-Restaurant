@@ -10,10 +10,14 @@ namespace ZeroStarRestaurant.Editor
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
-            EditorGUILayout.HelpBox("Development controls affect only food simulation. No cooking or refrigeration is implemented.", MessageType.Info);
+            EditorGUILayout.HelpBox("Development only: advances freshness, temperature and cooking at current placement. " +
+                "Player/physics time is unchanged. Grill temperature/power can be edited in its Inspector.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!Application.isPlaying))
-                if (GUILayout.Button("Advance food by 60 simulated seconds"))
-                    ((FoodSimulation)target).Advance(60.0);
+            {
+                foreach (double seconds in new[] { 1.0, 10.0, 60.0 })
+                    if (GUILayout.Button("Advance food by " + seconds + " simulated seconds"))
+                        ((FoodSimulation)target).Advance(seconds);
+            }
         }
     }
 }
