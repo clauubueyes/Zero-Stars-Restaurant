@@ -48,10 +48,12 @@ namespace ZeroStarRestaurant.Food
         }
 
         // Time and the deterioration rate are supplied by the caller, never read from a game clock.
-        public void Advance(double elapsedSeconds, double ambientTemperatureCelsius, double deteriorationMultiplier = 1.0)
-            => Advance(elapsedSeconds, new ThermalEnvironment(ambientTemperatureCelsius), deteriorationMultiplier);
+        public void Advance(double elapsedSeconds, double ambientTemperatureCelsius, double deteriorationMultiplier = 1.0,
+            FoodPreservationProfile preservation = null)
+            => Advance(elapsedSeconds, new ThermalEnvironment(ambientTemperatureCelsius), deteriorationMultiplier, preservation);
 
-        public void Advance(double elapsedSeconds, ThermalEnvironment environment, double deteriorationMultiplier = 1.0)
+        public void Advance(double elapsedSeconds, ThermalEnvironment environment, double deteriorationMultiplier = 1.0,
+            FoodPreservationProfile preservation = null)
         {
             // Validate every argument before mutating any part of this instance.
             RequireNonNegativeFinite(elapsedSeconds, nameof(elapsedSeconds));
@@ -61,15 +63,17 @@ namespace ZeroStarRestaurant.Food
             if (elapsedSeconds == 0.0)
                 return;
 
+            double responseSeconds = Profile.ThermalResponseSeconds / environment.ResponseMultiplier;
+            double exposure = preservation == null ? elapsedSeconds : preservation.ExposureSeconds(
+                elapsedSeconds, TemperatureCelsius, environment.TemperatureCelsius, responseSeconds);
             AgeSeconds = elapsedSeconds > double.MaxValue - AgeSeconds ? double.MaxValue : AgeSeconds + elapsedSeconds;
             double remaining = Profile.FreshnessLifetimeSeconds - DeteriorationSeconds;
             if (deteriorationMultiplier > 0.0 && remaining > 0.0)
-                DeteriorationSeconds = elapsedSeconds >= remaining / deteriorationMultiplier
+                DeteriorationSeconds = exposure >= remaining / deteriorationMultiplier
                     ? Profile.FreshnessLifetimeSeconds
-                    : DeteriorationSeconds + elapsedSeconds * deteriorationMultiplier;
+                    : DeteriorationSeconds + exposure * deteriorationMultiplier;
 
             // Analytic relaxation avoids frame-size dependent overshoot, including very large time jumps.
-            double responseSeconds = Profile.ThermalResponseSeconds / environment.ResponseMultiplier;
             if (environment.AllowsCooking)
                 Cooking?.Advance(elapsedSeconds, TemperatureCelsius, environment.TemperatureCelsius, responseSeconds);
             double retained = responseSeconds == 0.0 ? 0.0 : Math.Exp(-elapsedSeconds / responseSeconds);
