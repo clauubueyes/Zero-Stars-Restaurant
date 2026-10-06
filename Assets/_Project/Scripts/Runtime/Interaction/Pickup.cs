@@ -8,6 +8,7 @@ namespace ZeroStarRestaurant.Interaction
     {
         private Rigidbody _body;
         private PhysicalCarry _holder;
+        public bool IsHeld => _holder != null;
         public Rigidbody Body => _body != null ? _body : (_body = GetComponent<Rigidbody>());
         public override string ActionLabel => "Pick up";
 

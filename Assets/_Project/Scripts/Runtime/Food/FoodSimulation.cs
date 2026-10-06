@@ -13,6 +13,7 @@ namespace ZeroStarRestaurant.Food
         [SerializeField, Min(0f), Tooltip("Development only: scales food time, not player movement or Unity physics.")]
         private float _developmentTimeMultiplier = 1f;
         private readonly HashSet<FoodItem> _advancedFoods = new HashSet<FoodItem>();
+        public IReadOnlyList<FoodItem> Foods => _foods;
 
         private void Update() => Advance(Time.deltaTime * (double)Mathf.Max(0f, _developmentTimeMultiplier));
 
