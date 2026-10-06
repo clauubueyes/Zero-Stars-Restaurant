@@ -22,11 +22,14 @@ namespace ZeroStarRestaurant.Tests
 
         private T[] Components<T>() where T : Component => _scene.GetRootGameObjects()
             .SelectMany(root => root.GetComponentsInChildren<T>()).ToArray();
+        // Preserve the original M3 fixtures while later milestones add their own food units.
+        private FoodItem[] M3Foods() => _scene.GetRootGameObjects().Single(root => root.name == "FoodTestZone")
+            .GetComponentsInChildren<FoodItem>();
 
         [Test]
         public void FourPhysicalFoodsUseThreeValidDefinitionsAndExplicitSimulationReferences()
         {
-            FoodItem[] foods = Components<FoodItem>();
+            FoodItem[] foods = M3Foods();
             Assert.That(foods, Has.Length.EqualTo(4));
             Assert.That(foods.Select(f => f.Definition).Distinct().Count(), Is.EqualTo(3));
             Assert.That(foods.Select(f => f.Definition.Id).Distinct().Count(), Is.EqualTo(3));
@@ -42,16 +45,17 @@ namespace ZeroStarRestaurant.Tests
             }
             var simulation = new SerializedObject(Components<FoodSimulation>().Single());
             SerializedProperty references = simulation.FindProperty("_foods");
-            Assert.That(references.arraySize, Is.EqualTo(4));
-            for (int index = 0; index < references.arraySize; index++)
-                Assert.That(foods, Does.Contain(references.GetArrayElementAtIndex(index).objectReferenceValue));
+            Object[] registered = Enumerable.Range(0, references.arraySize)
+                .Select(index => references.GetArrayElementAtIndex(index).objectReferenceValue).ToArray();
+            Assert.That(registered, Is.EquivalentTo(Components<FoodItem>()));
+            foreach (FoodItem food in foods) Assert.That(registered, Does.Contain(food));
             Assert.That(simulation.FindProperty("_developmentTimeMultiplier").floatValue, Is.EqualTo(1f));
         }
 
         [Test]
         public void BeefUnitsShareDefinitionButHaveDistinctInitialStateFixtures()
         {
-            FoodItem[] beef = Components<FoodItem>().Where(f => f.Definition.Id == "food.raw_beef_patty").ToArray();
+            FoodItem[] beef = M3Foods().Where(f => f.Definition.Id == "food.raw_beef_patty").ToArray();
             Assert.That(beef, Has.Length.EqualTo(2));
             Assert.That(beef[0].Definition, Is.SameAs(beef[1].Definition));
             float[] freshness = beef.Select(f => new SerializedObject(f).FindProperty("_initialFreshnessPercent").floatValue).ToArray();

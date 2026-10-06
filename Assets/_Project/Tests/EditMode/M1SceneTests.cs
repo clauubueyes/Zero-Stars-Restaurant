@@ -53,7 +53,8 @@ namespace ZeroStarRestaurant.Tests
         public void SpawnIsClearOfBlockingGeometryAndFloorIsBelowFeet()
         {
             CharacterController player = Components<CharacterController>()[0];
-            BoxCollider[] blockers = Components<BoxCollider>();
+            // Thermal detection volumes added by M4 are sensors, not movement blockers.
+            BoxCollider[] blockers = Components<BoxCollider>().Where(box => !box.isTrigger).ToArray();
             Assert.That(blockers.Length, Is.GreaterThanOrEqualTo(5));
             foreach (BoxCollider blocker in blockers)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -10,6 +11,7 @@ using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Player;
 using ZeroStarRestaurant.Interaction;
 using ZeroStarRestaurant.Food;
+using ZeroStarRestaurant.Cooking;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -61,7 +63,7 @@ namespace ZeroStarRestaurant.Editor
             Material wall = GetOrCreateMaterial("GreyboxWall", new Color(0.65f, 0.67f, 0.68f));
             Material volume = GetOrCreateMaterial("GreyboxVolume", new Color(0.40f, 0.46f, 0.48f));
             FoodDefinition beef = GetOrCreateFoodDefinition("RawBeefPatty", "food.raw_beef_patty", "Raw Beef Patty",
-                FoodCategory.Meat, 80, 600f, 60f);
+                FoodCategory.Meat, 80, 600f, 60f, cookable: true);
             FoodDefinition bun = GetOrCreateFoodDefinition("Bun", "food.bun", "Bun",
                 FoodCategory.Bakery, 35, 1800f, 90f);
             FoodDefinition cheese = GetOrCreateFoodDefinition("Cheese", "food.cheese", "Cheese",
@@ -146,7 +148,7 @@ namespace ZeroStarRestaurant.Editor
                 Material beefMaterial = GetOrCreateMaterial("FoodBeef", new Color(0.58f, 0.2f, 0.2f));
                 Material bunMaterial = GetOrCreateMaterial("FoodBun", new Color(0.73f, 0.5f, 0.25f));
                 Material cheeseMaterial = GetOrCreateMaterial("FoodCheese", new Color(0.9f, 0.75f, 0.3f));
-                FoodItem[] foods =
+                var foods = new List<FoodItem>
                 {
                     CreateFood(foodZone.transform, "Raw Beef Patty - Fresh fixture", -4.8f, new Vector3(0.4f, 0.12f, 0.4f),
                         0.15f, beefMaterial, beef, 0f, 100f, 21f, false),
@@ -157,12 +159,45 @@ namespace ZeroStarRestaurant.Editor
                     CreateFood(foodZone.transform, "Cheese - Contaminated fixture", -3.3f, new Vector3(0.32f, 0.06f, 0.32f),
                         0.025f, cheeseMaterial, cheese, 312f, 74f, 22f, true)
                 };
+                var cookingZone = new GameObject("CookingTestZone");
+                var grill = new GameObject("GrillStation");
+                grill.transform.SetParent(cookingZone.transform, false);
+                grill.transform.localPosition = new Vector3(-5f, 0f, 0.6f);
+                CreateBox(grill.transform, "GrillBase", new Vector3(0f, 0.45f, 0f),
+                    new Vector3(2.4f, 0.9f, 1.2f), volume);
+                CreateBox(grill.transform, "GrillHotSurface", new Vector3(0f, 0.95f, 0f),
+                    new Vector3(2.4f, 0.1f, 1.2f),
+                    GetOrCreateMaterial("GrillSurface", new Color(0.65f, 0.22f, 0.1f)));
+                var zoneObject = new GameObject("GrillThermalZone", typeof(BoxCollider));
+                zoneObject.transform.SetParent(grill.transform, false);
+                zoneObject.transform.localPosition = new Vector3(0f, 1.1f, 0f);
+                BoxCollider zone = zoneObject.GetComponent<BoxCollider>();
+                zone.size = new Vector3(2.3f, 0.22f, 1.1f);
+                zone.isTrigger = true;
+                GrillHeatSource heat = grill.AddComponent<GrillHeatSource>();
+                var heatData = new SerializedObject(heat);
+                heatData.FindProperty("_effectiveZone").objectReferenceValue = zone;
+                heatData.ApplyModifiedPropertiesWithoutUndo();
+                CreateBox(cookingZone.transform, "CookingPrepBench", new Vector3(-5f, 0.4f, -2.3f),
+                    new Vector3(2.4f, 0.8f, 0.7f), volume);
+                float[] temperatures = { 21f, -18f, 21f, 21f };
+                string[] fixtureNames = { "Fresh", "Frozen", "Rotten", "Contaminated" };
+                for (int index = 0; index < fixtureNames.Length; index++)
+                {
+                    foods.Add(CreateFood(cookingZone.transform, "Raw Beef Patty - " + fixtureNames[index] + " cooking fixture",
+                        0f, new Vector3(0.4f, 0.12f, 0.4f), 0.15f, beefMaterial, beef, 0f,
+                        index == 2 ? 0f : 100f, temperatures[index], index == 3,
+                        new Vector3(-5.8f + index * 0.5f, 0.91f, -2.3f)));
+                }
                 FoodSimulation foodSimulation = foodZone.AddComponent<FoodSimulation>();
                 var simulationData = new SerializedObject(foodSimulation);
                 SerializedProperty foodReferences = simulationData.FindProperty("_foods");
-                foodReferences.arraySize = foods.Length;
-                for (int index = 0; index < foods.Length; index++)
+                foodReferences.arraySize = foods.Count;
+                for (int index = 0; index < foods.Count; index++)
                     foodReferences.GetArrayElementAtIndex(index).objectReferenceValue = foods[index];
+                SerializedProperty heatReferences = simulationData.FindProperty("_heatSources");
+                heatReferences.arraySize = 1;
+                heatReferences.GetArrayElementAtIndex(0).objectReferenceValue = heat;
                 simulationData.ApplyModifiedPropertiesWithoutUndo();
 
                 var lightObject = new GameObject("DevelopmentSun", typeof(Light));
@@ -247,9 +282,10 @@ namespace ZeroStarRestaurant.Editor
         }
 
         private static FoodItem CreateFood(Transform parent, string name, float x, Vector3 size, float mass,
-            Material material, FoodDefinition definition, float age, float freshness, float temperature, bool contaminated)
+            Material material, FoodDefinition definition, float age, float freshness, float temperature, bool contaminated,
+            Vector3? position = null)
         {
-            GameObject item = CreateBox(parent, name, new Vector3(x, 0.85f + size.y * 0.5f, -3.5f), size, material);
+            GameObject item = CreateBox(parent, name, position ?? new Vector3(x, 0.85f + size.y * 0.5f, -3.5f), size, material);
             AddPickupPhysics(item, mass);
             var pickupData = new SerializedObject(item.GetComponent<Pickup>());
             pickupData.FindProperty("_displayName").stringValue = definition.DisplayName;
@@ -266,7 +302,7 @@ namespace ZeroStarRestaurant.Editor
         }
 
         private static FoodDefinition GetOrCreateFoodDefinition(string assetName, string id, string displayName,
-            FoodCategory category, int costCents, float freshnessLifetime, float thermalResponse)
+            FoodCategory category, int costCents, float freshnessLifetime, float thermalResponse, bool cookable = false)
         {
             if (!AssetDatabase.IsValidFolder(FoodDefinitionFolder))
                 AssetDatabase.CreateFolder("Assets/_Project/ScriptableObjects", "Food");
@@ -286,6 +322,7 @@ namespace ZeroStarRestaurant.Editor
             data.FindProperty("_referenceCostCents").intValue = costCents;
             data.FindProperty("_freshnessLifetimeSeconds").floatValue = freshnessLifetime;
             data.FindProperty("_thermalResponseSeconds").floatValue = thermalResponse;
+            data.FindProperty("_isCookable").boolValue = cookable;
             data.ApplyModifiedPropertiesWithoutUndo();
             definition.CreateProfile();
             AssetDatabase.CreateAsset(definition, path);
