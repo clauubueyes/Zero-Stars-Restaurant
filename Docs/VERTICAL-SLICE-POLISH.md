@@ -1,5 +1,9 @@
 # Polish del vertical slice M1–M6
 
+Guía histórica de M6. El [polish físico desde M11](PHYSICAL-INTERACTION-POLISH.md)
+sustituye el clic de snap/Throw por hold/release y permite montaje fuera de
+AssemblySurface; también repone bandejas. Para controles actuales usar esa guía.
+
 Fecha: 2026-10-06. Rama **`fix/vertical-slice-polish`**, desde M6 aprobado
 **`9335899`**, con árbol limpio antes de editar. Sin merge/push; main conserva
 `e552029`. M6 fue validado manualmente por el usuario; esta corrección requiere

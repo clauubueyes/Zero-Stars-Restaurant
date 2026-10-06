@@ -364,6 +364,15 @@ el HUD muestra estado, plaza y espera individual. Ver [ADR 0012](Decisions/0012-
 - Validar input y referencias obligatorias con mensajes claros, sin fallos
   silenciosos. Comprobar OnEnable/OnDisable si se suscribe a callbacks de input.
 
+## Interacción física y montaje sobre superficies
+
+El polish físico previo a M12 separa hold/release de Pickup y acciones contextuales.
+PhysicalDishAssembly encuentra contacto y apoyo fuera de estaciones, libera claims
+de preview y confirma con DishItem y los FoodState originales. DishTraySupply solo
+crea un prefab vacío cuando el hueco queda libre. Grill consulta geometría local
+conservada por cada FoodItem tras retirar sus colliders, sin otro reloj ni calor
+automático para todo el agregado. Ver [ADR 0014](Decisions/0014-physical-interaction-and-surface-assembly.md).
+
 ## Cuándo documentar una decisión
 
 Añadir una nota corta en `Docs/Decisions/NNNN-nombre.md` para cambios de dependencias,

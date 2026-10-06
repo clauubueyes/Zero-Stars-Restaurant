@@ -76,3 +76,10 @@ termina antes de Closed. Next Day conserva ledger, comida y resto del restaurant
 FoodSimulation no cambia ni recibe tiempo del mundo. Ver `Docs/M11.md` y ADR 0013.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.
+
+M11 está validado en `0c81923`. El polish físico previo a M12 añade
+PhysicalDishAssembly para pilas apoyadas fuera de estaciones, DishTraySupply y
+Prefabs/EmptyDishTray para reposición sin clonar alimentos. Clic izquierdo usa
+hold/release, E acciones contextuales y F confirma. FoodItem conserva geometría
+local de colliders retirados para Grill; FoodSimulation permanece único.
+Ver `Docs/PHYSICAL-INTERACTION-POLISH.md` y ADR 0014. No implementa M12.

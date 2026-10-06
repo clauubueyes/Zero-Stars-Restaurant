@@ -17,11 +17,14 @@ autoriza exclusivamente **Food Storage & Refrigeration**, implementado en
 **M8: Economy & Ingredient Procurement** está validado en **`c12d408`**.
 Ver [M8](M8.md) y ADR 0010. **M9: Restaurant Layout & Service Flow** está validado
 en **`aa146c3`**; ver [M9](M9.md) y ADR 0011. **M10: Customer Queue** está validado
-en **`bd8d33c`**; ver [M10](M10.md) y ADR 0012. La tarea actual autoriza **M11:
-Restaurant Day & Game Time**, en `feature/restaurant-day`: jornada, apertura,
+en **`bd8d33c`**; ver [M10](M10.md) y ADR 0012. **M11:
+Restaurant Day & Game Time** está validado en `0c81923`: jornada, apertura,
 cierre de nuevas admisiones, final al vaciarse y siguiente día sin resetear
 restaurante. Ver [M11](M11.md) y ADR 0013. No se autoriza electricidad, facturas,
-alquiler, sueño, calendario, eventos, reputación ni guardado.
+alquiler, sueño, calendario, eventos, reputación ni guardado. La tarea actual es
+[polish físico previo a M12](PHYSICAL-INTERACTION-POLISH.md) en
+`fix/physical-interaction-polish`: hold/release, montaje sobre apoyo físico y
+reposición de bandejas, manteniendo M1–M11. M12 sigue sin autorización.
 
 ## Experiencia objetivo
 
@@ -109,12 +112,13 @@ terminar clientes y empezar otro día conservando saldo y estados alimentarios.
 3. Dejar una caja, ingrediente o bandeja sin confirmar en DeliveryPad: se ignora,
    pedido sigue esperando y saldo sin cambios. Entregar un Dish incorrecto o Custom: se
    rechaza, conserva plato, no cobra y el cliente sale; llega otro tras el intervalo.
-4. Cocinar una porción real, retirarla Cooked y montar el pedido con clic izquierdo
-   mirando bandeja/pila mientras se sostiene cada ingrediente. E/G siguen disponibles.
+4. Cocinar una porción real, retirarla Cooked y montar el pedido soltando cada
+   ingrediente sobre una pila apoyada en encimera, bandeja o Grill. Mantener clic
+   recoge/sostiene; soltar clic libera. E/G siguen disponibles como alternativas.
    Probar por separado
    Burnt, Rotten cocinado y contaminado dentro de un Dish estructuralmente correcto:
    Correct order YES; estado peligroso visible por separado, pago completo.
-5. Confirmar F, recoger E, llevar físicamente al pad verde y depositar G. Se detecta
+5. Confirmar F, recoger manteniendo clic, llevar al pad verde y soltar clic. Se detecta
    también en bordes con parte razonable del conjunto sobre el pad; no exige centrar.
    Al reposar, un pedido correcto cobra 5 € o 6,50 € según menú; cliente sale
    llevando el mismo plato y ambos se

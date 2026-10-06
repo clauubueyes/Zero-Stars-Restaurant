@@ -21,6 +21,8 @@ separadas y cuatro QueuePoints; validado en `aa146c3`. M10 conecta una cola
 física FIFO de hasta cuatro clientes, un solo pedido activo y paciencia de debug.
 M10 está validado en `bd8d33c`. M11 añade jornada y reloj del mundo: apertura,
 cierre sin nuevas entradas, final al vaciarse y siguiente día conservando estados.
+M11 está validado en `0c81923`. El [polish físico previo a M12](Docs/PHYSICAL-INTERACTION-POLISH.md)
+añade hold/release, montaje sobre apoyos normales y reposición de bandejas.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -39,13 +41,15 @@ La escena de plantilla
    **Escape** libera el cursor y **clic izquierdo en Game** vuelve a capturarlo.
    Con el cursor libre se suspenden movimiento voluntario y mirada; la gravedad
    sigue activa. Detener Play también libera el cursor.
-6. **E** recoge/interactúa, **G** suelta y **botón derecho del ratón** lanza.
+6. **Mantener clic izquierdo** recoge/sostiene objetos físicos; **soltar clic**
+   libera conservando movimiento. Mover la cámara y soltar permite lanzarlos.
+   **E** interactúa/recoge como alternativa y **G** suelta el agarre alternativo.
    El texto provisional muestra objeto, acción y binding. Las cajas M2 están
    conservadas en `PhysicalTestObjects`, inactivo; activarlo solo para desarrollo.
    Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
 7. Ir a Procurement sobre `FoodTestBench`, al oeste de la cocina, junto a Prep. Mirar un
    botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)** o
-   **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger con E y
+   **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger manteniendo clic y
    retirarla antes de comprar otra. Saldo y rechazo son visibles. Sin fondos o
    con salida ocupada no se cobra ni se crea comida. Ver [M8](Docs/M8.md).
    Las antiguas provisiones gratuitas están desactivadas; solo para desarrollo,
@@ -53,28 +57,29 @@ La escena de plantilla
    **Development: enable free ingredient fixtures**. Las guías M3–M7 que usan
    fixtures requieren ese opt-in explícito.
 8. Llevar la carne comprada a la superficie rojiza `GrillHotSurface`, al norte de
-   Prep, y soltarla con G. Temperatura y cocción avanzan por presencia física;
+   Prep, y soltar clic para depositarla. Temperatura y cocción avanzan por presencia física;
    retirarla Cooked pausa cocción y permite enfriamiento. El mismo FoodSimulation
    permite adelantar solo comida desde Inspector. Ver [M4](Docs/M4.md).
-9. Las tres bandejas `AssemblyStation1/2/3` están junto a la plancha, al fondo.
-   Sostener comida, mirar bandeja/pila y **clic izquierdo** para colocar la misma
-   unidad encima. También se pueden depositar, reorganizar y retirar con E/G. Mirar la
-   pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
-   E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
-   Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
+9. Apilar ingredientes soltándolos físicamente sobre encimera, mesa, bandeja o
+   Grill. Mirar la pila muestra `Recognized: Hamburger`/`Cheeseburger`/`Custom Dish`;
+   **F** confirma con manos libres. El plato final se recoge manteniendo clic.
+   Las tres estaciones `AssemblyStation1/2/3` reponen una bandeja vacía al retirar
+   el plato, esperando si el espacio está bloqueado. Grill sigue calentando solo
+   los ingredientes que toquen su zona, incluso después de confirmar.
+   Ver [polish físico](Docs/PHYSICAL-INTERACTION-POLISH.md) para límites y pruebas.
 10. Al llegar la cabeza de cola a Service Position, el panel derecho muestra pedido y el saldo de sesión
     (inicialmente **€10.00** en esta escena de desarrollo).
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
     `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
-    y **G** para depositarlo desde el pase de cocina. Se evalúa al reposar: Hamburger paga
+    y **soltar clic** para depositarlo desde el pase de cocina. Se evalúa al reposar: Hamburger paga
     **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
     Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
     sale por la puerta este sin atravesar la cocina; se limpia en la salida y los demás
     avanzan una plaza. Puede entrar otro por Entrance cuando hay espacio. El panel
     de cola muestra espera y paciencia por cliente; cero solo informa.
     Ver [M10](Docs/M10.md) para probar varias ventas y [M6](Docs/M6.md) para el pipeline.
-    Seguir [las pruebas actuales del polish](Docs/VERTICAL-SLICE-POLISH.md) para
-    snap, transporte visible y pruebas de rechazo. Las posiciones vigentes y el
+    Seguir [las pruebas actuales del polish](Docs/PHYSICAL-INTERACTION-POLISH.md) para
+    manejo físico y reposición. Las posiciones vigentes y el
     loop comprar → almacenar → cocinar → montar → entregar → cobrar están en [M9](Docs/M9.md).
     La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
     parcial: basta soltar y dejar reposar; no exige centrar el plato.

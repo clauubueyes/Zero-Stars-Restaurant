@@ -28,6 +28,9 @@
   ADR 0012. Solo Service Position tiene pedido; paciencia cero es debug.
   M10 está validado en `bd8d33c`. M11 añade tiempo del mundo y jornada en
   `feature/restaurant-day`; ver `Docs/M11.md` y ADR 0013.
+  M11 está validado en `0c81923`. Polish físico previo a M12 en
+  `fix/physical-interaction-polish`; ver `Docs/PHYSICAL-INTERACTION-POLISH.md` y
+  ADR 0014: hold/release, montaje sobre apoyos y reposición de bandejas.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -103,11 +106,19 @@
   y colisiones; desregistrar del único FoodSimulation y destruir solo al llegar a
   salida (o cancelar servicio). Rechazo conserva el plato
   y termina la visita; retirar/recoger antes de ofrecerlo al siguiente cliente.
-- Polish desde M6 aprobado `9335899`: clic izquierdo PlaceIngredient coloca la
+- Polish histórico desde M6 aprobado `9335899`: clic izquierdo PlaceIngredient coloca la
   Food sostenida sobre la pila con bounds, sin clones ni cambios de estado. Snap
   solo pertenece a AssemblySurface; E/G y Throw derecho siguen siendo genéricos.
   Finalizar usa un proxy único; el agarre elevado configurable evita depender de
   qué ingrediente se enfoca. Ver Docs/VERTICAL-SLICE-POLISH.md y ADR 0008.
+- El polish físico desde `0c81923` sustituye ese clic por hold/release exclusivo
+  de Pickup; E conserva acciones contextuales y F confirma. Snap/Throw siguen
+  como APIs de desarrollo, sin dispararse por clic en gameplay. PhysicalDishAssembly
+  reconoce una pila conectada con apoyo físico fuera de AssemblySurface, conserva
+  estados originales y reutiliza DishItem/M6. DishTraySupply repone un prefab vacío
+  solo con salida libre; nunca clonar comida vendida. FoodItem conserva geometría
+  local antes de retirar colliders y Grill consulta cada ingrediente, sin otro driver.
+  Ver Docs/PHYSICAL-INTERACTION-POLISH.md y ADR 0014. No avanzar a M12.
   M7 reutiliza HeatSource con ColdStorage; FoodSimulation sigue siendo el único reloj.
   FoodPreservationSettings crea una política inmutable por temperatura real, también
   fuera del almacenamiento. FoodState integra cruces de umbrales; nunca usar flags
