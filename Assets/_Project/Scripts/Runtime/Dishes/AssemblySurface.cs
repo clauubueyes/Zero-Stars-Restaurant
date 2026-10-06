@@ -19,6 +19,15 @@ namespace ZeroStarRestaurant.Dishes
         private DishProfile[] _profiles;
         private readonly List<FoodItem> _ingredients = new List<FoodItem>();
         public DishItem Dish => _dish;
+        // Supply replaces only a departed finalized tray, never a live composition.
+        public bool TryReplaceTray(DishItem previous, DishItem replacement)
+        {
+            if (_dish != previous || (previous != null && !previous.State.IsFinalized) || replacement == null ||
+                replacement.State == null || replacement.State.IsFinalized || replacement.State.Components.Count != 0) return false;
+            _dish = replacement;
+            _ingredients.Clear();
+            return true;
+        }
         public DishProfile PreviewDefinition => _dish != null && _dish.State != null ? _dish.State.Recognize(_profiles) : null;
         public override string DisplayName => PreviewDefinition?.DisplayName ?? "Custom Dish";
         public override string ActionLabel => "Finalize";
