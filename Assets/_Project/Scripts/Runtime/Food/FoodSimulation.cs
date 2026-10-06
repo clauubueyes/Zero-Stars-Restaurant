@@ -9,6 +9,8 @@ namespace ZeroStarRestaurant.Food
     {
         [SerializeField] private FoodItem[] _foods = Array.Empty<FoodItem>();
         [SerializeField] private HeatSource[] _heatSources = Array.Empty<HeatSource>();
+        [SerializeField, Tooltip("Temperature-based deterioration policy. Unassigned preserves the original M3/M4 rate.")]
+        private FoodPreservationSettings _preservationSettings;
         [SerializeField, Min(-273.15f)] private float _ambientTemperatureCelsius = 21f;
         [SerializeField, Min(0f), Tooltip("Development only: scales food time, not player movement or Unity physics.")]
         private float _developmentTimeMultiplier = 1f;
@@ -32,6 +34,7 @@ namespace ZeroStarRestaurant.Food
             if (double.IsNaN(elapsedSeconds) || double.IsInfinity(elapsedSeconds) || elapsedSeconds < 0.0)
                 throw new ArgumentOutOfRangeException(nameof(elapsedSeconds));
             var ambient = new ThermalEnvironment(_ambientTemperatureCelsius);
+            FoodPreservationProfile preservation = _preservationSettings == null ? null : _preservationSettings.CreateProfile();
             Physics.SyncTransforms(); // Also makes manual development advances see the current placement.
             _advancedFoods.Clear();
             // Explicit scene references; already initialized inactive food still ages at ambient.
@@ -55,7 +58,7 @@ namespace ZeroStarRestaurant.Food
                         hasSource = true;
                     }
                 }
-                food.State.Advance(elapsedSeconds, environment);
+                food.State.Advance(elapsedSeconds, environment, preservation: preservation);
             }
         }
     }
