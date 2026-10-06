@@ -26,6 +26,8 @@ namespace ZeroStarRestaurant.Player
         private bool _cursorCaptured;
         private bool _skipLookFrame;
 
+        public bool HasControl => isActiveAndEnabled && _cursorCaptured && Cursor.lockState == CursorLockMode.Locked;
+
         private void Awake()
         {
             _motor = GetComponent<FirstPersonMotor>();
