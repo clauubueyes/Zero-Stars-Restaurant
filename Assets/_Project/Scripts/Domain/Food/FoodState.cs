@@ -1,4 +1,5 @@
 using System;
+using ZeroStarRestaurant.Cooking;
 
 namespace ZeroStarRestaurant.Food
 {
@@ -10,6 +11,7 @@ namespace ZeroStarRestaurant.Food
         public double DeteriorationSeconds { get; private set; }
         public double TemperatureCelsius { get; private set; }
         public bool IsContaminated { get; private set; }
+        public CookingState Cooking { get; }
         public double FreshnessPercent => Math.Max(0.0, Math.Min(100.0,
             100.0 - DeteriorationSeconds / Profile.FreshnessLifetimeSeconds * 100.0));
 
@@ -29,6 +31,7 @@ namespace ZeroStarRestaurant.Food
             double temperatureCelsius = 21.0, bool isContaminated = false)
         {
             Profile = profile ?? throw new ArgumentNullException(nameof(profile));
+            Cooking = profile.IsCookable ? new CookingState(profile.Cooking) : null;
             RequireNonNegativeFinite(ageSeconds, nameof(ageSeconds));
             RequireNonNegativeFinite(freshnessPercent, nameof(freshnessPercent));
             if (freshnessPercent > 100.0)
@@ -42,10 +45,14 @@ namespace ZeroStarRestaurant.Food
 
         // Time and the deterioration rate are supplied by the caller, never read from a game clock.
         public void Advance(double elapsedSeconds, double ambientTemperatureCelsius, double deteriorationMultiplier = 1.0)
+            => Advance(elapsedSeconds, new ThermalEnvironment(ambientTemperatureCelsius), deteriorationMultiplier);
+
+        public void Advance(double elapsedSeconds, ThermalEnvironment environment, double deteriorationMultiplier = 1.0)
         {
             // Validate every argument before mutating any part of this instance.
             RequireNonNegativeFinite(elapsedSeconds, nameof(elapsedSeconds));
-            RequireTemperature(ambientTemperatureCelsius, nameof(ambientTemperatureCelsius));
+            // Revalidate even a default(struct), which bypasses the constructor.
+            environment = new ThermalEnvironment(environment.TemperatureCelsius, environment.ResponseMultiplier, environment.AllowsCooking);
             RequireNonNegativeFinite(deteriorationMultiplier, nameof(deteriorationMultiplier));
             if (elapsedSeconds == 0.0)
                 return;
@@ -58,8 +65,11 @@ namespace ZeroStarRestaurant.Food
                     : DeteriorationSeconds + elapsedSeconds * deteriorationMultiplier;
 
             // Analytic relaxation avoids frame-size dependent overshoot, including very large time jumps.
-            double retained = Math.Exp(-elapsedSeconds / Profile.ThermalResponseSeconds);
-            TemperatureCelsius = TemperatureCelsius * retained + ambientTemperatureCelsius * (1.0 - retained);
+            double responseSeconds = Profile.ThermalResponseSeconds / environment.ResponseMultiplier;
+            if (environment.AllowsCooking)
+                Cooking?.Advance(elapsedSeconds, TemperatureCelsius, environment.TemperatureCelsius, responseSeconds);
+            double retained = responseSeconds == 0.0 ? 0.0 : Math.Exp(-elapsedSeconds / responseSeconds);
+            TemperatureCelsius = TemperatureCelsius * retained + environment.TemperatureCelsius * (1.0 - retained);
         }
 
         public void SetTemperature(double temperatureCelsius)

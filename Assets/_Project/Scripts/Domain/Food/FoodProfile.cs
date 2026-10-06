@@ -1,4 +1,5 @@
 using System;
+using ZeroStarRestaurant.Cooking;
 
 namespace ZeroStarRestaurant.Food
 {
@@ -14,10 +15,13 @@ namespace ZeroStarRestaurant.Food
         public double FreshMinimumPercent { get; }
         public double SpoiledAtPercent { get; }
         public double RottenAtPercent { get; }
+        public CookingProfile Cooking { get; }
+        public bool IsCookable => Cooking != null;
 
         public FoodProfile(string id, string displayName, FoodCategory category,
             int referenceCostCents, double freshnessLifetimeSeconds, double thermalResponseSeconds,
-            double freshMinimumPercent = 80.0, double spoiledAtPercent = 30.0, double rottenAtPercent = 5.0)
+            double freshMinimumPercent = 80.0, double spoiledAtPercent = 30.0, double rottenAtPercent = 5.0,
+            CookingProfile cooking = null)
         {
             if (string.IsNullOrWhiteSpace(id) || id != id.Trim())
                 throw new ArgumentException("A stable, non-empty identifier without surrounding whitespace is required.", nameof(id));
@@ -42,6 +46,7 @@ namespace ZeroStarRestaurant.Food
             FreshMinimumPercent = freshMinimumPercent;
             SpoiledAtPercent = spoiledAtPercent;
             RottenAtPercent = rottenAtPercent;
+            Cooking = cooking;
         }
 
         private static bool IsPercent(double value) => !double.IsNaN(value) && value >= 0.0 && value <= 100.0;
