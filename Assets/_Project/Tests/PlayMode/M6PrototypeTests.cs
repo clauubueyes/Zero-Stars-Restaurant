@@ -100,7 +100,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(id));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Any(food => food.InstanceId == pattyId), Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(18));
-            Assert.That(Components<CustomerDishCarrier>().Single().Dish, Is.SameAs(dish));
+            Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
             Assert.That(dish.gameObject.activeInHierarchy, Is.True);
             var firstVisit = _service.Visit;
             Assert.That(_service.ForceNextOrder(1), Is.True);
@@ -108,11 +108,12 @@ namespace ZeroStarRestaurant.Tests
             yield return null;
             Assert.That(dish == null, Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(15));
-            Assert.That(_service.Visit, Is.Null); Assert.That(Components<CustomerMovement>().Single().gameObject.activeSelf, Is.False);
+            Assert.That(firstVisit.Stage, Is.EqualTo(CustomerStage.Finished));
+            Assert.That(_service.Queue.Customers.Count, Is.EqualTo(4));
             _service.Advance(3); _service.Advance(100); _service.Advance(1);
             Assert.That(_service.Visit.Order.InstanceId, Is.Not.EqualTo(firstVisit.Order.InstanceId));
             Assert.That(_service.Visit.Order.Offer.Dish.DisplayName, Is.EqualTo("Cheeseburger"));
-            Assert.That(Components<CustomerMovement>().Count(customer => customer.gameObject.activeSelf), Is.EqualTo(1));
+            Assert.That(Components<CustomerMovement>().Count(customer => customer.gameObject.activeSelf), Is.EqualTo(4));
         }
     }
 }

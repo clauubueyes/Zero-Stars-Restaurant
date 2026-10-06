@@ -11,6 +11,18 @@ namespace ZeroStarRestaurant.Orders
         private GUIStyle _style;
         private Vector2 _scroll;
         public static string Money(long cents) => "€" + (cents / 100m).ToString("0.00", CultureInfo.InvariantCulture);
+        public static string QueueText(CustomerQueueController queue)
+        {
+            var text = new StringBuilder("QUEUE " + queue.Count + "/" + queue.Capacity + (queue.IsFull ? " (FULL)" : "") + "\n");
+            foreach (QueuedCustomer customer in queue.Customers)
+            {
+                QueuedCustomerState state = customer.State;
+                text.AppendFormat(CultureInfo.InvariantCulture, "#{0:D3} Q{1} {2}  [{3}]\nWait {4:0.0}s | Patience {5:0.0}s{6}\n",
+                    state.Number, state.QueueIndex + 1, state.Stage, state.InstanceId.ToString("N").Substring(0, 6),
+                    state.WaitingSeconds, state.RemainingPatienceSeconds, state.PatienceExhausted ? " (0: debug only)" : "");
+            }
+            return text.ToString();
+        }
         public static string ResultText(OrderResult result)
         {
             var evaluation = result.Evaluation; var dish = evaluation.DeliveredDish;
@@ -42,12 +54,23 @@ namespace ZeroStarRestaurant.Orders
             float width = Mathf.Min(360f, Screen.width - 24f);
             GUI.Box(new Rect(Screen.width - width - 12f, 12f, width, 120f), GUIContent.none);
             string order = "Balance: " + Money(_service.Ledger.BalanceCents) + "\n";
-            if (_service.Visit == null) order += "Next customer in " + _service.NextCustomerSeconds.ToString("0.0", CultureInfo.InvariantCulture) + " s";
+            if (_service.Visit == null)
+                order += _service.Queue != null && _service.Queue.Count > 0 ? "Customer approaching Service Position" :
+                    "Next customer in " + _service.NextCustomerSeconds.ToString("0.0", CultureInfo.InvariantCulture) + " s";
             else order += "Customer #" + _service.CustomerNumber.ToString("D3") + "   " + _service.Visit.Stage +
                 "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + "\nPrice: " + Money(_service.Visit.Order.Offer.SalePriceCents);
             GUI.Label(new Rect(Screen.width - width - 4f, 20f, width - 16f, 104f), order, _style);
+            float resultTop = 144f;
+            if (_service.Queue != null)
+            {
+                float height = 30f + 42f * _service.Queue.Count;
+                GUI.Box(new Rect(Screen.width - width - 12f, 144f, width, height), GUIContent.none);
+                GUI.Label(new Rect(Screen.width - width - 4f, 150f, width - 16f, height - 8f), QueueText(_service.Queue), _style);
+                resultTop = 156f + height;
+            }
             if (_service.LastResult == null) return;
-            var rect = new Rect(Screen.width - width - 12f, 144f, width, Mathf.Min(370f, Screen.height - 156f));
+            if (Screen.height - resultTop < 48f) return;
+            var rect = new Rect(Screen.width - width - 12f, resultTop, width, Mathf.Min(370f, Screen.height - resultTop - 12f));
             GUI.Box(rect, GUIContent.none);
             GUILayout.BeginArea(new Rect(rect.x + 8f, rect.y + 8f, rect.width - 16f, rect.height - 16f));
             _scroll = GUILayout.BeginScrollView(_scroll); GUILayout.Label(ResultText(_service.LastResult), _style);

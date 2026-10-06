@@ -273,6 +273,7 @@ namespace ZeroStarRestaurant.Editor
 
                 M8ProcurementBuilder.ConfigureScene(scene);
                 M9RestaurantLayoutBuilder.ConfigureScene(scene);
+                M10CustomerQueueBuilder.ConfigureScene(scene);
 
                 if (!EditorSceneManager.SaveScene(scene, ScenePath))
                     throw new InvalidOperationException("Could not save the prototype scene.");

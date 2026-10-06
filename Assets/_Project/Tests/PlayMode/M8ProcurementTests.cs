@@ -203,7 +203,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1350));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Select(item => item.InstanceId),
                 Is.EqualTo(originalStates.Select(item => item.InstanceId)));
-            Assert.That(Components<CustomerDishCarrier>().Single().Dish, Is.SameAs(dish));
+            Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
             Assert.That(_service.TryDeliver(dish), Is.False); Components<DeliveryZone>().Single().Poll();
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1350));
             _service.Advance(10); _service.Advance(100); yield return null;

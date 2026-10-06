@@ -8348,6 +8348,7 @@ GameObject:
   - component: {fileID: 999010031}
   - component: {fileID: 999010030}
   - component: {fileID: 999010029}
+  - component: {fileID: 1163158815}
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -8384,6 +8385,8 @@ MonoBehaviour:
   _customer: {fileID: 999010035}
   _dishCarrier: {fileID: 999020001}
   _foodSimulation: {fileID: 1710634242}
+  _queue: {fileID: 1163158815}
+  _advanceAutomatically: 1
   _developmentInitialBalanceCents: 1000
   _forceNextOfferIndex: -1
 --- !u!4 &999010031
@@ -8409,6 +8412,7 @@ Transform:
   - {fileID: 999010017}
   - {fileID: 784898463}
   - {fileID: 557383307}
+  - {fileID: 2081385493}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &999010032
@@ -8456,6 +8460,7 @@ GameObject:
   - component: {fileID: 999010036}
   - component: {fileID: 999010035}
   - component: {fileID: 999020001}
+  - component: {fileID: 999020004}
   m_Layer: 0
   m_Name: CustomerPlaceholder
   m_TagString: Untagged
@@ -13717,3 +13722,74 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &999020004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb616118f3504f5cb23eb62087e79def, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Customers.QueuedCustomer
+  _movement: {fileID: 999010035}
+  _dishCarrier: {fileID: 999020001}
+  _initialPatienceSeconds: 180
+--- !u!114 &1163158815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd0107c8ac65497e88bc85eb16af2d20, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Customers.CustomerQueueController
+  _template: {fileID: 999020004}
+  _queuePoints:
+  - {fileID: 999010033}
+  - {fileID: 1391440854}
+  - {fileID: 1047456450}
+  - {fileID: 1062044310}
+  _entrancePath:
+  - {fileID: 999010010}
+  - {fileID: 999010006}
+  _servicePosition: {fileID: 999010033}
+  _customersRoot: {fileID: 2081385493}
+  _capacity: 4
+  _arrivalIntervalSeconds: 3
+--- !u!1 &2081385492
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2081385493}
+  m_Layer: 0
+  m_Name: QueuedCustomers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2081385493
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2081385492}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 999010031}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -13,6 +13,21 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField] private Transform[] _departurePath = Array.Empty<Transform>();
         private Vector3[] _targets = Array.Empty<Vector3>();
         private int _targetIndex;
+        public Vector3 EntryPosition => _entryPoint.position;
+        public void BeginQueueEntering(int customerNumber, Transform[] approach, Transform queuePoint)
+        {
+            _targets = new Vector3[approach.Length + 1];
+            for (int index = 0; index < approach.Length; index++) _targets[index] = approach[index].position;
+            _targets[approach.Length] = queuePoint.position;
+            _targetIndex = 0; transform.position = _entryPoint.position;
+            gameObject.name = "Customer #" + customerNumber.ToString("D3"); gameObject.SetActive(true);
+        }
+        public void RetargetQueuePoint(Transform queuePoint)
+        {
+            // An entrant keeps its unfinished approach, including the doorway and corner.
+            if (_targetIndex < _targets.Length) _targets[_targets.Length - 1] = queuePoint.position;
+            else { _targets = new[] { queuePoint.position }; _targetIndex = 0; }
+        }
         public bool HasValidRoute
         {
             get
