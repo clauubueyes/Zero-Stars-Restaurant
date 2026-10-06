@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M5. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M6. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -34,7 +34,12 @@ Ver `Docs/M4.md` y ADR 0005 en la raíz.
 M5 añade `Scripts/Domain/Dishes`, `Scripts/Runtime/Dishes`, dos definiciones de
 reconocimiento en `ScriptableObjects/Dishes`, tres bandejas, diez provisiones y
 un material de color. El plato final mantiene FoodItems/estados originales con
-un proxy físico único. Ver `Docs/M5.md` y ADR 0006 en la raíz. Sin clientes ni M6.
+un proxy físico único. Ver `Docs/M5.md` y ADR 0006 en la raíz.
+M6 añade `Scripts/Domain/Customers`, `Orders`, `Economy` y adaptadores en
+`Scripts/Runtime/Customers` y `Orders`. `ScriptableObjects/Customers/CustomerService`
+configura menú, precios y tiempos; dos materiales simples y `CustomerServiceZone`
+añaden cliente de primitivas, ruta y pad de entrega. Sin generación automática de
+comida ni otro reloj. Ver `Docs/M6.md` y ADR 0007. Sin sistemas M7.
 Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

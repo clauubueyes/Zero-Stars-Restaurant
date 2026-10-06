@@ -1,9 +1,12 @@
 # Vertical slice y roadmap
 
-Estado actual: **M0–M4 aprobados; M5 implementado, aceptación manual pendiente**.
-Ver [M1](M1.md), [M2](M2.md), [M3](M3.md), [M4](M4.md) y [M5 y su validación](M5.md).
-M6–M8 siguen pendientes. La subdivisión siguiente sigue siendo M6 pedido,
-M7 entrega/pago y M8 integración; esta tarea no las implementa.
+Estado actual: **M0–M5 y feedback aprobados; M6 implementado, aceptación manual pendiente**.
+Ver [M1](M1.md), [M2](M2.md), [M3](M3.md), [M4](M4.md), [M5](M5.md) y [M6](M6.md).
+La petición aprobada de M6 amplía su alcance a Customer Order → Delivery → Payment
+y sustituye la división anterior M6 pedido/M7 entrega-pago. También sustituye el
+rechazo por Raw/Burnt/calidad: ahora calidad y corrección se informan separadamente,
+y solo la coincidencia estructural controla aceptación/pago. Ver ADR 0007.
+M7 no se ha implementado ni autorizado; su alcance deberá acordarse después de M6.
 
 ## Experiencia objetivo
 
@@ -11,7 +14,7 @@ M7 entrega/pago y M8 integración; esta tarea no las implementa.
 
 En una sala pequeña hecha de primitivas, el jugador recoge una porción, la coloca
 en una estación de calor, la retira cocinada, la añade a un plato, consulta un
-pedido, lo entrega a un cliente estático y recibe dinero. El flujo ocurre desde
+pedido, lo entrega a un cliente de primitivas y recibe dinero. El flujo ocurre desde
 primera persona y da feedback visible para cada acción o rechazo.
 
 ## Alcance mínimo y decisiones de prueba
@@ -31,11 +34,11 @@ primera persona y da feedback visible para cada acción o rechazo.
   no exige receta, slots exactos ni una malla concreta. M5 reconoce pilas aproximadas
   Hamburger/Cheeseburger por datos, y permite Custom Dish para cualquier otra
   composición no vacía; orden/pila y transporte según [ADR 0006](Decisions/0006-physical-dish-assembly.md).
-  Reconocer no aplica aún criterios de pedido o comestibilidad. Para este
-  pedido basta contener una porción cocinada del tipo solicitado y que todas las
-  porciones del plato sean comestibles. Raw y Burnt se rechazan.
-- Pedido fijo de desarrollo, con importe configurable; valor inicial de prueba
-  **500 céntimos**. Entrega válida cobra una vez; los rechazos no consumen el plato
+  Reconocer no implica seguridad. En M6 el ID de plato reconocido debe coincidir
+  con el solicitado; Raw/Burnt/Rotten/contaminado no invalidan la coincidencia ni pago.
+- Menú configurable Hamburger (**500 céntimos**) y Cheeseburger (**650 céntimos**),
+  alternados por visita con override de desarrollo para el siguiente cliente.
+  Entrega válida cobra una vez; los rechazos no consumen el plato
   ni cambian el saldo. Entrega/pago deben ser una operación coherente sin estados
   parciales si se repite el input.
 
@@ -66,8 +69,8 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M3 · `feature/food-state` | Tres definiciones y cuatro alimentos físicos; Domain independiente de Unity, deterioro/temperatura e inspección provisional. | Dos porciones comparten definición pero no estado; recoger/soltar/lanzar conserva identidad y no muta el asset. Frescura 0–100 y transiciones por umbrales; temperatura por unidad y grandes saltos temporales deterministas. Fixture fresca/envejecida/fría/contaminada y aceleración solo de desarrollo. Tests EditMode/PlayMode y regresión M1/M2 según M3.md; sin cocción. |
 | M4 · `feature/basic-cooking` | Plancha física con varias porciones, temperatura y cocción continua separada de deterioro. | Raw → Undercooked → Cooked → Overcooked → Burnt por dosis térmica configurable; carne cocinable, pan/queso no. Calentamiento hacia plancha y enfriamiento hacia ambiente; retirar pausa dosis, volver conserva estado. Zona física sin registros obsoletos/duplicados; tests de saltos grandes, umbrales, contaminación, carne podrida, ciclo de vida y regresiones M1–M3 según M4.md. Sin platos. |
 | M5 · `feature/dish-assembly` | Montaje físico libre, identidad y estado real por ingrediente; reconocimiento data-driven y plato final manipulable. | Añadir/retirar/reorganizar por colocación, pertenencia exclusiva e IDs propios; pila ordenada reconoce Hamburger/Cheeseburger, otras combinaciones son Custom Dish. Confirmar no permite vacío ni duplicación; conserva referencias, estado, orden y datos agregados vivos. Proxy físico transporta sin dispersar ingredientes. Tests Domain/PlayMode e integración Pickup→Cooking→Assembly según M5.md; sin clientes/pedidos/pagos. |
-| M6 · `feature/customer-order` | Cliente estático y un pedido legible con requisito e importe. | Consultar pedido desde primera persona; validar por datos: vacío/Raw/Burnt fallan y contenido comestible que satisface el pedido pasa. No requiere navegación ni IA. Tests de predicado de aceptación. |
-| M7 · `feature/delivery-payment` | Entrega, cierre del pedido y saldo visible. | Inicio 0; entrega válida suma 500 céntimos, consume la entrega y cierra el pedido; volver a pulsar no duplica pago. Rechazo conserva plato/pedido/saldo. Test de entrega/pago y reentrada o doble solicitud. |
+| M6 · `feature/customer-service-loop` | Un cliente móvil por ruta, pedido, entrega física, evaluación separada y pago. | Enter → Order → Wait → Receive → Evaluate → Pay/Reject → Leave; pedido con ID independiente y menú configurable/forzable. Solo Dish final suelto/intacto apoyado se evalúa. Coincidencia paga 500/650 céntimos una vez, retira originales del reloj y destruye vendido; incorrecto/Custom conserva plato y cierra visita sin cobrar. Calidad no afecta pago. Recibo con IDs/ingredientes/frescura/cocción/contaminación/coste, saldo 0 inicial y siguiente cliente con delay. Tests Domain, físicos e integración/regresiones según M6.md. |
+| M7 · por acordar | Trabajo posterior exclusivamente con nueva autorización. | Entrega/pago básicos están en M6. No se anticipan reputación, seguridad alimentaria, colas, stock, guardado u otros sistemas. |
 | M8 · `fix/vertical-slice-integration` | Ciclo completo y revisión de fallos, sin sistemas nuevos. | Ejecutar el recorrido de abajo, repetir desde una nueva sesión y comprobar que las vistas son sustituibles. Console sin errores propios; build de desarrollo local si están instalados sus módulos. |
 
 ## Recorrido de aceptación del slice
@@ -77,12 +80,15 @@ dividirlo manteniendo un resultado comprobable en cada paso.
    completo para comprobar esta condición de la fixture.
 2. Leer el pedido del cliente. Recoger y soltar una porción; su identidad/estado
    permanece estable y solo existe en una ubicación.
-3. Intentar entregar un plato vacío o con porción cruda: feedback de rechazo,
-   pedido activo y saldo 0. El plato y su contenido permanecen disponibles.
-4. Cocinar una porción en el hornillo; retirarla al estado Cooked y montarla en el
-   plato. En una porción distinta, esperar hasta Burnt y comprobar rechazo.
-5. Entregar el plato correcto: pedido finalizado y saldo 5 €. Repetir la acción
-   inmediatamente varias veces; el saldo sigue siendo 5 €.
+3. Dejar una caja, ingrediente o bandeja sin confirmar en DeliveryPad: se ignora,
+   pedido sigue esperando y saldo cero. Entregar un Dish incorrecto o Custom: se
+   rechaza, conserva plato, no cobra y el cliente sale; llega otro tras el intervalo.
+4. Cocinar una porción real, retirarla Cooked y montar el pedido. Probar por separado
+   Burnt, Rotten cocinado y contaminado dentro de un Dish estructuralmente correcto:
+   Correct order YES; estado peligroso visible por separado, pago completo.
+5. Confirmar F, recoger E, llevar físicamente al pad verde y depositar G. Correcto
+   cobra 5 € o 6,50 € según menú; vendido se retira y cliente sale. Consultas repetidas
+   no vuelven a pagar. Retirar un rechazado antes de ofrecerlo a otro cliente.
 6. Detener y volver a iniciar Play: nueva sesión con 0 €, pedido y provisiones
    restaurados, sin cambios persistentes en los ScriptableObjects.
 7. Cambiar solo la geometría/material de un placeholder (por ejemplo esfera por

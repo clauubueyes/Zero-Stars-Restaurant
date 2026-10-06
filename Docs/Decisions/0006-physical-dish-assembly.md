@@ -1,6 +1,6 @@
 # ADR 0006: composición física, identidad y plato agregado M5
 
-Fecha: 2026-10-06. Estado: implementada; aceptación manual pendiente.
+Fecha: 2026-10-06. Estado: implementada y validada con feedback en `6a3ca72`.
 
 ## Contexto
 

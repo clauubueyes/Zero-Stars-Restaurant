@@ -34,6 +34,12 @@ M2 aprobado termina en `14e0575`. M3 parte de ese commit, sin merge previo:
 git switch -c feature/food-state 14e0575
 ```
 
+M5 y su feedback aprobados terminan en `6a3ca72`; M6 parte exactamente de él:
+
+```powershell
+git switch -c feature/customer-service-loop 6a3ca72
+```
+
 No hay remoto, CI ni protección de ramas del servidor configurados: la estabilidad
 de main depende de seguir este flujo local hasta conectar un remoto.
 
@@ -101,6 +107,11 @@ reutiliza configuración de assets; los controles de Inspector son de desarrollo
 Para M5, seguir [montaje físico y plato agregado](M5.md). El generador añade tres
 estaciones y provisiones, preserva definiciones y GUID existentes. Confirmar no
 crea copias de alimentos ni otro driver. Revisar pertenencia, orden y transporte.
+Para M6, seguir [servicio y pago](M6.md). El generador conserva M1–M5 y añade
+CustomerServiceZone; reutiliza CustomerService.asset, definiciones y materiales.
+Validar entrega física suelta, correcto/incorrecto, calidad separada, venta una vez,
+retirada del reloj y siguiente cliente. El recibo conserva datos del instante de
+entrega; el plato rechazado sigue vivo. No confundirlos ni avanzar comida desde NPCs.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

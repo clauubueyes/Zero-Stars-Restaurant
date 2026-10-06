@@ -3,8 +3,8 @@
 Estado: M1 implementa jugador FPS; M2 interacción genérica y agarre físico;
 M3 añade definiciones y estado de alimentos, deterioro y temperatura en Domain,
 adaptadores Unity e inspección. M4 añade fuente física y cocción térmica.
-M5 añade montaje libre y transporte de platos. Los sistemas de clientes/pedidos
-y pagos siguen pendientes.
+M5 añade montaje libre y transporte de platos; M5 y su feedback están aprobados.
+M6 añade un cliente activo, pedidos, entrega física, evaluación y pago. M7 pendiente.
 
 ## Dependencias y responsabilidades
 
@@ -19,7 +19,7 @@ Editor y Tests → código del juego; el juego no depende de Editor o Tests
 
 **Domain** contiene estado y reglas que pueden evaluarse sin una escena. No usa
 `GameObject`, `Transform`, `Renderer`, `MonoBehaviour`, `Time` ni APIs del Editor.
-Ejemplos futuros: progreso de cocción de una porción, contenido de un plato,
+Ejemplos implementados: progreso de cocción de una porción, contenido de un plato,
 validación de pedido y saldo. El tiempo se pasa explícitamente a las operaciones;
 las reglas no dependen de un Update oculto para poder probar umbrales.
 
@@ -72,11 +72,12 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-M1–M5 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
+M1–M6 incluyen `PrototypeRestaurant.unity`, tres materiales greybox, cuatro de
 cajas físicas y tres de alimentos, todos URP/Lit simples. M3 crea tres
 ScriptableObjects FoodDefinition. M4 añade un material de plancha y cuatro carnes.
 M5 añade dos definiciones de reconocimiento, un material de bandeja, tres
-estaciones y diez suministros. Todavía no hay prefabs propios.
+estaciones y diez suministros. M6 añade dos materiales, configuración de servicio
+y una raíz CustomerServiceZone; conserva toda la geometría M1–M5. Sin prefabs propios.
 
 ## Assemblies y tests al implementar
 
@@ -204,7 +205,7 @@ DishDefinition → DishProfile (secuencia de IDs, requisito de pila)
 FoodState      → Guid de unidad y pertenencia exclusiva de montaje
 DishState      → referencias ordenadas a FoodState + consultas agregadas vivas
 AssemblySurface → consulta física + orden aproximado → composición de borrador
-E (M2)          → confirmar → DishItem con proxy físico + Pickup genérico
+F / E sobre bandeja → confirmar → DishItem con proxy físico + Pickup genérico
 FoodSimulation → mismas unidades originales, único reloj antes/después de confirmar
 ```
 
@@ -216,6 +217,48 @@ existiendo como hijos del agregado con físicas individuales retiradas; el proxy
 lleva el conjunto. No hay sustitución por prefab de hamburguesa, inventario o
 save system. IDs de unidades/platos son distintos de IDs de definiciones.
 Ver [ADR 0006](Decisions/0006-physical-dish-assembly.md) y [M5](M5.md).
+
+## Servicio M6
+
+```text
+CustomerServiceConfiguration → OrderOffer (DishProfile + precio en céntimos)
+CustomerVisit → OrderState (IDs distintos y estado de cada visita/pedido)
+CustomerMovement ← ruta explícita, sin reglas de alimentos
+DeliveryZone → DishItem final, suelto, intacto, apoyado y suficientemente lento
+CustomerServiceLoop → OrderDelivery → OrderEvaluation + PaymentLedger
+OrderEvaluation → DishSnapshot → IngredientSnapshot de unidades originales
+OrderFeedback ← pedido/visita/saldo y último resultado histórico
+```
+
+CustomerVisit valida las transiciones Enter → Order → Wait → Receive → Evaluate
+→ Pay/Reject → Leave → Finished. Movement solo mueve el placeholder; el coordinador
+crea un pedido por visita, consume tiempos de configuración y nunca prepara platos.
+Receive/Evaluate son fases síncronas de la transacción; Pay/Reject dura 4 s por defecto.
+Máximo un cliente/pedido activo; tras salir se reutiliza el placeholder con nuevas
+identidades y un intervalo de 3 s. Menú alternado, con override de desarrollo una vez.
+
+Corrección compara ID reconocido de DishDefinition; no mira nombre, malla, color,
+frescura, contaminación ni CookingStage. Estos datos aparecen por separado en el
+resultado. Pedido correcto paga el precio completo incluso Raw/Burnt/Rotten;
+incorrecto o Custom Dish paga cero, termina visita y conserva plato vivo.
+
+OrderDelivery captura evidencia primero y registra una única transacción síncrona:
+solo tras validar IDs/duplicados/overflow modifica saldo, marca vendido y cierra
+pedido. PaymentLedger usa long en céntimos, sin conocer alimentos/cocción. Un fallo
+de transacción deja pedido y plato disponibles. No hay soporte multihilo/persistencia.
+
+DishState mantiene referencias vivas M5 hasta la venta. Las snapshots de M6 son
+evidencia histórica inmutable del instante de entrega, con los mismos IDs, perfiles,
+estado y coste, independiente del posterior deterioro o destrucción. Después de
+cobrar, Runtime desregistra los FoodItems del único FoodSimulation, desactiva y
+destruye el agregado. No quedan objetos vendidos ni referencias Unity en recibos.
+Los IDs procesados se conservan en el ledger de la sesión para impedir doble pago.
+
+DeliveryZone consulta volumen actual, ignora ingredientes/cajas/borradores/manos
+ocupadas y exige apoyo en el pad. Una colocación rechazada se registra hasta retirar
+o recoger el plato: evita venderlo involuntariamente al siguiente cliente. No exige
+una nueva tecla, input o dependencia. Ver [ADR 0007](Decisions/0007-customer-delivery-payment.md)
+y [M6](M6.md).
 
 ## Convenciones prácticas
 

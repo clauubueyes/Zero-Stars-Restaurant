@@ -9,12 +9,15 @@
   sanitarias, crimen, policía, empleados y eventos dinámicos.
 - Primer vertical slice:
   `Player → Interaction → Food → Cooking → Dish Assembly → Customer Order → Delivery → Payment`.
-- M0–M4 están aprobados. M1 añade jugador FPS y escena greybox; ver `Docs/M1.md`.
+- M0–M5 y la corrección de feedback están aprobados (`6a3ca72`).
+  M1 añade jugador FPS y escena greybox; ver `Docs/M1.md`.
   M2 añade interacción genérica y Pickup físico; ver `Docs/M2.md` y ADR 0003.
   M3 añade alimentos, estado independiente, deterioro y temperatura; ver `Docs/M3.md`
   y ADR 0004. M4 añade plancha física y cocción térmica independiente; ver `Docs/M4.md`
   y ADR 0005. M5 añade composición libre, reconocimiento y plato agregado; ver
-  `Docs/M5.md` y ADR 0006. M6 y los sistemas posteriores no están implementados.
+  `Docs/M5.md` y ADR 0006. M6 implementa un cliente activo, pedido, entrega física,
+  evaluación independiente de calidad y pago; ver `Docs/M6.md` y ADR 0007.
+  M7 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -80,6 +83,13 @@
   DishState contiene referencias originales, con pertenencia exclusiva y orden.
   Confirmar bloquea composición pero conserva estado vivo; el agregado físico no
   recrea alimentos. Reconocimiento no implica comestibilidad. Respetar ADR 0006.
+- M6: pedido correcto compara ID de DishDefinition; calidad/cocción no bloquean
+  aceptación ni pago. Precios de configuración en céntimos enteros; saldo de sesión
+  empieza en cero. OrderDelivery cierra/paga una vez, DishState.IsSold evita reventa.
+  Evaluación conserva evidencia inmutable de entrega con IDs originales; el plato
+  vivo M5 mantiene sus referencias hasta la venta. Desregistrar alimentos vendidos
+  del único FoodSimulation antes de destruir el agregado. Rechazo conserva el plato
+  y termina la visita; retirar/recoger antes de ofrecerlo al siguiente cliente.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.

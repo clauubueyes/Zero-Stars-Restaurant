@@ -9,7 +9,8 @@ genérica y cuatro cajas físicas para coger, transportar, soltar y lanzar. M3 a
 alimentos con estado independiente, deterioro temporal y temperatura, inspeccionables
 con feedback de desarrollo. M4 añade una plancha física con cocción térmica;
 M5 añade montaje libre, reconocimiento de platos y transporte agregado.
-Clientes, pedidos y pagos siguen pendientes.
+M6 cierra el ciclo con un cliente activo, pedido visible, entrega física,
+evaluación y pago en céntimos. M7 sigue pendiente.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
@@ -42,6 +43,13 @@ La escena de plantilla
    pila muestra `Recognized: Hamburger` y **F** confirma con manos libres.
    E sobre bandeja/pestaña también confirma; el plato final se recoge con E.
    Ver [M5](Docs/M5.md) para orden de pila, reconocimiento y pruebas manuales.
+10. Al entrar el cliente, el panel derecho muestra pedido y saldo **€0.00**.
+    Con el plato final sostenido, ir por detrás del mostrador, al pad verde
+    `CustomerServiceZone/DeliveryPad`, mirar ligeramente hacia arriba para elevar
+    el conjunto y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
+    **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
+    Calidad no afecta al cobro M6. Resultado visible; el cliente sale y el siguiente
+    aparece 3 s después de completar la salida. Ver [M6](Docs/M6.md) para casos y límites.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -83,6 +91,8 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión sobre fuente térmica y cocción](Docs/Decisions/0005-thermal-cooking.md).
 - [M5: montaje, reconocimiento, transporte y validación](Docs/M5.md).
 - [Decisión sobre composición física e identidad](Docs/Decisions/0006-physical-dish-assembly.md).
+- [M6: cliente, pedido, entrega, evaluación, pago y comprobación](Docs/M6.md).
+- [Decisión sobre transacción y separación de calidad](Docs/Decisions/0007-customer-delivery-payment.md).
 
 `main` conserva el proyecto original como baseline. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -90,4 +100,5 @@ M2 parte de M1 aprobado en `feature/world-interaction`.
 M3 parte de M2 aprobado (`14e0575`) en `feature/food-state`.
 M4 parte de M3 aprobado (`307174a`) en `feature/basic-cooking`.
 M5 parte de M4 aprobado (`d7eb2bf`) en `feature/dish-assembly`.
+M6 parte de M5 y feedback aprobados (`6a3ca72`) en `feature/customer-service-loop`.
 No hay remoto configurado y no se ha integrado en main; los commits son locales.

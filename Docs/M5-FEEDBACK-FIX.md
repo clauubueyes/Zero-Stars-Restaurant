@@ -1,6 +1,7 @@
 # M5: corrección de reconocimiento y confirmación durante montaje
 
-Rama `fix/m5-assembly-feedback`, desde `1071d68`. Sin merge/push ni M6.
+Rama `fix/m5-assembly-feedback`, desde `1071d68`. Validada por el usuario
+en `6a3ca72`, base aprobada de M6. Sin merge/push ni M6 en esta corrección.
 El working tree estaba limpio al comenzar. Unity 6000.5.3f1, URP 17.5.0,
 Input System 1.19.0 y Test Framework 1.7.0; sin actualizar dependencias/settings.
 
