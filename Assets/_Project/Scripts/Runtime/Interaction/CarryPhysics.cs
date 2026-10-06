@@ -5,6 +5,13 @@ namespace ZeroStarRestaurant.Interaction
     // Bounded, deterministic calculations; no input, renderer or physics queries.
     public static class CarryPhysics
     {
+        public static Vector3 NaturalReleaseVelocity(Vector3 bodyVelocity, Vector3 handVelocity,
+            float maximumRestingSpeed, float maximumMovingSpeed)
+        {
+            // Acquisition correction is not a throw. Movement only preserves already acquired momentum.
+            float limit = handVelocity.sqrMagnitude > .25f ? maximumMovingSpeed : maximumRestingSpeed;
+            return Vector3.ClampMagnitude(bodyVelocity, Mathf.Max(0f, limit));
+        }
         public static Vector3 FollowVelocity(Vector3 current, Vector3 error, float gain,
             float maximumSpeed, float maximumForce, float mass, float deltaTime)
         {

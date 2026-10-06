@@ -35,6 +35,17 @@ namespace ZeroStarRestaurant.Interaction
             return target != null && target.TryInteract(Context);
         }
 
+        public bool TryGrabPhysical()
+        {
+            // Mouse never invokes purchases, finalization or other contextual actions.
+            return isActiveAndEnabled && FindAvailableTarget() is Pickup pickup && pickup.TryInteract(Context);
+        }
+
+        public void ReleaseFromMouse()
+        {
+            if (_carry != null) _carry.ReleaseFromMouse();
+        }
+
         public void Drop()
         {
             if (isActiveAndEnabled && _carry != null)

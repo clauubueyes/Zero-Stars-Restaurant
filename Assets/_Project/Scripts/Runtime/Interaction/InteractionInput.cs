@@ -12,6 +12,9 @@ namespace ZeroStarRestaurant.Interaction
         private InputAction _interact;
         private InputAction _drop;
         private InputAction _throw;
+        private InputAction _physicalHold;
+        private bool _mouseHolding, _hadControl;
+        public bool IsMouseHolding => _mouseHolding && _interaction != null && _interaction.HasHeldObject;
 
         public string InteractBinding => BindingLabel(_interact);
         public string DropBinding => BindingLabel(_drop);
@@ -35,6 +38,7 @@ namespace ZeroStarRestaurant.Interaction
             _interact = _ownedActions.FindAction("Player/Interact");
             _drop = _ownedActions.FindAction("Player/Drop");
             _throw = _ownedActions.FindAction("Player/Throw");
+            _physicalHold = new InputAction("PhysicalHold", InputActionType.Button, "<Mouse>/leftButton");
             if (_interact == null || _drop == null || _throw == null)
             {
                 Debug.LogError("Interaction input needs Player/Interact, Player/Drop and Player/Throw.", this);
@@ -47,17 +51,21 @@ namespace ZeroStarRestaurant.Interaction
             if (_interact == null || _drop == null || _throw == null)
                 return;
             _interact.Enable(); _drop.Enable(); _throw.Enable();
+            _physicalHold?.Enable();
         }
 
         private void OnDisable()
         {
             _ownedActions?.Disable();
+            _physicalHold?.Disable();
+            _mouseHolding = false; _hadControl = false;
             if (_interaction != null)
                 _interaction.Drop();
         }
 
         private void OnDestroy()
         {
+            _physicalHold?.Dispose();
             if (_ownedActions != null)
                 Destroy(_ownedActions);
         }
@@ -65,11 +73,26 @@ namespace ZeroStarRestaurant.Interaction
         private void Update()
         {
             if (!_interaction.HasControl)
-                return;
+            {
+                if (_mouseHolding) _interaction.Drop();
+                _mouseHolding = false; _hadControl = false; return;
+            }
+            bool canGrab = _hadControl;
+            _hadControl = true;
+            if (UpdateMouseHold(canGrab && !_drop.WasPressedThisFrame() && !_interact.WasPressedThisFrame())) return;
             // One intent per frame. A simultaneous drop/throw cannot also grab a new object.
-            if (_throw.WasPressedThisFrame()) _interaction.Throw();
-            else if (_drop.WasPressedThisFrame()) _interaction.Drop();
+            // Legacy Throw remains callable for development; release is the primary mouse path.
+            if (_drop.WasPressedThisFrame()) { _interaction.Drop(); _mouseHolding = false; }
             else if (_interact.WasPressedThisFrame()) _interaction.TryInteract();
+        }
+
+        private bool UpdateMouseHold(bool canGrab)
+        {
+            if (_mouseHolding && !_physicalHold.IsPressed())
+            { _interaction.ReleaseFromMouse(); _mouseHolding = false; return true; }
+            if (!canGrab || !_physicalHold.WasPressedThisFrame()) return false;
+            _mouseHolding = _interaction.HasHeldObject || _interaction.TryGrabPhysical();
+            return _mouseHolding;
         }
     }
 }

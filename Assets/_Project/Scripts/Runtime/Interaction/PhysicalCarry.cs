@@ -27,6 +27,8 @@ namespace ZeroStarRestaurant.Interaction
         private BodySettings _saved;
         private readonly List<CollisionPair> _ignoredPairs = new List<CollisionPair>();
         private Collider[] _objectColliders;
+        private Vector3 _lastTarget;
+        private Vector3 _handVelocity;
 
         public bool HasHeldObject
         {
@@ -68,6 +70,8 @@ namespace ZeroStarRestaurant.Interaction
                 return false;
 
             _held = pickup;
+            _lastTarget = initialTarget;
+            _handVelocity = Vector3.zero;
             _body = pickup.Body;
             _radius = radius;
             _boundsOffset = bounds.center - _body.position;
@@ -97,6 +101,7 @@ namespace ZeroStarRestaurant.Interaction
 
         public void Drop() => Release(false);
         public void Throw() => Release(true);
+        public void ReleaseFromMouse() => Release(false, true);
 
         internal void ReleaseIfHeld(Pickup pickup)
         {
@@ -116,6 +121,8 @@ namespace ZeroStarRestaurant.Interaction
                 return;
             }
             Vector3 error = target - (_body.position + _boundsOffset);
+            _handVelocity = Vector3.Lerp(_handVelocity, (target - _lastTarget) / Time.fixedDeltaTime, .5f);
+            _lastTarget = target;
             if (error.sqrMagnitude > _allowedTargetError * _allowedTargetError)
             {
                 Release(false);
@@ -161,7 +168,7 @@ namespace ZeroStarRestaurant.Interaction
             return collider.attachedRigidbody != item && !collider.transform.IsChildOf(_actorRoot);
         }
 
-        private void Release(bool thrown)
+        private void Release(bool thrown, bool natural = false)
         {
             Rigidbody body = _body;
             Pickup pickup = _held;
@@ -173,7 +180,8 @@ namespace ZeroStarRestaurant.Interaction
                 _saved.Restore(body);
                 if (!body.isKinematic && body.gameObject.activeInHierarchy)
                 {
-                    body.linearVelocity = CarryPhysics.ReleaseVelocity(velocity,
+                    body.linearVelocity = natural ? CarryPhysics.NaturalReleaseVelocity(velocity, _handVelocity,
+                        _maximumDropSpeed, _maximumHoldSpeed) : CarryPhysics.ReleaseVelocity(velocity,
                         thrown && _viewTransform != null ? _viewTransform.forward : Vector3.zero,
                         thrown ? _throwImpulse : 0f, body.mass, _maximumDropSpeed, _maximumThrowSpeed);
                     body.angularVelocity = Vector3.zero;
