@@ -11,6 +11,7 @@ namespace ZeroStarRestaurant.Dishes
         public IReadOnlyList<FoodState> Components { get; }
         public Guid? InstanceId => IsFinalized ? _ownershipId : (Guid?)null;
         public bool IsFinalized { get; private set; }
+        public bool IsSold { get; private set; }
         public bool IsDisposed { get; private set; }
         public bool IsStack { get; private set; }
         public DishProfile RecognizedDefinition { get; private set; }
@@ -102,6 +103,8 @@ namespace ZeroStarRestaurant.Dishes
             IsFinalized = true;
             return true;
         }
+
+        internal void MarkSold() => IsSold = true;
 
         public void Dispose()
         {
