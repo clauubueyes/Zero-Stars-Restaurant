@@ -29,10 +29,11 @@ namespace ZeroStarRestaurant.Tests
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity",
                 new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Components<DevelopmentIngredientSupply>().Single().EnableForDevelopment();
             Components<FirstPersonController>().Single().enabled = false;
             Components<FoodSimulation>().Single().enabled = false;
             _service = Components<CustomerServiceLoop>().Single();
-            Assert.That(_service.Ledger.BalanceCents, Is.Zero);
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1000));
             _service.Advance(1); _service.Advance(100); _service.Advance(1);
             Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
         }
@@ -93,7 +94,7 @@ namespace ZeroStarRestaurant.Tests
             carry.Drop(); for (int frame = 0; frame < 75; frame++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult?.Accepted, Is.True,
                 dish == null ? "Dish removed without result" : "Unprocessed dish at " + dish.GetComponent<BoxCollider>().bounds);
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1500));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(id));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Any(food => food.InstanceId == pattyId), Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(18));

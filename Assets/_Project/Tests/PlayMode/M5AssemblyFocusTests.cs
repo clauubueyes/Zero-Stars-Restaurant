@@ -35,6 +35,7 @@ namespace ZeroStarRestaurant.Tests
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity",
                 new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Components<DevelopmentIngredientSupply>().Single().EnableForDevelopment();
             _surface = Components<AssemblySurface>().OrderBy(surface => surface.name).First();
             _assembly = Components<DishAssemblyInteraction>().Single();
             _detector = Components<InteractionDetector>().Single();
