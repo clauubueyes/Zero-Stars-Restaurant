@@ -10,6 +10,7 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField] private Transform _entryPoint;
         [SerializeField] private Transform _exitPoint;
         [SerializeField] private Transform[] _arrivalPath = Array.Empty<Transform>();
+        [SerializeField] private Transform[] _departurePath = Array.Empty<Transform>();
         private Vector3[] _targets = Array.Empty<Vector3>();
         private int _targetIndex;
         public bool HasValidRoute
@@ -18,6 +19,8 @@ namespace ZeroStarRestaurant.Customers
             {
                 if (_entryPoint == null || _exitPoint == null || _arrivalPath == null || _arrivalPath.Length == 0) return false;
                 foreach (Transform point in _arrivalPath) if (point == null) return false;
+                if (_departurePath == null) return false;
+                foreach (Transform point in _departurePath) if (point == null) return false;
                 return true;
             }
         }
@@ -30,6 +33,16 @@ namespace ZeroStarRestaurant.Customers
         }
         public void BeginLeaving()
         {
+            if (_departurePath.Length > 0)
+            {
+                _targets = new Vector3[_departurePath.Length + 1];
+                for (int index = 0; index < _departurePath.Length; index++)
+                    _targets[index] = _departurePath[index].position;
+                _targets[_departurePath.Length] = _exitPoint.position;
+                _targetIndex = 0;
+                return;
+            }
+            // Existing M6 configurations can still retrace their arrival route.
             _targets = new Vector3[_arrivalPath.Length];
             for (int index = 0; index < _targets.Length - 1; index++)
                 _targets[index] = _arrivalPath[_arrivalPath.Length - 2 - index].position;
