@@ -1,0 +1,52 @@
+# Unity caches and local settings. Keep Assets (including .meta), Packages and ProjectSettings.
+/[Ll]ibrary/
+/[Tt]emp/
+/[Ll]ogs/
+[Oo]bj/
+/[Uu]ser[Ss]ettings/
+/[Bb]uild/
+/[Bb]uilds/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Tt]est[Rr]esults/
+
+# IDE state and Unity-generated solutions/projects.
+/.vs/
+/.vscode/
+/.idea/
+/.fleet/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.opendb
+*.VC.db
+*.pdb
+*.mdb
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+*.log
+
+# Crash reports and OS metadata.
+/sysinfo.txt
+/crash.dmp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Generated Unity services/Addressables data (source settings remain tracked).
+/Assets/StreamingAssets/aa/
+/Assets/StreamingAssets/aa.meta
+/Assets/AddressableAssetsData/*/*.bin*
+/Assets/AddressableAssetsData/*/*.bin*.meta
+/Assets/AddressableAssetsData/link.xml
+/Assets/AddressableAssetsData/link.xml.meta
+/Assets/AddressableAssetsData/AddressablesBuildTEP.json
+/Assets/AddressableAssetsData/AddressablesBuildTEP.json.meta
