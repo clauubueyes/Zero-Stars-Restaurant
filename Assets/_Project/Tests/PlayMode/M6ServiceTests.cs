@@ -384,6 +384,31 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_simulation.Foods, Is.Empty); Assert.That(dish == null, Is.True); // Native destruction at exit.
             _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
+        [UnityTest]
+        public IEnumerator DishAssembledDirectlyOnWorkbenchUsesTheSameDeliveryPaymentAndExitPipeline()
+        {
+            Ready(0);
+            FoodItem bottom = Food(_bun, _origin + Vector3.up * 1.01f);
+            FoodItem patty = Food(_beef, _origin + Vector3.up * 1.18f);
+            FoodItem top = Food(_bun, _origin + Vector3.up * 1.35f);
+            var assembly = Create("Physical Assembly", _origin).AddComponent<PhysicalDishAssembly>();
+            Set(assembly, "_simulation", _simulation); Set(assembly, "_definitions", new[] { _hamburger, _cheeseburger });
+            Assert.That(assembly.TryFinalize(top, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Assert.That(dish.State.DisplayName, Is.EqualTo("Hamburger"));
+            FoodState[] originals = { bottom.State, patty.State, top.State };
+            Assert.That(dish.State.Components, Is.EqualTo(originals));
+            var dishId = dish.State.InstanceId;
+            Place(dish); _delivery.Poll(); _delivery.Poll();
+            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+            Assert.That(_service.LastResult.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(dishId));
+            Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Select(food => food.InstanceId),
+                Is.EqualTo(originals.Select(food => food.InstanceId)));
+            Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(_simulation.Foods.Count, Is.EqualTo(3));
+            _service.Advance(10); _service.Advance(100); yield return null;
+            Assert.That(dish == null, Is.True); Assert.That(_simulation.Foods, Is.Empty);
+            _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+        }
+
         private static void Set(object target, string field, object value) => target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
     }
 }

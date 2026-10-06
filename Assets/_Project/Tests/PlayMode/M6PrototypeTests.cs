@@ -101,6 +101,9 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Any(food => food.InstanceId == pattyId), Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(18));
             Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
+            Assert.That(surface.Dish, Is.Not.SameAs(dish), "The departed sold dish leaves a fresh preparation tray.");
+            Assert.That(surface.Dish.State.Components, Is.Empty);
+            Assert.That(surface.Dish.State.IsFinalized, Is.False);
             Assert.That(dish.gameObject.activeInHierarchy, Is.True);
             var firstVisit = _service.Visit;
             Assert.That(_service.ForceNextOrder(1), Is.True);
