@@ -271,6 +271,8 @@ namespace ZeroStarRestaurant.Editor
                 RenderSettings.skybox = null;
                 RenderSettings.fog = false;
 
+                M8ProcurementBuilder.ConfigureScene(scene);
+
                 if (!EditorSceneManager.SaveScene(scene, ScenePath))
                     throw new InvalidOperationException("Could not save the prototype scene.");
                 Debug.Log("Prototype greybox saved: " + ScenePath);
