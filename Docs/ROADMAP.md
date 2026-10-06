@@ -1,7 +1,7 @@
 # Vertical slice y roadmap
 
-Estado actual: **M0 aprobado; M1 implementado, aceptación manual pendiente**.
-Ver [M1 y su validación](M1.md). M2–M8 siguen pendientes y no se implementan con M1.
+Estado actual: **M0 y M1 aprobados; M2 implementado, aceptación manual pendiente**.
+Ver [M1](M1.md) y [M2 y su validación](M2.md). M3–M8 siguen pendientes.
 
 ## Experiencia objetivo
 
@@ -54,7 +54,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | --- | --- | --- |
 | M0 · `feature/project-foundation` | Git, carpetas, documentación y plan. | Metas completas, fuentes y caches separados, sin cambios en gameplay/paquetes/configuración. Abrir SampleScene y comprobar carpetas/Console. |
 | M1 · `feature/player-controller` | Escena `PrototypeRestaurant`, suelo/paredes de primitivas, cámara y jugador. | WASD mueve y ratón mira; no atraviesa paredes; el cursor se captura/libera; entrar/salir de Play dos veces no duplica input. Cámara y velocidad configurables. Sin interacción todavía. |
-| M2 · `feature/world-interaction` | Raycast de alcance limitado, foco y acción de interacción; coger/soltar un cubo. | Mostrar prompt solo en objetivo válido; no actuar a través de paredes o fuera de alcance; transportar uno a la vez y soltarlo sin clipping inmediato. Revisar Interact/Hold del asset existente y documentar su ajuste. |
+| M2 · `feature/world-interaction` | Contrato genérico, raycast de alcance limitado y feedback; coger/transportar/soltar/lanzar cuatro cajas físicas. | Mostrar prompt y bindings solo con control/objetivo válido; paredes y alcance bloquean la acción; un agarre exclusivo; caminar/mirar sosteniendo; comparar masas/tamaños; limitar velocidades y liberar si falta espacio seguro o desaparece el objeto. Interact pasa de Hold a pulsación; Drop/Throw configurables. Tests deterministas, física PlayMode y aceptación manual según M2.md. |
 | M3 · `feature/food-state` | Definición mínima y estado independiente por porción; assembly Domain y tests de negocio. | Dos porciones de la misma definición no comparten estado; coger/soltar conserva instancia; no duplicar porciones; modificar un estado no modifica el ScriptableObject. Tests EditMode para independencia y pertenencia. |
 | M4 · `feature/basic-cooking` | Estación no eléctrica para una porción y progreso de cocción. | Raw → Cooked → Burned en umbrales configurados; retirar pausa el calor acumulado; volver a colocar continúa sin resetear; no cocina lejos de la estación. Tests con tiempo explícito antes/en/después del umbral y comprobación PlayMode de colocación. |
 | M5 · `feature/dish-assembly` | Plato con colección de porciones y montaje por interacción. | Una porción pasa de mano/estación al plato sin duplicarse; retirar conserva estado; plato vacío no entregable. Montar dos porciones en distinto orden conserva los mismos datos. Tests de pertenencia y composición. |

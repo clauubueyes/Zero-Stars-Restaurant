@@ -22,6 +22,12 @@ La foundation aprobada está en `feature/project-foundation`. M1 parte directame
 de ella, sin integrar en main. Para tareas posteriores, usar la rama o commit
 aprobado que incluya sus dependencias; partir de main solo cuando ya las contenga.
 No hacer merge o push salvo autorización de la tarea.
+M1 ya está aprobado. M2 se desarrolla desde esa rama:
+
+```powershell
+git switch -c feature/world-interaction feature/player-controller
+```
+
 No hay remoto, CI ni protección de ramas del servidor configurados: la estabilidad
 de main depende de seguir este flujo local hasta conectar un remoto.
 
@@ -37,7 +43,7 @@ git diff --cached --check
 git commit -m "feat: add first-person movement"
 ```
 
-La ruta de Player del ejemplo se creará en M1; no existe aún. Añadir también los
+La ruta de Player del ejemplo existe desde M1. Añadir también los
 metas de nuevas carpetas, assets y scripts. Los YAML generados por Unity pueden
 incluir espacios tras campos vacíos; identificar ese origen antes de reformatear
 un archivo entero. Revisar documentación/código propios sin esos espacios.
@@ -78,6 +84,8 @@ Referencia de Unity para metas: [uso de control de versiones externo](https://do
 Para M1, seguir [las instrucciones de jugador y greybox](M1.md). Hay pruebas
 propias en ambos modos del Test Runner. El generador no se ejecuta automáticamente
 al importar el proyecto y no cambia las escenas de Build Settings.
+Para M2, seguir [interacción física y límites](M2.md), incluyendo regresión M1.
+El menú actual del generador es **Zero Star Restaurant > Prototype > Rebuild Greybox Scene**.
 
 - Revisar los criterios de `ROADMAP.md` de la feature concreta y los errores de
   Console. Probar un caso válido y los rechazos que afecten al estado.

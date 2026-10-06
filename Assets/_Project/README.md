@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias, comenzando por el futuro `PrototypeRestaurant`. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1/M2. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -20,6 +20,9 @@ Las carpetas vacías contienen `.gitkeep` para que existan también tras clonar.
 M1 incluye `Scenes/PrototypeRestaurant.unity`, tres materiales greybox, controlador
 FPS en `Scripts/Runtime/Player`, generador de escena en Editor y tests EditMode y
 PlayMode. Domain, Prefabs y ScriptableObjects siguen reservados para tareas futuras.
+M2 añade `Scripts/Runtime/Interaction`, cuatro materiales de cajas y extiende el
+generador/escena de M1. Usa el asset de input existente con Interact, Drop y Throw;
+no hay comida ni estado de negocio. Ver `Docs/M2.md` en la raíz.
 Los tests ya tienen sus assemblies; no añadir NUnit al código Runtime.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

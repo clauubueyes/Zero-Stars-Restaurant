@@ -9,8 +9,9 @@
   sanitarias, crimen, policía, empleados y eventos dinámicos.
 - Primer vertical slice:
   `Player → Interaction → Food → Cooking → Dish Assembly → Customer Order → Delivery → Payment`.
-- M0 prepara estructura y documentación. M1 añade jugador FPS y escena greybox;
-  ver `Docs/M1.md`. M2 y los sistemas posteriores no están implementados.
+- M0 y M1 están aprobados. M1 añade jugador FPS y escena greybox; ver `Docs/M1.md`.
+  M2 añade interacción genérica y Pickup físico; ver `Docs/M2.md` y ADR 0003.
+  M3 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -56,6 +57,9 @@
   retirar paquetes de la plantilla de forma incidental.
 - Contenido propio bajo `Assets/_Project`. Preservar por ahora la escena, input,
   ajustes URP y tutorial de la plantilla en sus ubicaciones originales.
+- M2 amplía el asset de input existente: Interact por pulsación, Drop y Throw.
+  Preservar sus GUID y bindings de M1/UI. Detección, input, interacción y agarre
+  físico son componentes separados en `Scripts/Runtime/Interaction`.
 - Separar estado/reglas de representación. `Scripts/Domain` contiene C# sin
   UnityEngine/UnityEditor; `Scripts/Runtime` adapta input, física, componentes,
   vistas y composición. `Editor` solo contiene herramientas del Editor.

@@ -1,6 +1,7 @@
 # Arquitectura y convenciones
 
-Estado: M1 implementa adaptadores Unity de jugador, escena greybox y pruebas.
+Estado: M1 implementa adaptadores Unity de jugador; M2 añade interacción genérica,
+agarre físico y feedback provisional en la misma escena greybox, con pruebas.
 Domain no tiene clases todavía; las separaciones de negocio descritas aquí se
 aplicarán cuando aparezcan sus reglas reales.
 
@@ -70,8 +71,9 @@ Assets/
 Crear subcarpetas por feature (Player, Interaction, Food, etc.) cuando exista su
 primer archivo. No reservar ahora carpetas para policía, empleados o reputación.
 No usar `Resources` ni Addressables sin una necesidad comprobada de carga.
-M1 incluye `PrototypeRestaurant.unity` y tres materiales simples URP/Lit. Todavía
-no hay prefabs ni ScriptableObjects propios.
+M1/M2 incluyen `PrototypeRestaurant.unity`, tres materiales greybox y cuatro de
+cajas físicas, todos URP/Lit simples. Todavía no hay prefabs ni ScriptableObjects
+propios.
 
 ## Assemblies y tests al implementar
 
@@ -105,6 +107,36 @@ Ambos son Runtime porque dependen de Unity; no se inventan clases Domain para
 física del motor. Ver [ADR 0002](Decisions/0002-first-person-greybox.md).
 
 Referencia técnica: [assemblies en Unity](https://docs.unity.com/en-us/engine/6000.0/manual/programming-environment/script-compilation/assembly-definition-files).
+
+## Interacción física M2
+
+```text
+InteractionDetector → objetivo más cercano / oclusión / alcance
+InteractionInput    → intención Interact / Drop / Throw
+PlayerInteraction   → revalidación y llamada al contrato Interactable
+Interactable        → CanInteract / TryInteract / nombre y acción
+Pickup              → reclamación exclusiva → PhysicalCarry → Rigidbody
+InteractionFeedback ← foco y agarre actuales / etiquetas del input
+```
+
+`PlayerInteraction` coordina referencias sin conocer tipos concretos. Un nuevo
+interactuable deriva de `Interactable` e implementa disponibilidad y acción;
+recibe un `InteractionContext` local con actor y portador opcional. No hay
+registro global, inventario ni lista de tipos de objetos en el jugador.
+
+`PhysicalCarry` conserva el Rigidbody dinámico, ajusta velocidad con fuerza
+limitada según masa y mueve el destino mediante consultas de volumen. Nunca
+parenta ni teletransporta el objeto. Guarda/restaura configuración física y pares
+de colisión del jugador, y libera el agarre ante desactivación/destrucción o
+espacio inseguro. `CarryPhysics` reúne cálculos deterministas de seguimiento y
+salida; pertenece a Runtime por usar vectores/física Unity, sin crear un Domain
+artificial. El comportamiento no consulta Renderer, mesh, material ni color.
+
+Input y feedback dependen de `FirstPersonController.HasControl` para respetar
+cursor/foco. La API de interacción puede probarse sin un dispositivo físico.
+Cada adaptador posee su copia del asset; el de M2 solo habilita sus tres acciones.
+Se reutilizan los assemblies existentes. Ver [ADR 0003](Decisions/0003-physical-interaction.md)
+y [configuración, límites y validación de M2](M2.md).
 
 ## Convenciones prácticas
 

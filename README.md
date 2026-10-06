@@ -4,8 +4,9 @@ Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollad
 en Unity. El jugador comienza con **0 €**, un local casi vacío y **sin electricidad**.
 El objetivo es conseguir que el negocio sobreviva mediante sistemas combinables.
 
-M1 permite caminar, mirar y saltar en un restaurante greybox. No hay todavía
-interacción con objetos ni sistemas de restaurante. La escena de plantilla
+M1 permite caminar, mirar y saltar en un restaurante greybox. M2 añade interacción
+genérica y cuatro cajas físicas para coger, transportar, soltar y lanzar. Los
+sistemas de restaurante siguen pendientes. La escena de plantilla
 `SampleScene` permanece separada y conservada.
 
 ## Abrir el proyecto
@@ -21,6 +22,9 @@ interacción con objetos ni sistemas de restaurante. La escena de plantilla
    **Escape** libera el cursor y **clic izquierdo en Game** vuelve a capturarlo.
    Con el cursor libre se suspenden movimiento voluntario y mirada; la gravedad
    sigue activa. Detener Play también libera el cursor.
+6. Mirar una caja a menos de 3 m: **E** la recoge, **G** la suelta y **botón derecho
+   del ratón** la lanza. El texto provisional muestra objeto, acción y binding.
+   Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -54,7 +58,10 @@ probar ese ciclo con saldo cero; su obtención será una tarea posterior.
 - [Decisión arquitectónica inicial](Docs/Decisions/0001-prototype-foundation.md).
 - [Inventario de cambios y validación de esta entrega](Docs/FOUNDATION.md).
 - [M1: pruebas, controles, configuración y reconstrucción del greybox](Docs/M1.md).
+- [M2: interacción física, validación y pruebas manuales](Docs/M2.md).
+- [Decisión sobre interacción y agarre físico](Docs/Decisions/0003-physical-interaction.md).
 
 `main` conserva el proyecto original como baseline. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
+M2 parte de M1 aprobado en `feature/world-interaction`.
 No hay remoto configurado y no se ha integrado en main; los commits son locales.
