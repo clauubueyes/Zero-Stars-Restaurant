@@ -8,7 +8,7 @@ conservan en sus ubicaciones actuales para mantener sus GUID y referencias.
 | --- | --- |
 | `Scripts/Domain` | Estado y reglas en C# sin dependencias de Unity. |
 | `Scripts/Runtime` | Componentes de Unity, input, física, vistas y composición. |
-| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M8. |
+| `Scenes` | Escenas propias: `PrototypeRestaurant` para M1–M9. |
 | `Prefabs` | Objetos reutilizables con primitivas y componentes. |
 | `ScriptableObjects` | Datos de configuración compartidos, sin estado de partida. |
 | `Materials` | Materiales simples de color compatibles con URP. |
@@ -57,5 +57,11 @@ FoodState y se registra en el único FoodSimulation M7. Las 18 provisiones gratu
 quedan bajo opt-in explícito de DevelopmentIngredientSupply, desactivadas por defecto.
 La escena configura 1000 céntimos de desarrollo; primera provisión con 0 € pendiente
 de diseño. Ver `Docs/M8.md` y ADR 0010. No hay inventario ni otro milestone.
+
+M8 está validado en `c12d408`. M9 separa cocina y zona pública con mostrador
+continuo, puertas de entrada/salida y cuatro QueuePoints pasivos. Storage,
+Procurement, Prep, Grill, Assembly y pase forman un recorrido de trabajo.
+El único cliente usa una salida explícita; las fixtures/cajas de tests quedan
+apartadas o bajo opt-in. Ver `Docs/M9.md` y ADR 0011. No hay lógica de cola.
 
 Consulta `README.md`, `AGENTS.md` y `Docs/ROADMAP.md` en la raíz antes de trabajar.

@@ -21,6 +21,9 @@
   M7 añade almacenamiento físico y conservación térmica; ver `Docs/M7.md` y ADR 0009.
   M7 está validado en `8872f0d`. M8 implementa economía y compras físicas en
   `feature/economy-procurement`; ver `Docs/M8.md` y ADR 0010.
+  M8 está validado en `c12d408`. M9 reorganiza el greybox y el recorrido del
+  cliente único en `feature/restaurant-layout-service-flow`; ver `Docs/M9.md`
+  y ADR 0011. QueuePoints solo reserva espacio; no hay múltiples clientes.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -119,6 +122,13 @@
   electricidad, supermercado, inventario, robo, préstamos ni otro milestone
   sin autorización expresa. Ver Docs/M8.md y ADR 0010.
 - Referencias explícitas en Inspector o por inicialización; componentes pequeños.
+  M9 conserva los objetos/referencias M1–M8: cocina al norte del mostrador
+  continuo, clientes al sur, entrada oeste y salida este. CustomerMovement admite
+  departurePath explícito y conserva el retorno M6 si está vacío. QueuePoints
+  contiene cuatro puntos pasivos; no anticipar lógica de cola/múltiples clientes.
+  Cajas/obstáculos de tests permanecen inactivos y recuperables; el opt-in de
+  DevelopmentIngredientSupply activa también el soporte de fixtures apartado.
+  Rebuild aplica M9; Apply M9 adapta una escena cerrada sin recrear objetos.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.
 - Crear interfaces y assemblies solo cuando una dependencia real lo necesite.

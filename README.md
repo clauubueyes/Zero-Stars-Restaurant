@@ -15,8 +15,10 @@ El polish añade snap contextual, agarre coherente del plato y salida visible de
 cliente con la venta. M1–M6 y polish están aprobados en `144cca5`.
 M7 añade Fridge/Freezer físicos y conservación por temperatura real, con el mismo
 reloj e identidad; validado por el usuario en `8872f0d`.
-M8 añade compras físicas y reinversión con el mismo saldo M6, en
-`feature/economy-procurement`. La escena usa **10 € de desarrollo** configurables;
+M8 añade compras físicas y reinversión con el mismo saldo M6, validado en `c12d408`.
+M9 reorganiza cocina y zona pública, con mostrador continuo, entrada/salida
+separadas y cuatro QueuePoints pasivos. Sigue un único cliente activo.
+La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
 `SampleScene` permanece separada y conservada.
@@ -34,10 +36,11 @@ La escena de plantilla
    **Escape** libera el cursor y **clic izquierdo en Game** vuelve a capturarlo.
    Con el cursor libre se suspenden movimiento voluntario y mirada; la gravedad
    sigue activa. Detener Play también libera el cursor.
-6. Mirar una caja a menos de 3 m: **E** la recoge, **G** la suelta y **botón derecho
-   del ratón** la lanza. El texto provisional muestra objeto, acción y binding.
+6. **E** recoge/interactúa, **G** suelta y **botón derecho del ratón** lanza.
+   El texto provisional muestra objeto, acción y binding. Las cajas M2 están
+   conservadas en `PhysicalTestObjects`, inactivo; activarlo solo para desarrollo.
    Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
-7. Ir a la estación sobre `FoodTestBench`, a la izquierda del spawn. Mirar un
+7. Ir a Procurement sobre `FoodTestBench`, al oeste de la cocina, junto a Prep. Mirar un
    botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)** o
    **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger con E y
    retirarla antes de comprar otra. Saldo y rechazo son visibles. Sin fondos o
@@ -46,8 +49,8 @@ La escena de plantilla
    seleccionar FoodTestZone y usar el menú contextual de DevelopmentIngredientSupply
    **Development: enable free ingredient fixtures**. Las guías M3–M7 que usan
    fixtures requieren ese opt-in explícito.
-8. Llevar la carne comprada a la superficie rojiza `GrillHotSurface`, a la izquierda
-   del local, y soltarla con G. Temperatura y cocción avanzan por presencia física;
+8. Llevar la carne comprada a la superficie rojiza `GrillHotSurface`, al norte de
+   Prep, y soltarla con G. Temperatura y cocción avanzan por presencia física;
    retirarla Cooked pausa cocción y permite enfriamiento. El mismo FoodSimulation
    permite adelantar solo comida desde Inspector. Ver [M4](Docs/M4.md).
 9. Las tres bandejas `AssemblyStation1/2/3` están junto a la plancha, al fondo.
@@ -60,24 +63,29 @@ La escena de plantilla
     (inicialmente **€10.00** en esta escena de desarrollo).
     Con el plato final sostenido, ir por detrás del mostrador, al pad verde
     `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
-    y **G** para depositarlo. Se evalúa al reposar: Hamburger paga
+    y **G** para depositarlo desde el pase de cocina. Se evalúa al reposar: Hamburger paga
     **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
     Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
-    se limpia en la salida y el siguiente
+    sale por la puerta este sin atravesar la cocina; se limpia en la salida y el siguiente
     aparece 3 s después de completar la salida. Ver [M6](Docs/M6.md) para casos y límites.
     Seguir [las pruebas actuales del polish](Docs/VERTICAL-SLICE-POLISH.md) para
-    posiciones, snap, transporte visible y pruebas de rechazo.
+    snap, transporte visible y pruebas de rechazo. Las posiciones vigentes y el
+    loop comprar → almacenar → cocinar → montar → entregar → cobrar están en [M9](Docs/M9.md).
     La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
     parcial: basta soltar y dejar reposar; no exige centrar el plato.
 
 11. Los gabinetes abiertos **Fridge** (azul claro, +4 °C) y **Freezer** (azul oscuro,
-    −18 °C) están en el lado izquierdo, entre spawn y cocina. **E** recoge comida,
+    −18 °C) están contra la pared oeste de cocina y abren hacia el este. **E** recoge comida,
     mirar dentro aproximadamente horizontal y **G** la deposita en el estante;
     **E** recupera normalmente. La temperatura cambia gradualmente al guardar y
     retirar, conservando el estado original.
     Deterioro por temperatura real: normal, 10× más lento refrigerado y 1000× más
     lento congelado. Edad sigue avanzando. Ver [M7](Docs/M7.md) para medirlo con
     los botones del único FoodSimulation y comprobar límites/identidad.
+
+La zona pública queda al sur del mostrador; cliente único entra por la puerta
+oeste, espera en el primer QueuePoint y sale por la puerta este. Los otros tres
+puntos solo preparan espacio para una cola futura. El jugador empieza en cocina.
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -128,6 +136,8 @@ Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 - [Decisión sobre almacenamiento y política térmica](Docs/Decisions/0009-food-storage-refrigeration.md).
 - [M8: economía, compras físicas, pruebas y recorrido manual](Docs/M8.md).
 - [Decisión sobre adquisiciones y deuda del inicio con 0 €](Docs/Decisions/0010-economy-ingredient-procurement.md).
+- [M9: distribución, recorridos, pruebas y comprobación manual](Docs/M9.md).
+- [Decisión sobre distribución y servicio](Docs/Decisions/0011-restaurant-layout-service-flow.md).
 
 `main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -139,4 +149,5 @@ M6 parte de M5 y feedback aprobados (`6a3ca72`) en `feature/customer-service-loo
 Su polish parte de M6 aprobado (`9335899`) en `fix/vertical-slice-polish`.
 M7 parte del slice/polish aprobado (`144cca5`) en `feature/food-storage-refrigeration`.
 M8 parte de M7 aprobado (`8872f0d`) en `feature/economy-procurement`.
+M9 parte de M8 validado (`c12d408`) en `feature/restaurant-layout-service-flow`.
 Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.

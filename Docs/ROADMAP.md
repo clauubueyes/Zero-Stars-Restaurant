@@ -14,10 +14,12 @@ y solo la coincidencia estructural controla aceptación/pago. Ver ADR 0007.
 M1–M6, polish y entrega tolerante aprobados en **`144cca5`**. La petición de M7
 autoriza exclusivamente **Food Storage & Refrigeration**, implementado en
 `feature/food-storage-refrigeration` y validado en **`8872f0d`**; ver [M7](M7.md).
-La nueva tarea autoriza **M8: Economy & Ingredient Procurement**, en
-`feature/economy-procurement` desde ese commit. Ver [M8](M8.md) y ADR 0010.
-No autoriza otros milestones ni electricidad, supermercado, inventario o nuevas
-mecánicas de clientes.
+**M8: Economy & Ingredient Procurement** está validado en **`c12d408`**.
+Ver [M8](M8.md) y ADR 0010. La tarea actual autoriza **M9: Restaurant Layout &
+Service Flow** desde ese commit, en `feature/restaurant-layout-service-flow`;
+ver [M9](M9.md) y ADR 0011. Se reorganiza el greybox y se reservan QueuePoints;
+continúa un único cliente activo. No se autoriza lógica de cola/múltiples clientes,
+electricidad, supermercado, inventario ni otros milestones.
 
 ## Experiencia objetivo
 
@@ -83,6 +85,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | Polish · `fix/vertical-slice-polish` | Corrección del flujo M1–M6, desde `9335899`. | Clic contextual conserva la Food sostenida y la apila con bounds; E permite retirar. F sigue confirmando; todas las partes resuelven el mismo Pickup del Dish, también Custom. Venta conserva mismo agregado y recibo; impide recogida/reventa/doble pago, limpia al salir. Prep/Grill/Assembly próximos y pasillo despejado hacia Delivery. Generador reproducible. Sin cambios Domain ni M7. |
 | M7 · `feature/food-storage-refrigeration` | Fridge y Freezer físicos, entornos fríos y conservación por temperatura real. | Enfriamiento progresivo a +4/−18 °C y calentamiento al retirar; tasas 1/0.1/0.001 según temperatura real. Edad, ID, FoodState, frescura, contaminación y cocción se conservan. E/G/E usa física existente; único FoodSimulation, integración analítica de exposición y regresiones M1–M6. Sin inventario, puertas funcionales, electricidad, compras ni M8; ver M7.md y ADR 0009. |
 | M8 · `feature/economy-procurement` | Compras físicas y loop económico con el saldo M6. | Comprar Bun/Raw Beef Patty/Cheese en céntimos configurables: cargo único, unidad real con ID/FoodState propio y registro en el único FoodSimulation M7. Fondos insuficientes o salida ocupada: no crear/cobrar. Fixtures gratuitas solo desarrollo/testing; saldo de desarrollo configurable y deuda de 0 € documentada. Conservar/cocinar/montar/vender unidades compradas, pago M6 único y reinversión. Tests Domain, PlayMode, escena y regresiones M1–M7; ver M8.md y ADR 0010. Sin otros milestones. |
+| M9 · `feature/restaurant-layout-service-flow` | Distribución espacial de restaurante y recorrido del cliente único. | Cocina al norte: Storage → Prep → Grill → Assembly → Delivery, con Procurement física y pase accesibles. Mostrador sólido separa zona pública: Entrance → futura Queue → Counter → Exit, por puertas y ruta sin atravesar cocina. Cuatro QueuePoints pasivos; fixtures de tests conservadas fuera del gameplay normal. Mantener referencias/GUID y sistemas M1–M8, ejecutar regresiones y comprobar manualmente comprar → almacenar → cocinar → montar → entregar → cobrar; ver M9.md y ADR 0011. Sin múltiples clientes ni arte definitivo. |
 
 ## Recorrido de aceptación del slice
 
@@ -117,6 +120,8 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 Automatizar en EditMode los casos de estado/cocción/validación/doble pago. Usar
 PlayMode para integración importante y revisión manual para cámara, input,
 colliders y feedback. No sustituir este recorrido por tests triviales.
+La ubicación vigente y el recorrido de compras/almacenamiento están en [M9](M9.md);
+las posiciones de guías anteriores son históricas.
 
 ## Después del slice
 
