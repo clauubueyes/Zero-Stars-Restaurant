@@ -19,6 +19,17 @@ namespace ZeroStarRestaurant.Food
 
         private void Update() => Advance(Time.deltaTime * (double)Mathf.Max(0f, _developmentTimeMultiplier));
 
+        public bool Register(FoodItem food)
+        {
+            if (food == null || food.State == null) return false;
+            foreach (FoodItem existing in _foods) if (existing == food) return false;
+            var registered = new List<FoodItem>();
+            foreach (FoodItem existing in _foods) if (existing != null) registered.Add(existing);
+            registered.Add(food);
+            _foods = registered.ToArray();
+            return true;
+        }
+
         public void Unregister(IReadOnlyList<FoodItem> foods)
         {
             if (foods == null) throw new ArgumentNullException(nameof(foods));

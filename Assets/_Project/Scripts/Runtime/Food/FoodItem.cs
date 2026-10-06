@@ -17,11 +17,19 @@ namespace ZeroStarRestaurant.Food
 
         private void Awake()
         {
+            TryInitialize();
+        }
+
+        // Allows an inactive purchase prefab to prepare its own state before payment/activation.
+        // Repeated calls preserve the same state; they never restore freshness or identity.
+        public bool TryInitialize()
+        {
+            if (State != null) return true;
             if (_definition == null)
             {
                 Debug.LogError("FoodItem needs a FoodDefinition assigned before activation.", this);
                 enabled = false;
-                return;
+                return false;
             }
             try
             {
@@ -32,7 +40,9 @@ namespace ZeroStarRestaurant.Food
             {
                 Debug.LogError("Invalid food configuration: " + exception.Message, this);
                 enabled = false;
+                return false;
             }
+            return true;
         }
     }
 }

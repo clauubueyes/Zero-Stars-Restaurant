@@ -15,6 +15,8 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField] private CustomerMovement _customer;
         [SerializeField] private CustomerDishCarrier _dishCarrier;
         [SerializeField] private FoodSimulation _foodSimulation;
+        [SerializeField, Min(0), Tooltip("Development seed money only. Final gameplay starts at zero; first supply remains a design debt.")]
+        private int _developmentInitialBalanceCents;
         [SerializeField, Min(-1), Tooltip("Development: -1 alternates the menu; 0/1 force the next spawned customer's menu slot once.")]
         private int _forceNextOfferIndex = -1;
         private OrderOffer[] _offers;
@@ -33,7 +35,9 @@ namespace ZeroStarRestaurant.Customers
             try { _offers = _configuration.CreateOffers(); }
             catch (ArgumentException exception)
             { Debug.LogError("Invalid customer service configuration: " + exception.Message, this); enabled = false; return; }
-            Ledger = new PaymentLedger(); _remainingSeconds = _configuration.InitialDelaySeconds; _customer.Hide();
+            if (_developmentInitialBalanceCents < 0)
+            { Debug.LogError("Development starting balance cannot be negative.", this); enabled = false; return; }
+            Ledger = new PaymentLedger(_developmentInitialBalanceCents); _remainingSeconds = _configuration.InitialDelaySeconds; _customer.Hide();
         }
         private void Update() => Advance(Time.deltaTime);
         private void OnDisable()
