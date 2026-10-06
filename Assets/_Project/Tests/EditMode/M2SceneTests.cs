@@ -18,7 +18,9 @@ namespace ZeroStarRestaurant.Tests
             Scene scene = EditorSceneManager.OpenPreviewScene(M1GreyboxBuilder.ScenePath);
             try
             {
-                Pickup[] pickups = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Pickup>()).ToArray();
+                // M2's fixture remains four boxes; subsequent milestones can add other pickups.
+                Pickup[] pickups = scene.GetRootGameObjects().Single(root => root.name == "PhysicalTestObjects")
+                    .GetComponentsInChildren<Pickup>();
                 Assert.That(pickups, Has.Length.EqualTo(4));
                 Assert.That(pickups.Select(p => p.Body.mass).Distinct().Count(), Is.EqualTo(4));
                 Assert.That(pickups.Select(p => p.GetComponent<MeshRenderer>().sharedMaterial).Distinct().Count(), Is.EqualTo(4));

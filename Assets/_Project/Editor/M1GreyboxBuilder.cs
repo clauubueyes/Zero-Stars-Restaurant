@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Player;
 using ZeroStarRestaurant.Interaction;
+using ZeroStarRestaurant.Food;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -16,6 +17,7 @@ namespace ZeroStarRestaurant.Editor
     {
         public const string ScenePath = "Assets/_Project/Scenes/PrototypeRestaurant.unity";
         private const string MaterialFolder = "Assets/_Project/Materials";
+        private const string FoodDefinitionFolder = "Assets/_Project/ScriptableObjects/Food";
         [MenuItem("Zero Star Restaurant/Prototype/Rebuild Greybox Scene")]
         private static void RebuildFromMenu()
         {
@@ -58,6 +60,12 @@ namespace ZeroStarRestaurant.Editor
             Material floor = GetOrCreateMaterial("GreyboxFloor", new Color(0.25f, 0.27f, 0.29f));
             Material wall = GetOrCreateMaterial("GreyboxWall", new Color(0.65f, 0.67f, 0.68f));
             Material volume = GetOrCreateMaterial("GreyboxVolume", new Color(0.40f, 0.46f, 0.48f));
+            FoodDefinition beef = GetOrCreateFoodDefinition("RawBeefPatty", "food.raw_beef_patty", "Raw Beef Patty",
+                FoodCategory.Meat, 80, 600f, 60f);
+            FoodDefinition bun = GetOrCreateFoodDefinition("Bun", "food.bun", "Bun",
+                FoodCategory.Bakery, 35, 1800f, 90f);
+            FoodDefinition cheese = GetOrCreateFoodDefinition("Cheese", "food.cheese", "Cheese",
+                FoodCategory.Dairy, 25, 1200f, 45f);
             Scene previousScene = SceneManager.GetActiveScene();
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
             try
@@ -119,6 +127,8 @@ namespace ZeroStarRestaurant.Editor
                 Wire(input, "_inputActions", actions, "_interaction", interaction);
                 InteractionFeedback feedback = player.AddComponent<InteractionFeedback>();
                 Wire(feedback, "_interaction", interaction, "_input", input);
+                FoodInspectionFeedback foodFeedback = player.AddComponent<FoodInspectionFeedback>();
+                Wire(foodFeedback, "_interaction", interaction, "_carry", carry);
 
                 var pickups = new GameObject("PhysicalTestObjects");
                 CreatePickup(pickups.transform, "Light box (0.5 kg)", -1.8f, 0.45f, 0.5f,
@@ -129,6 +139,31 @@ namespace ZeroStarRestaurant.Editor
                     GetOrCreateMaterial("PickupSmall", new Color(0.15f, 0.5f, 0.8f)));
                 CreatePickup(pickups.transform, "Large box (4 kg)", 1.8f, 0.9f, 4f,
                     GetOrCreateMaterial("PickupLarge", new Color(0.8f, 0.7f, 0.2f)));
+
+                var foodZone = new GameObject("FoodTestZone");
+                CreateBox(foodZone.transform, "FoodTestBench", new Vector3(-4f, 0.4f, -3.5f),
+                    new Vector3(2.4f, 0.8f, 1.2f), volume);
+                Material beefMaterial = GetOrCreateMaterial("FoodBeef", new Color(0.58f, 0.2f, 0.2f));
+                Material bunMaterial = GetOrCreateMaterial("FoodBun", new Color(0.73f, 0.5f, 0.25f));
+                Material cheeseMaterial = GetOrCreateMaterial("FoodCheese", new Color(0.9f, 0.75f, 0.3f));
+                FoodItem[] foods =
+                {
+                    CreateFood(foodZone.transform, "Raw Beef Patty - Fresh fixture", -4.8f, new Vector3(0.4f, 0.12f, 0.4f),
+                        0.15f, beefMaterial, beef, 0f, 100f, 21f, false),
+                    CreateFood(foodZone.transform, "Raw Beef Patty - Aged fixture", -4.3f, new Vector3(0.4f, 0.12f, 0.4f),
+                        0.15f, beefMaterial, beef, 564f, 6f, 21f, false),
+                    CreateFood(foodZone.transform, "Bun - Cold fixture", -3.8f, new Vector3(0.4f, 0.22f, 0.4f),
+                        0.08f, bunMaterial, bun, 0f, 100f, 5f, false),
+                    CreateFood(foodZone.transform, "Cheese - Contaminated fixture", -3.3f, new Vector3(0.32f, 0.06f, 0.32f),
+                        0.025f, cheeseMaterial, cheese, 312f, 74f, 22f, true)
+                };
+                FoodSimulation foodSimulation = foodZone.AddComponent<FoodSimulation>();
+                var simulationData = new SerializedObject(foodSimulation);
+                SerializedProperty foodReferences = simulationData.FindProperty("_foods");
+                foodReferences.arraySize = foods.Length;
+                for (int index = 0; index < foods.Length; index++)
+                    foodReferences.GetArrayElementAtIndex(index).objectReferenceValue = foods[index];
+                simulationData.ApplyModifiedPropertiesWithoutUndo();
 
                 var lightObject = new GameObject("DevelopmentSun", typeof(Light));
                 lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
@@ -194,6 +229,11 @@ namespace ZeroStarRestaurant.Editor
         private static void CreatePickup(Transform parent, string name, float x, float size, float mass, Material material)
         {
             GameObject item = CreateBox(parent, name, new Vector3(x, size * 0.5f + 0.1f, -2.4f), Vector3.one * size, material);
+            AddPickupPhysics(item, mass);
+        }
+
+        private static void AddPickupPhysics(GameObject item, float mass)
+        {
             Rigidbody body = item.AddComponent<Rigidbody>();
             body.mass = mass;
             body.linearDamping = 0.05f;
@@ -204,6 +244,52 @@ namespace ZeroStarRestaurant.Editor
             body.maxAngularVelocity = 10f;
             body.solverIterations = 12;
             item.AddComponent<Pickup>();
+        }
+
+        private static FoodItem CreateFood(Transform parent, string name, float x, Vector3 size, float mass,
+            Material material, FoodDefinition definition, float age, float freshness, float temperature, bool contaminated)
+        {
+            GameObject item = CreateBox(parent, name, new Vector3(x, 0.85f + size.y * 0.5f, -3.5f), size, material);
+            AddPickupPhysics(item, mass);
+            var pickupData = new SerializedObject(item.GetComponent<Pickup>());
+            pickupData.FindProperty("_displayName").stringValue = definition.DisplayName;
+            pickupData.ApplyModifiedPropertiesWithoutUndo();
+            FoodItem food = item.AddComponent<FoodItem>();
+            var data = new SerializedObject(food);
+            data.FindProperty("_definition").objectReferenceValue = definition;
+            data.FindProperty("_initialAgeSeconds").floatValue = age;
+            data.FindProperty("_initialFreshnessPercent").floatValue = freshness;
+            data.FindProperty("_initialTemperatureCelsius").floatValue = temperature;
+            data.FindProperty("_initiallyContaminated").boolValue = contaminated;
+            data.ApplyModifiedPropertiesWithoutUndo();
+            return food;
+        }
+
+        private static FoodDefinition GetOrCreateFoodDefinition(string assetName, string id, string displayName,
+            FoodCategory category, int costCents, float freshnessLifetime, float thermalResponse)
+        {
+            if (!AssetDatabase.IsValidFolder(FoodDefinitionFolder))
+                AssetDatabase.CreateFolder("Assets/_Project/ScriptableObjects", "Food");
+            string path = FoodDefinitionFolder + "/" + assetName + ".asset";
+            FoodDefinition existing = AssetDatabase.LoadAssetAtPath<FoodDefinition>(path);
+            if (existing != null)
+            {
+                existing.CreateProfile(); // Reject invalid authoring data before replacing the scene.
+                return existing;
+            }
+            FoodDefinition definition = ScriptableObject.CreateInstance<FoodDefinition>();
+            definition.name = assetName;
+            var data = new SerializedObject(definition);
+            data.FindProperty("_id").stringValue = id;
+            data.FindProperty("_displayName").stringValue = displayName;
+            data.FindProperty("_category").enumValueIndex = (int)category;
+            data.FindProperty("_referenceCostCents").intValue = costCents;
+            data.FindProperty("_freshnessLifetimeSeconds").floatValue = freshnessLifetime;
+            data.FindProperty("_thermalResponseSeconds").floatValue = thermalResponse;
+            data.ApplyModifiedPropertiesWithoutUndo();
+            definition.CreateProfile();
+            AssetDatabase.CreateAsset(definition, path);
+            return definition;
         }
     }
 }
