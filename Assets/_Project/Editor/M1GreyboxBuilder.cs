@@ -8,6 +8,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Player;
+using ZeroStarRestaurant.Interaction;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -15,17 +16,17 @@ namespace ZeroStarRestaurant.Editor
     {
         public const string ScenePath = "Assets/_Project/Scenes/PrototypeRestaurant.unity";
         private const string MaterialFolder = "Assets/_Project/Materials";
-        [MenuItem("Zero Star Restaurant/M1/Rebuild Greybox Scene")]
+        [MenuItem("Zero Star Restaurant/Prototype/Rebuild Greybox Scene")]
         private static void RebuildFromMenu()
         {
-            if (File.Exists(ScenePath) && !EditorUtility.DisplayDialog("Rebuild M1 greybox",
-                    "Replace the saved PrototypeRestaurant scene with the original M1 layout? " +
+            if (File.Exists(ScenePath) && !EditorUtility.DisplayDialog("Rebuild prototype greybox",
+                    "Replace the saved PrototypeRestaurant scene with the current prototype layout? " +
                     "Custom scene edits will be lost. Material assets are preserved.", "Rebuild", "Cancel"))
                 return;
             GenerateScene();
         }
 
-        [MenuItem("Zero Star Restaurant/M1/Rebuild Greybox Scene", true)]
+        [MenuItem("Zero Star Restaurant/Prototype/Rebuild Greybox Scene", true)]
         private static bool CanRebuild()
         {
             return !EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling;
@@ -34,7 +35,7 @@ namespace ZeroStarRestaurant.Editor
         public static void GenerateScene()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
-                throw new InvalidOperationException("Stop Play Mode before generating the M1 scene.");
+                throw new InvalidOperationException("Stop Play Mode before generating the prototype scene.");
             if (SceneManager.GetSceneByPath(ScenePath).IsValid())
                 throw new InvalidOperationException("Close PrototypeRestaurant before rebuilding it. Other open scenes are preserved.");
 
@@ -49,7 +50,9 @@ namespace ZeroStarRestaurant.Editor
 
             InputActionAsset actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/InputSystem_Actions.inputactions");
             if (actions == null || actions.FindAction("Player/Move") == null ||
-                actions.FindAction("Player/Look") == null || actions.FindAction("Player/Jump") == null)
+                actions.FindAction("Player/Look") == null || actions.FindAction("Player/Jump") == null ||
+                actions.FindAction("Player/Interact") == null || actions.FindAction("Player/Drop") == null ||
+                actions.FindAction("Player/Throw") == null)
                 throw new InvalidOperationException("The existing Player input actions are required.");
 
             Material floor = GetOrCreateMaterial("GreyboxFloor", new Color(0.25f, 0.27f, 0.29f));
@@ -102,6 +105,31 @@ namespace ZeroStarRestaurant.Editor
                 serialized.FindProperty("_viewTransform").objectReferenceValue = cameraObject.transform;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
+                PhysicalCarry carry = player.AddComponent<PhysicalCarry>();
+                Wire(carry, "_viewTransform", cameraObject.transform, "_actorRoot", player.transform);
+                InteractionDetector detector = player.AddComponent<InteractionDetector>();
+                Wire(detector, "_origin", cameraObject.transform, "_actorRoot", player.transform);
+                PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
+                var interactionData = new SerializedObject(interaction);
+                interactionData.FindProperty("_detector").objectReferenceValue = detector;
+                interactionData.FindProperty("_carry").objectReferenceValue = carry;
+                interactionData.FindProperty("_player").objectReferenceValue = controller;
+                interactionData.ApplyModifiedPropertiesWithoutUndo();
+                InteractionInput input = player.AddComponent<InteractionInput>();
+                Wire(input, "_inputActions", actions, "_interaction", interaction);
+                InteractionFeedback feedback = player.AddComponent<InteractionFeedback>();
+                Wire(feedback, "_interaction", interaction, "_input", input);
+
+                var pickups = new GameObject("PhysicalTestObjects");
+                CreatePickup(pickups.transform, "Light box (0.5 kg)", -1.8f, 0.45f, 0.5f,
+                    GetOrCreateMaterial("PickupLight", new Color(0.8f, 0.35f, 0.15f)));
+                CreatePickup(pickups.transform, "Heavy box (12 kg)", -0.6f, 0.45f, 12f,
+                    GetOrCreateMaterial("PickupHeavy", new Color(0.45f, 0.2f, 0.55f)));
+                CreatePickup(pickups.transform, "Small box (0.25 kg)", 0.6f, 0.25f, 0.25f,
+                    GetOrCreateMaterial("PickupSmall", new Color(0.15f, 0.5f, 0.8f)));
+                CreatePickup(pickups.transform, "Large box (4 kg)", 1.8f, 0.9f, 4f,
+                    GetOrCreateMaterial("PickupLarge", new Color(0.8f, 0.7f, 0.2f)));
+
                 var lightObject = new GameObject("DevelopmentSun", typeof(Light));
                 lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
                 Light light = lightObject.GetComponent<Light>();
@@ -115,8 +143,8 @@ namespace ZeroStarRestaurant.Editor
                 RenderSettings.fog = false;
 
                 if (!EditorSceneManager.SaveScene(scene, ScenePath))
-                    throw new InvalidOperationException("Could not save the M1 prototype scene.");
-                Debug.Log("M1 greybox saved: " + ScenePath);
+                    throw new InvalidOperationException("Could not save the prototype scene.");
+                Debug.Log("Prototype greybox saved: " + ScenePath);
             }
             finally
             {
@@ -143,7 +171,7 @@ namespace ZeroStarRestaurant.Editor
             return material;
         }
 
-        private static void CreateBox(Transform parent, string name, Vector3 position, Vector3 scale, Material material)
+        private static GameObject CreateBox(Transform parent, string name, Vector3 position, Vector3 scale, Material material)
         {
             var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
             box.name = name;
@@ -151,6 +179,31 @@ namespace ZeroStarRestaurant.Editor
             box.transform.localPosition = position;
             box.transform.localScale = scale;
             box.GetComponent<MeshRenderer>().sharedMaterial = material;
+            return box;
+        }
+
+        private static void Wire(UnityEngine.Object component, string firstField, UnityEngine.Object first,
+            string secondField, UnityEngine.Object second)
+        {
+            var serialized = new SerializedObject(component);
+            serialized.FindProperty(firstField).objectReferenceValue = first;
+            serialized.FindProperty(secondField).objectReferenceValue = second;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreatePickup(Transform parent, string name, float x, float size, float mass, Material material)
+        {
+            GameObject item = CreateBox(parent, name, new Vector3(x, size * 0.5f + 0.1f, -2.4f), Vector3.one * size, material);
+            Rigidbody body = item.AddComponent<Rigidbody>();
+            body.mass = mass;
+            body.linearDamping = 0.05f;
+            body.angularDamping = 0.25f;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.maxLinearVelocity = 20f;
+            body.maxAngularVelocity = 10f;
+            body.solverIterations = 12;
+            item.AddComponent<Pickup>();
         }
     }
 }
