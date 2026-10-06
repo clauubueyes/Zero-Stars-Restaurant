@@ -8376,6 +8376,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Customers.CustomerServiceLoop
   _configuration: {fileID: 11400000, guid: 9cdf954e8f1114348897b31542120763, type: 2}
   _customer: {fileID: 999010035}
+  _dishCarrier: {fileID: 999020001}
   _foodSimulation: {fileID: 1710634242}
   _forceNextOfferIndex: -1
 --- !u!4 &999010031
@@ -8446,6 +8447,7 @@ GameObject:
   - component: {fileID: 999010037}
   - component: {fileID: 999010036}
   - component: {fileID: 999010035}
+  - component: {fileID: 999020001}
   m_Layer: 0
   m_Name: CustomerPlaceholder
   m_TagString: Untagged
@@ -8535,6 +8537,7 @@ Transform:
   m_Children:
   - {fileID: 999010021}
   - {fileID: 999010002}
+  - {fileID: 999020003}
   m_Father: {fileID: 999010031}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &999010039
@@ -8702,3 +8705,47 @@ SceneRoots:
   - {fileID: 623391879}
   - {fileID: 999010031}
   - {fileID: 1730434019}
+--- !u!114 &999020001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2123f1b6663f434ca2f0794e1ae91c36, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Customers.CustomerDishCarrier
+  _anchor: {fileID: 999020003}
+--- !u!1 &999020002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 999020003}
+  m_Layer: 0
+  m_Name: DishCarryAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &999020003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999020002}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 0.65}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 999010038}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

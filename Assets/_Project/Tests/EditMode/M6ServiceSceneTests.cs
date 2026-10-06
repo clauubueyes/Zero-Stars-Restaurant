@@ -24,6 +24,9 @@ namespace ZeroStarRestaurant.Tests
             CustomerMovement customer = Components<CustomerMovement>().Single(); Assert.That(customer.gameObject.activeSelf, Is.False);
             Assert.That(customer.HasValidRoute, Is.True); Assert.That(customer.GetComponent<Rigidbody>().isKinematic, Is.True);
             Assert.That(service.FindProperty("_customer").objectReferenceValue, Is.SameAs(customer));
+            CustomerDishCarrier carrier = Components<CustomerDishCarrier>().Single();
+            Assert.That(service.FindProperty("_dishCarrier").objectReferenceValue, Is.SameAs(carrier));
+            Assert.That(carrier.HasValidAnchor, Is.True);
             Assert.That(service.FindProperty("_foodSimulation").objectReferenceValue, Is.SameAs(Components<FoodSimulation>().Single()));
             var config = (CustomerServiceConfiguration)service.FindProperty("_configuration").objectReferenceValue;
             var offers = config.CreateOffers(); Assert.That(offers.Select(offer => offer.Dish.Id), Is.EqualTo(new[] { "dish.hamburger", "dish.cheeseburger" }));

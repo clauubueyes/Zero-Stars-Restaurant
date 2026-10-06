@@ -21,6 +21,7 @@ namespace ZeroStarRestaurant.Food
         {
             if (foods == null) throw new ArgumentNullException(nameof(foods));
             var removed = new HashSet<FoodItem>(foods);
+            _advancedFoods.RemoveWhere(food => food == null || removed.Contains(food));
             var remaining = new List<FoodItem>();
             foreach (FoodItem food in _foods) if (food != null && !removed.Contains(food)) remaining.Add(food);
             _foods = remaining.ToArray();

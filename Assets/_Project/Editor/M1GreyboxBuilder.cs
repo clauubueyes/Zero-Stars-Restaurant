@@ -467,6 +467,12 @@ namespace ZeroStarRestaurant.Editor
             GameObject head = CreateBox(customer.transform, "HeadVisual", new Vector3(0f, 1.6f, 0f), Vector3.one * 0.35f, customerMaterial);
             UnityEngine.Object.DestroyImmediate(head.GetComponent<BoxCollider>());
             CustomerMovement movement = customer.GetComponent<CustomerMovement>();
+            var anchor = new GameObject("DishCarryAnchor"); anchor.transform.SetParent(customer.transform, false);
+            anchor.transform.localPosition = new Vector3(0f, 1.2f, 0.65f);
+            CustomerDishCarrier carrier = customer.AddComponent<CustomerDishCarrier>();
+            var carrierData = new SerializedObject(carrier);
+            carrierData.FindProperty("_anchor").objectReferenceValue = anchor.transform;
+            carrierData.ApplyModifiedPropertiesWithoutUndo();
             var moverData = new SerializedObject(movement);
             moverData.FindProperty("_entryPoint").objectReferenceValue = entry;
             moverData.FindProperty("_exitPoint").objectReferenceValue = exit;
@@ -478,6 +484,7 @@ namespace ZeroStarRestaurant.Editor
             var serviceData = new SerializedObject(service);
             serviceData.FindProperty("_configuration").objectReferenceValue = configuration;
             serviceData.FindProperty("_customer").objectReferenceValue = movement;
+            serviceData.FindProperty("_dishCarrier").objectReferenceValue = carrier;
             serviceData.FindProperty("_foodSimulation").objectReferenceValue = simulation;
             serviceData.ApplyModifiedPropertiesWithoutUndo();
             GameObject pad = CreateBox(serviceRoot.transform, "DeliveryPad", new Vector3(0f, 1.115f, 0.5f), new Vector3(1.25f, 0.03f, 0.9f), deliveryMaterial);

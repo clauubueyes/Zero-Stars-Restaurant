@@ -27,6 +27,7 @@ namespace ZeroStarRestaurant.Tests
         private FoodSimulation _simulation;
         private CustomerServiceLoop _service;
         private CustomerMovement _customer;
+        private CustomerDishCarrier _carrier;
         private DeliveryZone _delivery;
         private BoxCollider _pad;
 
@@ -42,6 +43,9 @@ namespace ZeroStarRestaurant.Tests
             GameObject customerObject = Create("Customer", _origin + new Vector3(5, 0, -3)); customerObject.SetActive(false);
             Rigidbody customerBody = customerObject.AddComponent<Rigidbody>(); customerBody.isKinematic = true; customerBody.useGravity = false;
             _customer = customerObject.AddComponent<CustomerMovement>();
+            Transform anchor = Create("Dish anchor", customerObject.transform.position + new Vector3(0, 1.2f, 0.65f)).transform;
+            anchor.SetParent(customerObject.transform, true);
+            _carrier = customerObject.AddComponent<CustomerDishCarrier>(); Set(_carrier, "_anchor", anchor);
             Set(_customer, "_entryPoint", Create("Entrance", customerObject.transform.position).transform);
             Set(_customer, "_exitPoint", Create("Exit", customerObject.transform.position).transform);
             Set(_customer, "_arrivalPath", new[] { Create("Corner", _origin + new Vector3(0, 0, -3)).transform,
@@ -51,7 +55,7 @@ namespace ZeroStarRestaurant.Tests
             var second = new CustomerServiceConfiguration.MenuEntry(); Set(second, "_dish", _cheeseburger); Set(second, "_salePriceCents", 650);
             Set(config, "_menu", new[] { first, second });
             GameObject loop = Create("Service", _origin); loop.SetActive(false); _service = loop.AddComponent<CustomerServiceLoop>();
-            Set(_service, "_configuration", config); Set(_service, "_customer", _customer); Set(_service, "_foodSimulation", _simulation);
+            Set(_service, "_configuration", config); Set(_service, "_customer", _customer); Set(_service, "_dishCarrier", _carrier); Set(_service, "_foodSimulation", _simulation);
             loop.SetActive(true);
             GameObject padObject = Create("DeliveryPad", _origin + new Vector3(-2, 0.915f, 0));
             _pad = padObject.AddComponent<BoxCollider>(); _pad.size = new Vector3(1.25f, 0.03f, 0.9f);
@@ -136,9 +140,33 @@ namespace ZeroStarRestaurant.Tests
             Guid[] ids = original.Components.Select(food => food.InstanceId).ToArray(); Place(dish); _delivery.Poll();
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(amount)); Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Pay));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Select(food => food.InstanceId), Is.EqualTo(ids));
-            Assert.That(dish.gameObject.activeSelf, Is.False); Assert.That(original.IsSold, Is.True);
-            Assert.That(_simulation.Foods, Is.Empty); _delivery.Poll(); Assert.That(_service.TryDeliver(dish), Is.False);
+            Assert.That(dish.gameObject.activeInHierarchy, Is.True); Assert.That(original.IsSold, Is.True);
+            Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(dish.transform.IsChildOf(_customer.transform), Is.True);
+            Assert.That(dish.GetComponent<Pickup>().enabled, Is.False); Assert.That(dish.GetComponent<Rigidbody>().isKinematic, Is.True);
+            Assert.That(dish.GetComponentsInChildren<Collider>().All(collider => !collider.enabled), Is.True);
+            Assert.That(_simulation.Foods.Count, Is.EqualTo(ids.Length)); _delivery.Poll(); Assert.That(_service.TryDeliver(dish), Is.False);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(amount));
+            var receipt = _service.LastResult; _simulation.Advance(600);
+            Assert.That(receipt.Evaluation.DeliveredDish.MinimumFreshnessPercent, Is.EqualTo(100));
+            _service.Advance(10); Assert.That(dish.gameObject.activeInHierarchy, Is.True);
+            Vector3 before = dish.transform.position; _service.Advance(0.1);
+            Assert.That(dish.transform.position, Is.Not.EqualTo(before), "The same sold dish travels with the customer.");
+            _service.Advance(100);
+            Assert.That(dish.gameObject.activeSelf, Is.False); Assert.That(_carrier.Dish, Is.Null); Assert.That(_simulation.Foods, Is.Empty);
+            Assert.That(_service.LastResult, Is.SameAs(receipt)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(amount));
+        }
+
+        [Test]
+        public void DisabledCarrierRejectsBeforePaymentAndCancelledServiceRetiresItsSoldDish()
+        {
+            Ready(); DishItem dish = FinalDish(); Place(dish); _carrier.enabled = false; _delivery.Poll();
+            Assert.That(_service.Ledger.BalanceCents, Is.Zero); Assert.That(dish.State.IsSold, Is.False);
+            Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait)); Assert.That(dish.gameObject.activeSelf, Is.True);
+            _carrier.enabled = true; _delivery.Poll(); Assert.That(_carrier.Dish, Is.SameAs(dish));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+            _service.enabled = false;
+            Assert.That(_carrier.Dish, Is.Null); Assert.That(dish.gameObject.activeSelf, Is.False); Assert.That(_simulation.Foods, Is.Empty);
+            Assert.That(_customer.gameObject.activeSelf, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
 
         [Test]
@@ -146,6 +174,7 @@ namespace ZeroStarRestaurant.Tests
         {
             Ready(1); DishItem dish = FinalDish(); Place(dish); _delivery.Poll();
             Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(dish.gameObject.activeSelf, Is.True);
+            Assert.That(_carrier.Dish, Is.Null); Assert.That(dish.GetComponent<Pickup>().enabled, Is.True);
             Assert.That(dish.State.IsSold, Is.False); Assert.That(_simulation.Foods.Count, Is.EqualTo(3));
             Assert.That(_service.Ledger.BalanceCents, Is.Zero);
             Assert.That(_service.ForceNextOrder(0), Is.True);
@@ -270,7 +299,11 @@ namespace ZeroStarRestaurant.Tests
             IngredientSnapshot deliveredPatty = _service.LastResult.Evaluation.DeliveredDish.Ingredients.Single(food => food.InstanceId == pattyId);
             Assert.That(deliveredPatty.CookingStage, Is.EqualTo(CookingStage.Cooked));
             Assert.That(deliveredPatty.FreshnessPercent, Is.EqualTo(original.FreshnessPercent));
-            Assert.That(_simulation.Foods, Is.Empty); Assert.That(dish == null, Is.True); // Native destruction, not pooled sold objects.
+            Assert.That(dish != null && dish.gameObject.activeInHierarchy, Is.True);
+            Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(_simulation.Foods.Count, Is.EqualTo(3));
+            Assert.That(carry.TryPickUp(dish.GetComponent<Pickup>()), Is.False);
+            _service.Advance(10); _service.Advance(100); yield return null;
+            Assert.That(_simulation.Foods, Is.Empty); Assert.That(dish == null, Is.True); // Native destruction at exit.
             _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
         private static void Set(object target, string field, object value) => target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(target, value);
