@@ -6,6 +6,8 @@ namespace ZeroStarRestaurant.Food
     public sealed class FoodState
     {
         public const double AbsoluteZeroCelsius = -273.15;
+        public Guid InstanceId { get; }
+        internal Guid? AssemblyOwnerId { get; private set; }
         public FoodProfile Profile { get; }
         public double AgeSeconds { get; private set; }
         public double DeteriorationSeconds { get; private set; }
@@ -28,8 +30,10 @@ namespace ZeroStarRestaurant.Food
         }
 
         public FoodState(FoodProfile profile, double ageSeconds = 0.0, double freshnessPercent = 100.0,
-            double temperatureCelsius = 21.0, bool isContaminated = false)
+            double temperatureCelsius = 21.0, bool isContaminated = false, Guid? instanceId = null)
         {
+            InstanceId = instanceId ?? Guid.NewGuid();
+            if (InstanceId == Guid.Empty) throw new ArgumentException("A non-empty unit identity is required.", nameof(instanceId));
             Profile = profile ?? throw new ArgumentNullException(nameof(profile));
             Cooking = profile.IsCookable ? new CookingState(profile.Cooking) : null;
             RequireNonNegativeFinite(ageSeconds, nameof(ageSeconds));
@@ -79,6 +83,18 @@ namespace ZeroStarRestaurant.Food
         }
 
         public void Contaminate() => IsContaminated = true;
+
+        internal bool TryClaimAssembly(Guid owner)
+        {
+            if (AssemblyOwnerId.HasValue && AssemblyOwnerId.Value != owner) return false;
+            AssemblyOwnerId = owner;
+            return true;
+        }
+
+        internal void ReleaseAssembly(Guid owner)
+        {
+            if (AssemblyOwnerId == owner) AssemblyOwnerId = null;
+        }
 
         private static void RequireNonNegativeFinite(double value, string parameter)
         {
