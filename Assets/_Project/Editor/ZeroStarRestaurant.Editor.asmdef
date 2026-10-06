@@ -1,0 +1,10 @@
+{
+    "name": "ZeroStarRestaurant.Editor",
+    "rootNamespace": "ZeroStarRestaurant.Editor",
+    "references": [
+        "ZeroStarRestaurant.Runtime",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": ["Editor"]
+}
