@@ -5,10 +5,16 @@ namespace ZeroStarRestaurant.Customers
 {
     public sealed class CustomerVisit
     {
-        public Guid InstanceId { get; } = Guid.NewGuid();
+        public Guid InstanceId { get; }
         public OrderState Order { get; }
         public CustomerStage Stage { get; private set; } = CustomerStage.Enter;
-        public CustomerVisit(OrderState order) => Order = order ?? throw new ArgumentNullException(nameof(order));
+        public CustomerVisit(OrderState order) : this(order, Guid.NewGuid()) { }
+        public CustomerVisit(OrderState order, Guid customerId)
+        {
+            Order = order ?? throw new ArgumentNullException(nameof(order));
+            if (customerId == Guid.Empty) throw new ArgumentException("Customer ID cannot be empty.", nameof(customerId));
+            InstanceId = customerId;
+        }
         private bool Transition(CustomerStage expected, CustomerStage next)
         { if (Stage != expected) return false; Stage = next; return true; }
         public bool Arrive() => Transition(CustomerStage.Enter, CustomerStage.Order);
