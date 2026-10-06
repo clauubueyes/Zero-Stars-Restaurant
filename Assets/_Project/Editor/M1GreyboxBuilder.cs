@@ -13,6 +13,8 @@ using ZeroStarRestaurant.Interaction;
 using ZeroStarRestaurant.Food;
 using ZeroStarRestaurant.Cooking;
 using ZeroStarRestaurant.Dishes;
+using ZeroStarRestaurant.Customers;
+using ZeroStarRestaurant.Orders;
 
 namespace ZeroStarRestaurant.Editor
 {
@@ -244,6 +246,8 @@ namespace ZeroStarRestaurant.Editor
                 heatReferences.GetArrayElementAtIndex(0).objectReferenceValue = heat;
                 simulationData.ApplyModifiedPropertiesWithoutUndo();
 
+                CreateCustomerService(foodSimulation, dishDefinitions);
+
                 var lightObject = new GameObject("DevelopmentSun", typeof(Light));
                 lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
                 Light light = lightObject.GetComponent<Light>();
@@ -419,6 +423,84 @@ namespace ZeroStarRestaurant.Editor
             for (int index = 0; index < definitions.Length; index++) profiles.GetArrayElementAtIndex(index).objectReferenceValue = definitions[index];
             data.ApplyModifiedPropertiesWithoutUndo();
             return surface;
+        }
+
+        private static void CreateCustomerService(FoodSimulation simulation, DishDefinition[] dishes)
+        {
+            const string folder = "Assets/_Project/ScriptableObjects/Customers";
+            if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder("Assets/_Project/ScriptableObjects", "Customers");
+            string path = folder + "/CustomerService.asset";
+            CustomerServiceConfiguration configuration = AssetDatabase.LoadAssetAtPath<CustomerServiceConfiguration>(path);
+            if (configuration == null)
+            {
+                configuration = ScriptableObject.CreateInstance<CustomerServiceConfiguration>();
+                var configData = new SerializedObject(configuration);
+                SerializedProperty menu = configData.FindProperty("_menu"); menu.arraySize = dishes.Length;
+                for (int index = 0; index < dishes.Length; index++)
+                {
+                    menu.GetArrayElementAtIndex(index).FindPropertyRelative("_dish").objectReferenceValue = dishes[index];
+                    menu.GetArrayElementAtIndex(index).FindPropertyRelative("_salePriceCents").intValue = index == 0 ? 500 : 650;
+                }
+                configData.ApplyModifiedPropertiesWithoutUndo(); configuration.CreateOffers();
+                AssetDatabase.CreateAsset(configuration, path);
+            }
+            Material customerMaterial = GetOrCreateMaterial("CustomerPlaceholder", new Color(0.2f, 0.55f, 0.8f));
+            Material deliveryMaterial = GetOrCreateMaterial("DeliveryPad", new Color(0.2f, 0.7f, 0.35f));
+            var serviceRoot = new GameObject("CustomerServiceZone");
+            Transform entry = CreateRoutePoint(serviceRoot.transform, "CustomerEntrance", new Vector3(6.25f, 0f, -5.3f), deliveryMaterial, true);
+            Transform exit = CreateRoutePoint(serviceRoot.transform, "CustomerExit", new Vector3(6.25f, 0f, -5.65f), deliveryMaterial, false);
+            Transform[] route =
+            {
+                CreateRoutePoint(serviceRoot.transform, "ArrivalCorner1", new Vector3(2.7f, 0f, -5.3f), null, false),
+                CreateRoutePoint(serviceRoot.transform, "ArrivalCorner2", new Vector3(2.7f, 0f, -1.4f), null, false),
+                CreateRoutePoint(serviceRoot.transform, "ArrivalCorner3", new Vector3(0f, 0f, -1.4f), null, false),
+                CreateRoutePoint(serviceRoot.transform, "CustomerWaitingPoint", new Vector3(0f, 0f, -0.65f), customerMaterial, true)
+            };
+            var customer = new GameObject("CustomerPlaceholder", typeof(Rigidbody), typeof(BoxCollider), typeof(CustomerMovement));
+            customer.transform.SetParent(serviceRoot.transform, false); customer.transform.position = entry.position;
+            customer.GetComponent<Rigidbody>().isKinematic = true; customer.GetComponent<Rigidbody>().useGravity = false;
+            customer.GetComponent<BoxCollider>().size = new Vector3(0.5f, 1.8f, 0.5f);
+            customer.GetComponent<BoxCollider>().center = Vector3.up * 0.9f;
+            GameObject torso = CreateBox(customer.transform, "BodyVisual", new Vector3(0f, 0.75f, 0f), new Vector3(0.45f, 1.3f, 0.4f), customerMaterial);
+            UnityEngine.Object.DestroyImmediate(torso.GetComponent<BoxCollider>());
+            GameObject head = CreateBox(customer.transform, "HeadVisual", new Vector3(0f, 1.6f, 0f), Vector3.one * 0.35f, customerMaterial);
+            UnityEngine.Object.DestroyImmediate(head.GetComponent<BoxCollider>());
+            CustomerMovement movement = customer.GetComponent<CustomerMovement>();
+            var moverData = new SerializedObject(movement);
+            moverData.FindProperty("_entryPoint").objectReferenceValue = entry;
+            moverData.FindProperty("_exitPoint").objectReferenceValue = exit;
+            SerializedProperty points = moverData.FindProperty("_arrivalPath"); points.arraySize = route.Length;
+            for (int index = 0; index < route.Length; index++) points.GetArrayElementAtIndex(index).objectReferenceValue = route[index];
+            moverData.ApplyModifiedPropertiesWithoutUndo(); customer.SetActive(false);
+
+            CustomerServiceLoop service = serviceRoot.AddComponent<CustomerServiceLoop>();
+            var serviceData = new SerializedObject(service);
+            serviceData.FindProperty("_configuration").objectReferenceValue = configuration;
+            serviceData.FindProperty("_customer").objectReferenceValue = movement;
+            serviceData.FindProperty("_foodSimulation").objectReferenceValue = simulation;
+            serviceData.ApplyModifiedPropertiesWithoutUndo();
+            GameObject pad = CreateBox(serviceRoot.transform, "DeliveryPad", new Vector3(0f, 1.115f, 0.5f), new Vector3(1.25f, 0.03f, 0.9f), deliveryMaterial);
+            var zoneObject = new GameObject("DeliveryZone", typeof(BoxCollider), typeof(DeliveryZone));
+            zoneObject.transform.SetParent(serviceRoot.transform, false); zoneObject.transform.position = new Vector3(0f, 1.65f, 0.5f);
+            BoxCollider sensor = zoneObject.GetComponent<BoxCollider>(); sensor.isTrigger = true; sensor.size = new Vector3(1.25f, 1.04f, 0.9f);
+            var deliveryData = new SerializedObject(zoneObject.GetComponent<DeliveryZone>());
+            deliveryData.FindProperty("_zone").objectReferenceValue = sensor;
+            deliveryData.FindProperty("_support").objectReferenceValue = pad.GetComponent<BoxCollider>();
+            deliveryData.FindProperty("_service").objectReferenceValue = service; deliveryData.ApplyModifiedPropertiesWithoutUndo();
+            OrderFeedback feedback = serviceRoot.AddComponent<OrderFeedback>();
+            var feedbackData = new SerializedObject(feedback); feedbackData.FindProperty("_service").objectReferenceValue = service;
+            feedbackData.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static Transform CreateRoutePoint(Transform parent, string name, Vector3 position, Material material, bool visible)
+        {
+            var point = new GameObject(name); point.transform.SetParent(parent, false); point.transform.position = position;
+            if (visible)
+            {
+                GameObject marker = CreateBox(point.transform, "MarkerVisual", new Vector3(0f, 0.01f, 0f), new Vector3(0.7f, 0.02f, 0.45f), material);
+                UnityEngine.Object.DestroyImmediate(marker.GetComponent<BoxCollider>());
+            }
+            return point.transform;
         }
     }
 }

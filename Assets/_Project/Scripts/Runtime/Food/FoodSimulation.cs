@@ -17,6 +17,15 @@ namespace ZeroStarRestaurant.Food
 
         private void Update() => Advance(Time.deltaTime * (double)Mathf.Max(0f, _developmentTimeMultiplier));
 
+        public void Unregister(IReadOnlyList<FoodItem> foods)
+        {
+            if (foods == null) throw new ArgumentNullException(nameof(foods));
+            var removed = new HashSet<FoodItem>(foods);
+            var remaining = new List<FoodItem>();
+            foreach (FoodItem food in _foods) if (food != null && !removed.Contains(food)) remaining.Add(food);
+            _foods = remaining.ToArray();
+        }
+
         public void Advance(double elapsedSeconds)
         {
             if (double.IsNaN(elapsedSeconds) || double.IsInfinity(elapsedSeconds) || elapsedSeconds < 0.0)
