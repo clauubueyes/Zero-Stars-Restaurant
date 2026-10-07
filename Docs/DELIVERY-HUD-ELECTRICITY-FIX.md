@@ -160,3 +160,46 @@ de transporte para usar el pasillo actual, sin modificar layout ni reglas de aga
 Los archivos locales `_Recovery` y SceneTemplateSettings del proyecto original
 permanecen intactos y no se incorporan a commits de gameplay. Sin cambios de input,
 paquetes, pipeline, prefabs, recetas o configuración económica existente.
+
+## Seguimiento de entrega sobre el pad (2026-10-07)
+
+El usuario sigue observando una hamburguesa sin recoger sobre el verde y confirma
+que pulsó F y había pedido. Falta conocer la condición bloqueante y distinguir
+Order de Wait; la captura tampoco permite medir apoyo o velocidades. El caso
+exacto todavía no está reproducido; las pruebas automáticas no lo dan por resuelto.
+
+DeliveryZone expone `PlacementMessage` desde la misma detección y las mismas
+condiciones que autorizan entregar. OrderFeedback lo muestra junto al pedido,
+antes de la cola, mediante el único DebugHudPresenter. Explica si falta confirmar
+la pila con F, soltar el plato, apoyarlo, introducirlo más en el pad, esperar a que
+se asiente o esperar al cliente. No modifica geometría, umbrales, input, recetas,
+pagos ni la necesidad de confirmar un Dish; no convierte alimentos automáticamente.
+
+Se reproduce una pila reconocible sobre el pad sin confirmar: no paga, explica F
+y, al finalizarla en el mismo sitio, el cliente recibe ese Dish y cobra una vez.
+También se prueba que altura/velocidad bloqueantes se explican sin cobrar y que
+recolocar correctamente permite la misma entrega. Dos pruebas nuevas recorren
+con agarre y caída física ambos lados del pad en PrototypeRestaurant.
+
+Validación nueva en `Zero Stars Restaurant Delivery`: **68/68 PlayMode** de
+M6ServiceTests/M6PrototypeTests y **256/256 EditMode**, sin fallos ni omitidas.
+XML: `TestResults/PadFeedback.xml` y `TestResults/PadEditMode.xml`.
+La primera exploración pasó **7/7** pruebas físicas de PrototypeRestaurant.
+No se repite aquí la suite PlayMode completa histórica de M1–M13.
+
+Aplicado a la carpeta que el usuario abrió, `C:/Users/Usuario/Zero Stars Restaurant
+Fixes`, rama `fix/delivery-pad-feedback`, commits `4e63e74` y `aead582`.
+Los otros 439 archivos versionados de Assets se conservan byte a byte, incluidas
+escenas, materiales y metas. El Editor abierto tiene cambios sin guardar; no se
+sobrescribe su escena ni se inicia otro Editor en esa carpeta. La compilación del
+Editor interactivo estaba pendiente al aplicar los scripts.
+
+Archivos modificados: `Scripts/Runtime/Orders/DeliveryZone.cs`,
+`Scripts/Runtime/Orders/OrderFeedback.cs`, `Tests/PlayMode/M6PrototypeTests.cs`,
+`Tests/PlayMode/M6ServiceTests.cs` (bajo `Assets/_Project`) y este documento.
+
+Comprobación pendiente: salir de Play, enfocar Unity y esperar compilación; usar
+Assets / Refresh si hace falta. Volver a Play y repetir la colocación de la
+captura. Leer la línea **Delivery:** junto al pedido. El usuario ya confirmó F;
+ese mensaje permite distinguir geometría, apoyo y velocidad de disponibilidad
+del cliente o una colocación previamente rechazada.
