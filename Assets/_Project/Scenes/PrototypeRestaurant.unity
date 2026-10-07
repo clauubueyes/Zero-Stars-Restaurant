@@ -5445,7 +5445,6 @@ GameObject:
   - component: {fileID: 1163158818}
   - component: {fileID: 1163158820}
   - component: {fileID: 1163158819}
-
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -6268,7 +6267,6 @@ GameObject:
   - component: {fileID: 999030020}
   - component: {fileID: 288771098}
   - component: {fileID: 288771099}
-
   m_Layer: 0
   m_Name: Freezer
   m_TagString: Untagged
@@ -6328,7 +6326,6 @@ GameObject:
   - component: {fileID: 999030024}
   - component: {fileID: 1163601737}
   - component: {fileID: 1163601736}
-
   m_Layer: 0
   m_Name: Fridge
   m_TagString: Untagged
@@ -8843,7 +8840,6 @@ GameObject:
   - component: {fileID: 1241087750}
   - component: {fileID: 1241087752}
   - component: {fileID: 1241087753}
-
   m_Layer: 0
   m_Name: GrillStation
   m_TagString: Untagged
