@@ -1,6 +1,10 @@
 # Vertical slice y roadmap
 
 Estado actual: **M0–M6 aprobados por el usuario; M6 aprobado en `9335899`**.
+La [corrección de transferencia](DISH-CUSTOMER-HANDOFF-FIX.md) refuerza la entrega
+Dish/DeliveryZone: aceptación y fijación al cliente en una operación, seguimiento
+de todos los cuerpos originales hasta Exit y tests con mirada desviada y jugador
+en distintas posiciones. Sin nuevo milestone; aceptación manual pendiente.
 El [polish del slice](VERTICAL-SLICE-POLISH.md) mejora snap, agarre, transporte de
 ventas y greybox en `fix/vertical-slice-polish`.
 La prueba manual del slice detectó precisión excesiva en entrega; la

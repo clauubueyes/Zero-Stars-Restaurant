@@ -85,6 +85,9 @@ La escena de plantilla
     loop comprar → almacenar → cocinar → montar → entregar → cobrar están en [M9](Docs/M9.md).
     La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
     parcial: basta soltar y dejar reposar; no exige centrar el plato.
+    La [transferencia al cliente](Docs/DISH-CUSTOMER-HANDOFF-FIX.md) fija el agregado
+    original antes de resolver la visita y lo sigue hasta Exit sin consultar al
+    jugador; tras soltar se puede mirar hacia otro lado y alejarse.
 
 11. Los gabinetes abiertos **Fridge** (azul claro, +4 °C) y **Freezer** (azul oscuro,
     −18 °C) están contra la pared oeste de cocina y abren hacia el este. **E** recoge comida,
