@@ -127,7 +127,10 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_assembly.TryFinalize(), Is.False);
             _player.transform.position += _view.forward * 5f; Physics.SyncTransforms();
             unrelated.Body.position = start + Vector3.left * 0.7f; Physics.SyncTransforms();
+            // Acquire with a clear carry destination in the user's current layout, then look back at the stack.
+            _view.rotation = Quaternion.Euler(0, 180, 0);
             Assert.That(_carry.TryPickUp(unrelated), Is.True);
+            _view.LookAt(_focus.GetComponent<BoxCollider>().bounds.center);
             Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null, "Held hands cannot finalize.");
             Assert.That(_assembly.TryFinalize(), Is.False);
             _carry.Drop();

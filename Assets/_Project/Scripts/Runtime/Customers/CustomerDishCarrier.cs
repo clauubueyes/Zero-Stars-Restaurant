@@ -57,7 +57,8 @@ namespace ZeroStarRestaurant.Customers
             for (int index = 0; index < _bodies.Length; index++)
                 _bodyLocalPoses[index] = new Pose(dish.transform.InverseTransformPoint(_bodies[index].transform.position),
                     Quaternion.Inverse(dish.transform.rotation) * _bodies[index].transform.rotation);
-            dish.transform.SetParent(_anchor, false); dish.transform.localRotation = Quaternion.identity;
+            // Preserve the aggregate's world scale when the user's customer/anchor is scaled.
+            dish.transform.SetParent(_anchor, true); dish.transform.localRotation = Quaternion.identity;
             BoxCollider proxy = dish.GetComponent<BoxCollider>();
             _carryLocalPosition = Vector3.up * (proxy.size.y * 0.5f - proxy.center.y);
             Dish = dish;
@@ -80,6 +81,10 @@ namespace ZeroStarRestaurant.Customers
                 body.position = position; body.rotation = rotation;
             }
         }
+
+        // Presentation only: reassert native-body poses after physics and before rendering.
+        // This advances no customer or food clock.
+        private void LateUpdate() => SynchronizePose();
 
         // The service unregisters originals before invoking this at exit (or cancellation).
         public void Clear()

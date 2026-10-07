@@ -16,6 +16,7 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField] private CustomerDishCarrier _dishCarrier;
         [SerializeField] private FoodSimulation _foodSimulation;
         [SerializeField] private CustomerQueueController _queue;
+        [SerializeField] private DeliveryZone _deliveryZone;
         [SerializeField, Tooltip("Development/testing: turn off to advance the same service clock explicitly with Advance.")]
         private bool _advanceAutomatically = true;
         [SerializeField, Min(0), Tooltip("Development seed money only. Final gameplay starts at zero; first supply remains a design debt.")]
@@ -27,6 +28,7 @@ namespace ZeroStarRestaurant.Customers
         private double _queueElapsedSeconds;
         private const double QueueStepSeconds = 0.05;
         public CustomerQueueController Queue => _queue;
+        public DeliveryZone DeliveryZone => _deliveryZone;
         public CustomerMovement ActiveCustomer => Visit != null ? _customer : null;
         public CustomerDishCarrier ActiveDishCarrier => Visit != null ? _dishCarrier : null;
         public PaymentLedger Ledger { get; private set; }
@@ -164,9 +166,13 @@ namespace ZeroStarRestaurant.Customers
             }
             else { CustomerNumber++; _customer.BeginEntering(CustomerNumber); }
         }
-        public bool TryDeliver(DishItem dish)
+        // Compatibility entry point: every submission still has to be on the same pad.
+        public bool TryDeliver(DishItem dish) => _deliveryZone != null && _deliveryZone.TryDeliver(dish);
+
+        internal bool TryAcceptDelivery(DeliveryZone source, DishItem dish)
         {
-            if (!isActiveAndEnabled || Visit == null || Visit.Stage != CustomerStage.Wait || dish == null ||
+            if (source == null || source != _deliveryZone || !source.isActiveAndEnabled ||
+                !isActiveAndEnabled || Visit == null || Visit.Stage != CustomerStage.Wait || dish == null ||
                 !dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized || dish.State.IsSold || !dish.IsIntact) return false;
             if (_queue != null && (!_queue.isActiveAndEnabled || _queue.Head == null || _queue.Head.State.Stage != QueuedCustomerStage.Service ||
                 _queue.Head.State.InstanceId != Visit.InstanceId || _queue.Head.Movement != _customer ||

@@ -108,11 +108,11 @@ namespace ZeroStarRestaurant.Tests
             Quaternion start = view.rotation;
             for (int frame = 0; frame < 35; frame++)
             { view.rotation = Quaternion.Slerp(start, Quaternion.identity, (frame + 1f) / 35f); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
-            for (int frame = 0; frame < 60; frame++)
-            { player.transform.position = new Vector3(Mathf.Lerp(pickupSpot.x, deliveryX, (frame + 1f) / 60f), 0.03f, pickupSpot.z); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
-            // Turn through the open west side, then approach the unchanged 1.1 m counter.
+            // The user's prep is now by the north wall: turn toward the open aisle before walking sideways.
             for (int frame = 0; frame < 90; frame++)
             { view.rotation = Quaternion.Euler(-5f, -180f * (frame + 1f) / 90f, 0f); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
+            for (int frame = 0; frame < 60; frame++)
+            { player.transform.position = new Vector3(Mathf.Lerp(pickupSpot.x, deliveryX, (frame + 1f) / 60f), 0.03f, pickupSpot.z); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 60; frame++)
             { player.transform.position = new Vector3(deliveryX, 0.03f, Mathf.Lerp(pickupSpot.z, 2.25f, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();

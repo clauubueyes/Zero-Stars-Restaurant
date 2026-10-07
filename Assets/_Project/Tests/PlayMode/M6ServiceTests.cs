@@ -63,6 +63,7 @@ namespace ZeroStarRestaurant.Tests
             GameObject delivery = Create("Delivery", _origin + new Vector3(-2, 1.45f, 0)); delivery.SetActive(false);
             BoxCollider sensor = delivery.AddComponent<BoxCollider>(); sensor.isTrigger = true; sensor.size = new Vector3(1.25f, 1.04f, 0.9f);
             _delivery = delivery.AddComponent<DeliveryZone>(); Set(_delivery, "_zone", sensor); Set(_delivery, "_support", _pad); Set(_delivery, "_service", _service);
+            Set(_service, "_deliveryZone", _delivery);
             delivery.SetActive(true); Physics.SyncTransforms();
         }
         [TearDown]
@@ -346,7 +347,8 @@ namespace ZeroStarRestaurant.Tests
             Vector3 start = _customer.transform.position; _service.Advance(0.1); Assert.That(_customer.transform.position, Is.Not.EqualTo(start));
             Assert.That(_service.Visit, Is.SameAs(first)); _service.Advance(100); Assert.That(first.Stage, Is.EqualTo(CustomerStage.Order));
             _service.Advance(1); Assert.That(first.Stage, Is.EqualTo(CustomerStage.Wait));
-            DishItem dish = FinalDish(); Assert.That(_service.TryDeliver(dish), Is.True);
+            DishItem dish = FinalDish(); Assert.That(_service.TryDeliver(dish), Is.False);
+            Place(dish); _delivery.Poll(); Assert.That(first.Order.IsCompleted, Is.True);
             _service.Advance(10); Assert.That(first.Stage, Is.EqualTo(CustomerStage.Leave)); _service.Advance(100);
             Assert.That(first.Stage, Is.EqualTo(CustomerStage.Finished)); Assert.That(_service.Visit, Is.Null); Assert.That(_customer.gameObject.activeSelf, Is.False);
             Assert.That(_service.ForceNextOrder(0), Is.True); Assert.That(_service.ForceNextOrder(99), Is.False);
@@ -438,6 +440,43 @@ namespace ZeroStarRestaurant.Tests
         [UnityTest] public IEnumerator DishWithPlateWithoutLookingAtCustomerCarriesSameUtensilToExit() =>
             DeliverWithoutPlayerDependency(new Vector3(0, 0, 1.8f), 0f, true);
 
+        [UnityTest] public IEnumerator FarPlayerCannotAffectDishDeliveryOrExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(40, 0, 40), 90f, leaveImmediately: true);
+        [UnityTest] public IEnumerator FarPlayerCannotAffectPlateDeliveryOrExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(40, 0, 40), 90f, true, true);
+        [UnityTest] public IEnumerator PlayerBehindCustomerCannotAffectDishDeliveryOrExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(0, 0, -6), 180f, leaveImmediately: true);
+        [UnityTest] public IEnumerator PlayerBehindCustomerCannotAffectPlateDeliveryOrExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(0, 0, -6), 180f, true, true);
+        [UnityTest] public IEnumerator PlayerLeavingDeliveryImmediatelyAfterReleaseCannotCancelHandoff() =>
+            DeliverWithoutPlayerDependency(new Vector3(-20, 0, 10), 270f, leaveImmediately: true);
+        [UnityTest] public IEnumerator PlateHandoffSurvivesPlayerLeavingAndScaledCustomer() =>
+            DeliverWithoutPlayerDependency(new Vector3(-20, 0, 10), 270f, true, true, true);
+
+        [Test]
+        public void DirectServiceApiCannotBypassPadOrItsPlacementRetryPolicy()
+        {
+            Ready(1); DishItem dish = FreeDish(false);
+            Assert.That(_service.TryDeliver(dish), Is.False, "A workbench is not a delivery pad.");
+            Assert.That(_service.LastResult, Is.Null); Assert.That(_service.Ledger.BalanceCents, Is.Zero);
+            PlaceAt(dish, new Vector2(2, 0)); Assert.That(_service.TryDeliver(dish), Is.False);
+            Place(dish); Assert.That(_service.TryDeliver(dish), Is.True);
+            Assert.That(_service.LastResult.Accepted, Is.False); var result = _service.LastResult;
+            Assert.That(_service.TryDeliver(dish), Is.False); Assert.That(_service.LastResult, Is.SameAs(result));
+            Assert.That(dish.GetComponent<Pickup>().enabled, Is.True); Assert.That(dish.State.IsSold, Is.False);
+        }
+
+        [TestCase(false)] [TestCase(true)]
+        public void MovingTheGreenPadWithoutMovingTheOldTriggerKeepsItTheOnlySpatialReference(bool withPlate)
+        {
+            Ready(0); DishItem dish = FreeDish(withPlate);
+            _pad.transform.position += new Vector3(3, 0, 2);
+            _pad.transform.rotation = Quaternion.Euler(0, 40, 0);
+            PlaceAt(dish, Vector2.zero); _delivery.Poll();
+            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_carrier.Dish, Is.SameAs(dish));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+        }
+
         private DishItem FreeDish(bool withPlate)
         {
             float baseHeight = .9f;
@@ -458,10 +497,13 @@ namespace ZeroStarRestaurant.Tests
             return dish;
         }
 
-        private IEnumerator DeliverWithoutPlayerDependency(Vector3 playerOffset, float yaw, bool withPlate = false)
+        private IEnumerator DeliverWithoutPlayerDependency(Vector3 playerOffset, float yaw, bool withPlate = false,
+            bool leaveImmediately = false, bool scaledCustomer = false)
         {
             Set(_service, "_advanceAutomatically", false);
+            if (scaledCustomer) _customer.transform.localScale = Vector3.one * 1.2f;
             Ready(); DishItem dish = FreeDish(withPlate);
+            Vector3 originalWorldScale = dish.transform.lossyScale;
             PlateItem plate = dish.Plate; Guid plateId = plate != null ? plate.InstanceId : Guid.Empty;
             Assert.That(dish.State.InstanceId.Value, Is.Not.EqualTo(plateId), "Plate is never the order identity.");
             Vector3 plateLocalPosition = plate != null ? dish.transform.InverseTransformPoint(plate.transform.position) : Vector3.zero;
@@ -470,7 +512,8 @@ namespace ZeroStarRestaurant.Tests
             Quaternion[] localRotations = ingredients.Select(food => Quaternion.Inverse(dish.transform.rotation) * food.transform.rotation).ToArray();
             FoodState[] states = ingredients.Select(food => food.State).ToArray();
             foreach (FoodItem food in ingredients) food.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
-            GameObject actor = Create("Player", _pad.transform.position + playerOffset - Vector3.up * _pad.transform.position.y);
+            Vector3 pickupOffset = leaveImmediately ? new Vector3(0, 0, 1.8f) : playerOffset;
+            GameObject actor = Create("Player", _pad.transform.position + pickupOffset - Vector3.up * _pad.transform.position.y);
             Transform view = Create("Camera", actor.transform.position + Vector3.up * 1.65f).transform;
             view.SetParent(actor.transform, true); view.rotation = Quaternion.Euler(0, yaw, 0);
             if (yaw == 0f)
@@ -481,10 +524,17 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(carry.TryPickUp(dish.GetComponent<Pickup>()), Is.True);
             _delivery.Poll(); Assert.That(_service.LastResult, Is.Null, "Holding a dish never submits it.");
             carry.ReleaseFromMouse();
+            if (leaveImmediately)
+            {
+                actor.transform.position = _pad.transform.position + playerOffset;
+                view.rotation = Quaternion.Euler(0, yaw + 180, 0);
+                carry.enabled = false;
+            }
             for (int step = 0; step < 50 && _service.LastResult == null; step++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult?.Accepted, Is.True, "Delivery depends on the released Dish and zone, including looking away.");
             var visit = _service.Visit;
             Assert.That(_carrier.Dish, Is.SameAs(dish));
+            Assert.That(Vector3.Distance(dish.transform.lossyScale, originalWorldScale), Is.LessThan(.001f));
             // Move and turn the player throughout result/exit, also processing native physics/render frames.
             for (int step = 0; step < 300 && visit.Stage != CustomerStage.Finished; step++)
             {
