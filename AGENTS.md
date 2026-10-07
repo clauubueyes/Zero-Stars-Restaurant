@@ -41,7 +41,9 @@
   y estadísticas acumuladas; ver Docs/M15.md y ADR 0021.
   Código M15 validado en `c0698d9`: 304/304 EditMode y 284/284 PlayMode en
   `C:/Users/Usuario/Zero Stars Restaurant M14`, rama `feature/food-quality-consequences`.
-  Los sistemas posteriores no están implementados.
+  M16 añade reputación e incidentes diferidos desde M15 `3799710` en
+  `feature/reputation-delayed-consequences`; ver Docs/M16.md y ADR 0022.
+  M17 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -276,7 +278,22 @@ silenciosamente**: indícalo antes.
   Burnt Complaint; Acceptable/Overcooked Unhappy; resto Good/Satisfied. Prioridad
   sanitaria > queja > descontento > satisfacción, causas completas y contadores
   exclusivos. Temperatura sigue como hecho. Sin enfermedad diferida, reputación,
-  inspección, devolución, descuento por calidad ni M16. Ver ADR 0021.
+  inspección, devolución ni descuento por calidad. M16 está autorizado aparte. Ver ADR 0021.
+- M16 consume CustomerConsequence original, sin sustituir estadísticas M15 ni
+  modificar pagos M14. RestaurantReputationState conserva rango, eventos, riesgos
+  y resoluciones por visita/pedido; no reiniciar al salir, cancelar o cambiar día.
+  Riesgo al servir; plazo solo tras Exit (o cancelación de una visita ya consumida).
+  Satisfied +1, Unhappy -1, Complaint -3 al finalizar; Health Incident sin penalización
+  inmediata, confirmado -8, todo configurable. Probabilidad máxima de causas reales:
+  carne Raw/Undercooked .35, Spoiled/Rotten .55, Contaminated .75; una tirada por visita.
+  GameTime.ElapsedWorldSeconds acumula solo avance efectivo, no noche ni Next Day;
+  RestaurantDayController llama ResolveDue, sin otro Update/reloj. Retraso 7200s.
+  RNG inyectable en Domain y seed de sesión en Runtime, evidencia inmutable y
+  resolución una vez. Herramientas de desarrollo adelantan/confirmar/descartar solo
+  riesgos de clientes que ya salieron. Feedback en HUD central con scroll existente.
+  Persistencia de sesión entre días, sin guardado en disco. No estrellas, reputación
+  sobre clientes/precios, inspecciones, multas, enfermedades concretas ni M17.
+  Ver Docs/M16.md y ADR 0022.
 - DeliveryZone es la única puerta espacial: todas las APIs de servicio deben pasar
   por apoyo/overlap del pad verde actual, sin posición/orientación/input del jugador.
   El carrier recibe el mismo Dish con o sin Plate, bloquea todo Pickup/colisión y

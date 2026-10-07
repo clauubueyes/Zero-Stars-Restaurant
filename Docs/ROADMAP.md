@@ -55,7 +55,13 @@ Stale u Overcooked/Unhappy, Burnt/Complaint y peligro/Health Incident; conserva
 problemas simultáneos y estadísticas/evidencia entre visitas y jornadas.
 M14 mantiene el pago sin descuentos por calidad. Ver [M15](M15.md) y ADR 0021.
 Validación completa en el proyecto real: **304/304 EditMode y 284/284 PlayMode**.
-Sin reputación, enfermedad diferida, inspecciones, devoluciones ni M16.
+M15 no implementa reputación ni enfermedad diferida; M16 está autorizado aparte.
+
+**M16: Reputation & Delayed Consequences**, desde `3799710`, convierte evidencia
+M15 en reputación e historial entre visitas y días, con resolución sanitaria
+posterior a Exit por GameTime y RNG inyectable. Mantiene pagos M14 y datos M15.
+Validación completa en la carpeta entregada M14: **333/333 EditMode y 290/290
+PlayMode**, sin fallos/omisiones. Ver [M16](M16.md) y ADR 0022. No M17.
 
 ## Experiencia objetivo
 
@@ -128,6 +134,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M13 · `feature/bills-operating-costs` | Facturas, costes fijos configurables y resultado diario con el ledger existente. | kWh reales M12 × tarifa, redondeo final determinista en céntimos; ventas/compras reales sin doble cobro; alquiler una vez. Closing termina clientes y Closed liquida exactamente una vez; Next Day exige resumen y no repite cargos. Saldo negativo permitido. Summary conciliado hasta Next Day; consumo eléctrico devengado separado de pagos, período pendiente entre días, herramienta Inspector para pagar exactamente una vez. Ver también ADR 0019. Reset solo diario, históricos/dinero/objetos/estados intactos. Dos días consecutivos, apagado individual/corte, éxito/rechazo/duplicados/overflow e integración/regresiones M1–M12. Ver M13.md y ADR 0018; sin M14. |
 | M14 · `feature/order-satisfaction-partial-payment` | Completitud por unidades y pago parcial configurable. | Expected/Received/Missing/Extra con multiplicidades y receta reconocida, separados de calidad y seguridad. Precio como máximo, pesos positivos por slot, céntimos deterministas, extras sin aumento y rechazo solo irrelevante. Dish completo/incompleto, alimento suelto y mezcla se evalúan por PASS; aceptación transporta todos los originales a Exit sin clonarlos. Ledger guarda importe real una vez y Summary lo conserva. Tests perfectos/ausencias/Patty/Bun/extras/otra receta/rechazo/topes/duplicados/seguridad/transporte y regresiones M1–M13; ver M14.md y ADR 0020. |
 | M15 · `feature/food-quality-consequences` | Calidad independiente, reacción por visita y estadísticas de sesión. | Snapshot real con causas simultáneas por unidad: frescura/deterioro, contaminación y todas las etapas de cocción; temperatura como evidencia. Good/Satisfied, leve/Unhappy, Burnt/Complaint y peligro/Health Incident. Reacción e incidente una vez por visita/pedido; served, satisfied, unhappy, complaints, health incidents e historial conservados hasta después de Exit y Next Day. Dish completo/incompleto, individual y extras; pago M14 independiente, originales transportados y feedback visible. Tests de reglas, duplicados, acumulación, días, flujo físico y regresiones M1–M14. Ver M15.md y ADR 0021. Sin reputación, enfermedad diferida, inspecciones, devolución ni M16. |
+| M16 · `feature/reputation-delayed-consequences` | Reputación de sesión e historial; consecuencias sanitarias diferidas independientes del pago. | Desde `3799710`: rango configurable 0–100, neutral 50; Satisfied/Unhappy/Complaint al terminar visita. Riesgo sanitario desde evidencia M15; tras Exit y 7200s efectivos de GameTime, RNG inyectable confirma o descarta; una resolución por visita/pedido. Causas Raw/Undercooked meat, Spoiled/Rotten, Contaminated; múltiples riesgos, rango limitado, historial original, Next Day conserva pendientes sin simular noche. Debug para adelantar/forzar y feedback en panel existente sin solapamientos. Tests de reglas, probabilidades, días, identidad única y regresiones completas M1–M15; M14 paga intacto, M15 conserva reacción/estadísticas. Ver M16.md y ADR 0022. Sin estrellas, inspecciones, multas, enfermedades concretas, reputación sobre clientes/precios ni M17. |
 
 ## Recorrido de aceptación del slice
 

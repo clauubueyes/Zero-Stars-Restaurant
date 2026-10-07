@@ -1,11 +1,14 @@
 # Zero Star Restaurant
 
-Estado actual: **M15: Food Quality & Customer Consequences**, desde M14 validado
-`8751d34`. M14 conserva completitud/pagos (Hamburger 5 €, Patty + Bun 3,50 €,
-solo Patty 2 €). M15 registra causas de calidad independientes, una reacción por
-visita y estadísticas acumuladas: Satisfied, Unhappy, Complaint o Health Incident.
-La calidad no reduce el pago. Ver [M15](Docs/M15.md) para reglas y comparación
-buena/quemada/peligrosa; [M14](Docs/M14.md) para completitud. F sigue siendo opcional.
+Estado actual: **M16: Reputation & Delayed Consequences**, desde M15 validado
+`3799710`, en `feature/reputation-delayed-consequences`. M14 conserva completitud
+y pago; M15 conserva causas y reacción; M16 añade reputación de sesión e historial.
+Satisfied/Unhappy/Complaint cambian reputación al terminar la visita. Un Health
+Incident registra riesgo al cobrar y se resuelve después de Exit y un retraso de
+GameTime, sin retirar dinero. Pendientes e historial sobreviven a Next Day.
+Ver [M16](Docs/M16.md) para configuración, pruebas y resolución de desarrollo;
+[M15](Docs/M15.md) para calidad y [M14](Docs/M14.md) para completitud/pago.
+F sigue siendo opcional.
 
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
 en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.
