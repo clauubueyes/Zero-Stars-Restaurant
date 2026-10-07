@@ -37,6 +37,8 @@
   `feature/bills-operating-costs`; ver Docs/M13.md y ADR 0018.
   M1–M13 y correcciones de servicio están aprobados en `cf12f9d`.
   M14 implementa completitud de pedidos y pago parcial; ver Docs/M14.md y ADR 0020.
+  M14 está validado en `8751d34`. M15 añade causas de calidad, reacción por visita
+  y estadísticas acumuladas; ver Docs/M15.md y ADR 0021.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -263,7 +265,16 @@ silenciosamente**: indícalo antes.
   Dish/FoodItem/Plate originales hasta Exit, donde desregistra y limpia. Preservar
   evidencia inmutable de temperatura/edad/frescura/deterioro/cocción/contaminación.
   Montar fuera de PASS: se resuelve una entrega, sin rondas de completado posteriores.
-  No implementar reputación, intoxicación, inspección ni M15. Ver ADR 0020.
+  No implementar reputación, intoxicación ni inspección. M15 está autorizado aparte. Ver ADR 0020.
+- M15 evalúa el mismo snapshot inmutable de M14, con causas por unidad, sin score
+  único ni cambios de pago. CustomerVisit.Resolve crea una consecuencia solo tras
+  aceptar/comer provisionalmente en Pay. Statistics del servicio deduplica visita
+  y pedido; conserva evidencia tras Exit, cancelación y Next Day. Raw/Undercooked
+  de carne cocinable, Spoiled/Rotten y Contaminated producen Health Incident;
+  Burnt Complaint; Acceptable/Overcooked Unhappy; resto Good/Satisfied. Prioridad
+  sanitaria > queja > descontento > satisfacción, causas completas y contadores
+  exclusivos. Temperatura sigue como hecho. Sin enfermedad diferida, reputación,
+  inspección, devolución, descuento por calidad ni M16. Ver ADR 0021.
 - DeliveryZone es la única puerta espacial: todas las APIs de servicio deben pasar
   por apoyo/overlap del pad verde actual, sin posición/orientación/input del jugador.
   El carrier recibe el mismo Dish con o sin Plate, bloquea todo Pickup/colisión y

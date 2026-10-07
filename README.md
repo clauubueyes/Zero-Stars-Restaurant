@@ -1,10 +1,11 @@
 # Zero Star Restaurant
 
-Estado actual: **M14: Order Satisfaction & Partial Payment**, desde la versión
-aprobada `cf12f9d`. PASS acepta platos e ingredientes sueltos: Hamburger completa
-paga 5 €, Patty + Bun 3,50 €, solo Patty 2 €. Extras no aumentan el máximo;
-calidad/seguridad sigue registrándose por separado. Ver [M14](Docs/M14.md) para
-reglas configurables, pruebas y comparación manual. F es opcional para entregar.
+Estado actual: **M15: Food Quality & Customer Consequences**, desde M14 validado
+`8751d34`. M14 conserva completitud/pagos (Hamburger 5 €, Patty + Bun 3,50 €,
+solo Patty 2 €). M15 registra causas de calidad independientes, una reacción por
+visita y estadísticas acumuladas: Satisfied, Unhappy, Complaint o Health Incident.
+La calidad no reduce el pago. Ver [M15](Docs/M15.md) para reglas y comparación
+buena/quemada/peligrosa; [M14](Docs/M14.md) para completitud. F sigue siendo opcional.
 
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
 en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.
