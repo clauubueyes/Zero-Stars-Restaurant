@@ -477,6 +477,43 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
 
+        [Test]
+        public void UnconfirmedHamburgerOnTheGreenPadExplainsConfirmationAndDeliversAfterFinalization()
+        {
+            Ready(0);
+            Vector3 at = _pad.bounds.center;
+            float top = _pad.bounds.max.y;
+            Food(_bun, new Vector3(at.x, top + .11f, at.z));
+            Food(_beef, new Vector3(at.x, top + .28f, at.z));
+            FoodItem focus = Food(_bun, new Vector3(at.x, top + .45f, at.z));
+            _delivery.Poll();
+            Assert.That(_service.LastResult, Is.Null);
+            Assert.That(_service.Ledger.BalanceCents, Is.Zero);
+            Assert.That(_delivery.PlacementMessage, Does.Contain("press F"));
+            var feedback = _service.gameObject.AddComponent<OrderFeedback>(); Set(feedback, "_service", _service);
+            Assert.That(feedback.Text, Does.Contain(_delivery.PlacementMessage));
+            var assembly = Create("Assembly input", _origin).AddComponent<PhysicalDishAssembly>();
+            Set(assembly, "_simulation", _simulation); Set(assembly, "_definitions", new[] { _hamburger, _cheeseburger });
+            Assert.That(assembly.TryFinalize(focus, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            _delivery.Poll(); _delivery.Poll();
+            Assert.That(_service.LastResult.Accepted, Is.True);
+            Assert.That(_carrier.Dish, Is.SameAs(dish));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+        }
+
+        [Test]
+        public void SupportedDishShowsTheActualReasonWhileItCannotBeDelivered()
+        {
+            Ready(); DishItem dish = FinalDish(); Place(dish);
+            Rigidbody body = dish.GetComponent<Rigidbody>(); body.linearVelocity = Vector3.right;
+            _delivery.Poll(); Assert.That(_delivery.PlacementMessage, Does.Contain("settle"));
+            body.linearVelocity = Vector3.zero; body.position += Vector3.up * .2f; Physics.SyncTransforms();
+            _delivery.Poll(); Assert.That(_delivery.PlacementMessage, Does.Contain("rest the dish"));
+            Assert.That(_service.LastResult, Is.Null); Assert.That(_service.Ledger.BalanceCents, Is.Zero);
+            Place(dish); _delivery.Poll();
+            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+        }
+
         private DishItem FreeDish(bool withPlate)
         {
             float baseHeight = .9f;

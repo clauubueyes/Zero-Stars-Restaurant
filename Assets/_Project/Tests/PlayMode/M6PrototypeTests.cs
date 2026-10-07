@@ -58,7 +58,13 @@ namespace ZeroStarRestaurant.Tests
         [UnityTest]
         public IEnumerator RealPrototypeCarriesPurchasedPlateWithDishWhilePlayerLooksAway() => DeliverThroughNativePhysics(-.6f, 0f, true);
 
-        private IEnumerator DeliverThroughNativePhysics(float deliveryX, float releasedYaw = 180f, bool withPlate = false)
+        [UnityTest]
+        public IEnumerator RealPrototypeDeliversOnTheCustomerSideOfTheGreenPad() => DeliverThroughNativePhysics(0f, deliveryZOffset: -.35f);
+
+        [UnityTest]
+        public IEnumerator RealPrototypeDeliversOnTheKitchenSideOfTheGreenPad() => DeliverThroughNativePhysics(0f, deliveryZOffset: .35f);
+
+        private IEnumerator DeliverThroughNativePhysics(float deliveryX, float releasedYaw = 180f, bool withPlate = false, float deliveryZOffset = 0f)
         {
             BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
             PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
@@ -114,7 +120,7 @@ namespace ZeroStarRestaurant.Tests
             for (int frame = 0; frame < 60; frame++)
             { player.transform.position = new Vector3(Mathf.Lerp(pickupSpot.x, deliveryX, (frame + 1f) / 60f), 0.03f, pickupSpot.z); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 60; frame++)
-            { player.transform.position = new Vector3(deliveryX, 0.03f, Mathf.Lerp(pickupSpot.z, 2.25f, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
+            { player.transform.position = new Vector3(deliveryX, 0.03f, Mathf.Lerp(pickupSpot.z, 2.25f + deliveryZOffset, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult, Is.Null, "A held dish is never sold.");
             if (deliveryX > .9f)
