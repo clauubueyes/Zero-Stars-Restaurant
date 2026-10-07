@@ -54,6 +54,7 @@ añade causas por ingrediente y una reacción por visita. Good/Satisfied,
 Stale u Overcooked/Unhappy, Burnt/Complaint y peligro/Health Incident; conserva
 problemas simultáneos y estadísticas/evidencia entre visitas y jornadas.
 M14 mantiene el pago sin descuentos por calidad. Ver [M15](M15.md) y ADR 0021.
+Validación completa en el proyecto real: **304/304 EditMode y 284/284 PlayMode**.
 Sin reputación, enfermedad diferida, inspecciones, devoluciones ni M16.
 
 ## Experiencia objetivo

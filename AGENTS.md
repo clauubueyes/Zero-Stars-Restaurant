@@ -39,6 +39,8 @@
   M14 implementa completitud de pedidos y pago parcial; ver Docs/M14.md y ADR 0020.
   M14 está validado en `8751d34`. M15 añade causas de calidad, reacción por visita
   y estadísticas acumuladas; ver Docs/M15.md y ADR 0021.
+  Código M15 validado en `c0698d9`: 304/304 EditMode y 284/284 PlayMode en
+  `C:/Users/Usuario/Zero Stars Restaurant M14`, rama `feature/food-quality-consequences`.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
