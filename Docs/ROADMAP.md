@@ -32,11 +32,11 @@ en **`aa146c3`**; ver [M9](M9.md) y ADR 0011. **M10: Customer Queue** está vali
 en **`bd8d33c`**; ver [M10](M10.md) y ADR 0012. **M11:
 Restaurant Day & Game Time** está validado en `0c81923`: jornada, apertura,
 cierre de nuevas admisiones, final al vaciarse y siguiente día sin resetear
-restaurante. Ver [M11](M11.md) y ADR 0013. No se autoriza electricidad, facturas,
-alquiler, sueño, calendario, eventos, reputación ni guardado. La tarea actual es
-[polish físico previo a M12](PHYSICAL-INTERACTION-POLISH.md) en
-`fix/physical-interaction-polish`: hold/release, montaje sobre apoyo físico y
-reposición de bandejas, manteniendo M1–M11. M12 sigue sin autorización.
+restaurante. Ver [M11](M11.md) y ADR 0013. El polish físico posterior y Plate
+opcional están en la base `ec2ba3e`. **M12: Electricity & Utilities** introduce
+suministro eléctrico ON/OFF, dependencia térmica de Grill/Fridge/Freezer y consumo
+acumulado configurable. Ver [M12](M12.md) y ADR 0017. Aceptación manual pendiente.
+No se autorizan facturas, impagos, generadores, averías ni M13.
 
 ## Experiencia objetivo
 
@@ -79,10 +79,10 @@ compran como unidades físicas; toda provisión gratuita anterior requiere opt-i
 explícito de desarrollo/testing. Una nueva sesión restaura solo el saldo configurado;
 no existen compras ni estado persistentes en assets.
 
-La plancha y Fridge/Freezer activos, junto con iluminación ambiental, siguen siendo
-fixtures térmicas/de visibilidad del prototipo, sin lógica eléctrica. La primera
-provisión jugable con 0 € queda deliberadamente pendiente de diseño. M8 no inventa
-ninguna vía para obtenerla. Combustible y equipamiento siguen fuera del alcance.
+M12 inicia la escena sin corriente: el interruptor E en la pared norte habilita
+Grill/Fridge/Freezer. La iluminación ambiental permanece de desarrollo. La primera
+provisión jugable con 0 € queda pendiente de diseño; no se inventa financiación
+ni desbloqueo comercial de electricidad. Combustible sigue fuera del alcance.
 
 ## Milestones verificables
 
@@ -105,6 +105,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M9 · `feature/restaurant-layout-service-flow` | Distribución espacial de restaurante y recorrido del cliente único. | Cocina al norte: Storage → Prep → Grill → Assembly → Delivery, con Procurement física y pase accesibles. Mostrador sólido separa zona pública: Entrance → futura Queue → Counter → Exit, por puertas y ruta sin atravesar cocina. Cuatro QueuePoints pasivos; fixtures de tests conservadas fuera del gameplay normal. Mantener referencias/GUID y sistemas M1–M8, ejecutar regresiones y comprobar manualmente comprar → almacenar → cocinar → montar → entregar → cobrar; ver M9.md y ADR 0011. Sin múltiples clientes ni arte definitivo. |
 | M10 · `feature/customer-queue` | Cola física FIFO de cuatro clientes y paciencia de debug. | Entrance → Queue → Service Position → Order/Wait → Receive → Exit. Reservas únicas desde entrada hasta salida; al terminar avanza el resto y admite otro. Solo la cabeza llegada tiene pedido/recibe comida; IDs independientes y pipeline M6 de evaluación/pago único/transporte intacto. Paciencia configurable por unidad, cero sin penalización. Movimiento determinista público sin NavMesh; tests de aforo, avance, salida, relevo, identidad, pago y regresiones M1–M9; ver M10.md y ADR 0012. |
 | M11 · `feature/restaurant-day` | Tiempo del mundo y jornada con apertura/cierre. | Día/hora/minuto, horario y velocidad configurables, pausa/resume de desarrollo. Solo Open admite; Closing permite terminar visitas admitidas y finaliza con restaurante vacío. Next Day conserva dinero/comida/estados; único driver FoodSimulation independiente del mundo, sin salto nocturno. HUD mínimo, tests de límites temporales, entrada bloqueada, clientes terminando, dos jornadas consecutivas y regresiones M1–M10; ver M11.md y ADR 0013. |
+| M12 · `feature/electricity-utilities` | Suministro eléctrico general y consumo sin facturas. | ON/OFF corta/restaura Grill, Fridge y Freezer; sin corriente, FoodSimulation aproxima alimento a ambiente y pausa calor/cocción sin recrear estado. Vatios configurables por aparato y kWh acumulados por aparato/total, sin consumo OFF ni duplicación. Feedback mínimo, interruptor E, conservación en Next Day, pruebas de cortes/restauración, tres aparatos, consumo, identidad y regresiones completas M1–M11; ver M12.md y ADR 0017. Sin facturas, impagos, generadores, averías ni M13. |
 
 ## Recorrido de aceptación del slice
 
@@ -115,8 +116,8 @@ M11 añade horario y dos jornadas consecutivas en [M11](M11.md): cerrar admision
 terminar clientes y empezar otro día conservando saldo y estados alimentarios.
 
 1. Abrir `PrototypeRestaurant`; iniciar Play y comprobar 10 € de desarrollo
-   (o el saldo configurado) y provisiones gratuitas desactivadas. No debe hacer falta un sistema eléctrico
-   completo para comprobar esta condición de la fixture.
+   (o el saldo configurado) y provisiones gratuitas desactivadas. Comprobar electricidad
+   OFF y 0 kWh; encender con E en la pared norte para cocinar/enfriar.
 2. Leer el pedido del cliente. Comprar ingredientes con E en la estación,
    retirándolos de OUTPUT antes de la siguiente compra. Comprobar el gasto.
    Recoger y soltar una porción; su identidad/estado
@@ -154,7 +155,7 @@ las posiciones de guías anteriores son históricas.
 El orden siguiente es orientativo y se revisará con evidencia del prototipo:
 
 1. **Bucle de supervivencia:** obtención de provisiones con 0 €, balance de precios M8,
-   combustible, reposición y sistema mínimo de electricidad. Comprobar que existe
+   combustible, reposición y desbloqueo comercial del suministro M12. Comprobar que existe
    una vía jugable para realizar la primera venta sin dinero inicial.
 2. **Profundidad de cocina:** más ingredientes, factores de deterioro, almacenamiento, herramientas
    físicas y criterios de plato más expresivos, manteniendo creación libre.

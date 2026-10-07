@@ -401,3 +401,15 @@ desactiva antes de su Awake, salvo opt-in explícito de desarrollo. La escena co
 1000 céntimos iniciales de desarrollo; el valor por defecto del código continúa en 0.
 La primera provisión con saldo 0 es deuda de diseño. Ver [M8](M8.md) y
 [ADR 0010](Decisions/0010-economy-ingredient-procurement.md).
+
+## Electricidad y consumo M12
+
+ElectricitySupplyState/ElectricityMeter son Domain, con energía double en kWh y
+potencia nominal W. RestaurantElectricity avanza exclusivamente sus medidores,
+con segundos de simulación independientes del mundo y del debug alimentario.
+ElectricalAppliance vincula suministro y HeatSource mediante referencias locales.
+HeatSource.IsOperational integra disponibilidad eléctrica y térmica; OFF retira
+el entorno, sin otro driver alimentario ni flags FoodState. FoodSimulation conserva
+su resolución/avance únicos. Next Day no reinicia energía ni suministro.
+El interruptor físico usa E/Interactable y el HUD muestra estado y consumo.
+Ver [M12](M12.md) y [ADR 0017](Decisions/0017-electricity-and-utilities.md).

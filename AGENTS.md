@@ -31,6 +31,8 @@
   M11 está validado en `0c81923`. Polish físico previo a M12 en
   `fix/physical-interaction-polish`; ver `Docs/PHYSICAL-INTERACTION-POLISH.md` y
   ADR 0014: hold/release, montaje sobre apoyos y reposición de bandejas.
+  M12 implementa electricidad y consumo desde `ec2ba3e` en
+  `feature/electricity-utilities`; ver Docs/M12.md y ADR 0017.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -120,7 +122,7 @@
   estados originales y reutiliza DishItem/M6. DishTraySupply repone un prefab vacío
   solo con salida libre; nunca clonar comida vendida. FoodItem conserva geometría
   local antes de retirar colliders y Grill consulta cada ingrediente, sin otro driver.
-  Ver Docs/PHYSICAL-INTERACTION-POLISH.md y ADR 0014. No avanzar a M12.
+  Ver Docs/PHYSICAL-INTERACTION-POLISH.md y ADR 0014. M12 está autorizado aparte.
   M7 reutiliza HeatSource con ColdStorage; FoodSimulation sigue siendo el único reloj.
   FoodPreservationSettings crea una política inmutable por temperatura real, también
   fuera del almacenamiento. FoodState integra cruces de umbrales; nunca usar flags
@@ -168,6 +170,16 @@
   cero termina el día. Next Day cambia número/hora y delay de admisión, sin
   recargar/resetear dinero, comida, platos, recibos o contador de clientes.
   No simular una noche, calendario, facturas, sueño o guardado sin autorización.
+- M12: RestaurantElectricity es el único driver de consumo, con segundos de
+  simulación independientes del mundo/comida de debug. ElectricitySupplyState y
+  ElectricityMeter son Domain; potencia nominal W, acumulados kWh por aparato y
+  total, sin otro ledger. HeatSource requiere ElectricalAppliance explícito en
+  escena; OFF retira su entorno y FoodSimulation resuelve ambiente sin tocar
+  FoodState. ON/OFF, disable/enable y Next Day no reinician energía ni alimentos.
+  Potencia configurable antes de Play; consumo continuo vacío si fuente operativa.
+  Fixtures térmicas aisladas sin requisito mantienen comportamiento histórico;
+  requisito sin referencia falla apagado. No implementar facturas, impagos,
+  generadores, averías ni M13. Ver Docs/M12.md y ADR 0017.
 - Convenciones: C# y nombres técnicos en inglés; documentación en español;
   namespace `ZeroStarRestaurant`, con subnamespaces según responsabilidad;
   PascalCase para tipos/métodos, `_camelCase` para campos privados.

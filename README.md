@@ -24,6 +24,9 @@ cierre sin nuevas entradas, final al vaciarse y siguiente día conservando estad
 M11 está validado en `0c81923`. El [polish físico previo a M12](Docs/PHYSICAL-INTERACTION-POLISH.md)
 añade hold/release y montaje sobre apoyos normales. El [ajuste de Plate opcional](Docs/PLATES-FREE-ASSEMBLY.md)
 sustituye la reposición gratuita por compras y conserva la entrega por Dish.
+M12 añade [electricidad y consumo](Docs/M12.md): suministro ON/OFF con **E**,
+Grill/Fridge/Freezer dependientes y kWh acumulados, sin facturas. La escena
+empieza **sin corriente**; encender en la pared norte antes de cocinar/enfriar.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -122,6 +125,11 @@ Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Unity Test Framework 1.7.0** instalado. El inventario completo está en
 [la auditoría inicial](Docs/PROJECT_AUDIT.md).
 
+El interruptor eléctrico está en la pared norte de cocina `(0.2, 1.45, 5.9)`: **E**
+con manos libres conmuta los tres aparatos. Sin corriente, la comida vuelve
+gradualmente a ambiente mediante el mismo FoodSimulation. El HUD muestra W/kWh
+totales y por aparato; ON/OFF y Next Day conservan energía. Ver [M12](Docs/M12.md).
+
 ## Filosofía del prototipo
 
 Primitivas, materiales simples y placeholders. Primero demostrar el ciclo jugable;
@@ -135,7 +143,7 @@ material, prefab o interfaz.
 **Player → Interaction → Food → Cooking → Dish Assembly → Customer Order → Delivery → Payment**
 
 Una pequeña escena permitirá coger una porción, cocinarla con una fuente de calor
-no eléctrica, montar un plato, entregarlo a un cliente placeholder y cobrar una
+eléctrica M12, montar un plato, entregarlo a un cliente placeholder y cobrar una
 única vez. M8 amplía el loop: **dinero → comprar unidades físicas → conservar/cocinar
 → vender → reinvertir**. Provisiones gratuitas solo bajo opt-in de desarrollo.
 Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
@@ -170,6 +178,8 @@ Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 - [Decisión sobre distribución y servicio](Docs/Decisions/0011-restaurant-layout-service-flow.md).
 - [M10: cola física, paciencia, pruebas y secuencia manual](Docs/M10.md).
 - [Decisión sobre reservas de cola e identidad](Docs/Decisions/0012-customer-queue-and-patience.md).
+- [M12: electricidad, consumo, tests y comprobación manual](Docs/M12.md).
+- [Decisión sobre suministro y medición](Docs/Decisions/0017-electricity-and-utilities.md).
 - [M11: jornada, reloj, pruebas y dos días consecutivos](Docs/M11.md).
 - [Decisión sobre tiempo del mundo y simulación](Docs/Decisions/0013-restaurant-day-and-world-time.md).
 
@@ -188,3 +198,7 @@ M10 parte de M9 validado (`aa146c3`) en `feature/customer-queue`: hasta cuatro
 clientes físicos, un pedido activo, paciencia de debug y avance FIFO al completar Exit.
 M11 parte de M10 validado (`bd8d33c`) en `feature/restaurant-day`.
 Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica cambios.
+
+M12 parte de `ec2ba3e` en `feature/electricity-utilities`, con worktree aislado
+`C:/Users/Usuario/Zero Stars Restaurant M12`; las ediciones locales previas y el
+Editor original se conservan.

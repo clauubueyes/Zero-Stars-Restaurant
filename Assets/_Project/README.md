@@ -85,3 +85,9 @@ local de colliders retirados para Grill; FoodSimulation permanece único.
 El release tranquilo sobre apoyo/pila cercana conserva la colocación asistida;
 G y gestos rápidos liberan libremente. No se auto-finaliza una receta.
 Ver `Docs/PHYSICAL-INTERACTION-POLISH.md` y ADR 0014. No implementa M12.
+
+M12 incorpora `Domain/Utilities` y `Runtime/Utilities`: suministro general OFF al
+iniciar, interruptor E y consumo nominal W/kWh por aparato/total. Grill/Fridge/Freezer
+requieren corriente; OFF retira el entorno térmico y el único FoodSimulation usa
+ambiente sin recrear alimentos. Next Day conserva suministro y medidores.
+Ver `Docs/M12.md` y ADR 0017. Sin facturas ni M13.
