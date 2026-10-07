@@ -25,6 +25,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(new SerializedObject(supply).FindProperty("_initiallyOn").boolValue, Is.False);
             HeatSource[] sources = Components<HeatSource>(); Assert.That(sources, Has.Length.EqualTo(3));
             Assert.That(supply.Appliances.Count, Is.EqualTo(3));
+            Assert.That(Components<ApplianceSwitch>(), Has.Length.EqualTo(3));
             foreach (HeatSource source in sources)
             {
                 Assert.That(source.RequiresElectricity, Is.True); Assert.That(source.Electricity, Is.Not.Null);
@@ -33,6 +34,11 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(supply.Appliances, Does.Contain(source.Electricity));
                 Assert.That(source.IsOperational, Is.False);
                 Assert.That(source.Electricity.RatedWatts, Is.EqualTo(source is GrillHeatSource ? 2000 : source.name == "Fridge" ? 150 : 200));
+                ApplianceSwitch control = source.GetComponent<ApplianceSwitch>();
+                Assert.That(control.Appliance, Is.SameAs(source.Electricity));
+                Assert.That(control.DisplayName, Is.EqualTo(source is GrillHeatSource ? "Grill" : source.name));
+                Assert.That(control.PromptLabel, Is.EqualTo("Turn " + control.DisplayName + " On"));
+                Assert.That(new SerializedObject(source.Electricity).FindProperty("_initiallyOn").boolValue, Is.True);
             }
             ElectricitySwitch button = Components<ElectricitySwitch>().Single(); Assert.That(button.Supply, Is.SameAs(supply));
             Assert.That(button.GetComponent<Collider>().isTrigger, Is.False);
@@ -47,13 +53,29 @@ namespace ZeroStarRestaurant.Tests
             RestaurantElectricity supply = Components<RestaurantElectricity>().Single();
             var data = new SerializedObject(supply); data.FindProperty("_initiallyOn").boolValue = true; data.ApplyModifiedPropertiesWithoutUndo();
             var appliance = new SerializedObject(supply.Appliances[0]); appliance.FindProperty("_ratedWatts").floatValue = 3456; appliance.ApplyModifiedPropertiesWithoutUndo();
+            appliance.FindProperty("_initiallyOn").boolValue = false; appliance.ApplyModifiedPropertiesWithoutUndo();
             Component[] original = Components<Component>();
             Vector3[] positions = Components<Transform>().Select(item => item.position).ToArray();
             M12ElectricityBuilder.ConfigureScene(_scene); M12ElectricityBuilder.ConfigureScene(_scene);
             Assert.That(Components<Component>(), Is.EquivalentTo(original));
             Assert.That(Components<Transform>().Select(item => item.position), Is.EqualTo(positions));
             Assert.That(supply.Appliances[0].RatedWatts, Is.EqualTo(3456));
+            Assert.That(new SerializedObject(supply.Appliances[0]).FindProperty("_initiallyOn").boolValue, Is.False);
             Assert.That(new SerializedObject(supply).FindProperty("_initiallyOn").boolValue, Is.True);
+        }
+
+        [Test]
+        public void UpgradingGeneralOnlySceneAddsThreeSwitchesWithoutMovingOrResettingAppliances()
+        {
+            RestaurantElectricity supply = Components<RestaurantElectricity>().Single();
+            foreach (ApplianceSwitch control in Components<ApplianceSwitch>()) Object.DestroyImmediate(control);
+            var data = new SerializedObject(supply.Appliances[1]); data.FindProperty("_initiallyOn").boolValue = false; data.ApplyModifiedPropertiesWithoutUndo();
+            Transform[] transforms = Components<Transform>(); Vector3[] positions = transforms.Select(item => item.position).ToArray();
+            M12ElectricityBuilder.ConfigureScene(_scene); M12ElectricityBuilder.ConfigureScene(_scene);
+            Assert.That(Components<ApplianceSwitch>(), Has.Length.EqualTo(3));
+            Assert.That(Components<Transform>(), Is.EquivalentTo(transforms));
+            Assert.That(transforms.Select(item => item.position), Is.EqualTo(positions));
+            Assert.That(new SerializedObject(supply.Appliances[1]).FindProperty("_initiallyOn").boolValue, Is.False);
         }
 
         [Test]

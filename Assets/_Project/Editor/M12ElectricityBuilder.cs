@@ -33,7 +33,7 @@ namespace ZeroStarRestaurant.Editor
         {
             T[] Components<T>() where T : Component => scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
             RestaurantElectricity installed = Components<RestaurantElectricity>().SingleOrDefault();
-            if (installed != null) { installed.Validate(); return; }
+            if (installed != null) { installed.Validate(); InstallApplianceSwitches(installed); return; }
             HeatSource[] sources = { Components<GrillHeatSource>().Single(),
                 Components<ColdStorage>().Single(item => item.name == "Fridge"),
                 Components<ColdStorage>().Single(item => item.name == "Freezer") };
@@ -75,7 +75,28 @@ namespace ZeroStarRestaurant.Editor
             switchData.FindProperty("_label").objectReferenceValue = text; switchData.ApplyModifiedPropertiesWithoutUndo();
             var feedback = new SerializedObject(root.AddComponent<ElectricityFeedback>());
             feedback.FindProperty("_supply").objectReferenceValue = supply; feedback.ApplyModifiedPropertiesWithoutUndo();
-            supply.Validate(); EditorSceneManager.MarkSceneDirty(scene);
+            supply.Validate(); InstallApplianceSwitches(supply); EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        private static void InstallApplianceSwitches(RestaurantElectricity supply)
+        {
+            foreach (ElectricalAppliance appliance in supply.Appliances)
+            {
+                ApplianceSwitch installed = appliance.GetComponent<ApplianceSwitch>();
+                if (installed != null)
+                {
+                    if (installed.Appliance != appliance) throw new InvalidOperationException("Appliance switch references a different appliance.");
+                    continue;
+                }
+                var data = new SerializedObject(appliance);
+                // Populate only absent labels when upgrading; keep user settings and existing references.
+                if (string.IsNullOrWhiteSpace(data.FindProperty("_applianceName").stringValue))
+                    data.FindProperty("_applianceName").stringValue = appliance.ThermalSource is GrillHeatSource ? "Grill" : appliance.name;
+                data.ApplyModifiedPropertiesWithoutUndo();
+                var switchData = new SerializedObject(appliance.gameObject.AddComponent<ApplianceSwitch>());
+                switchData.FindProperty("_appliance").objectReferenceValue = appliance; switchData.ApplyModifiedPropertiesWithoutUndo();
+                EditorSceneManager.MarkSceneDirty(supply.gameObject.scene);
+            }
         }
     }
 }

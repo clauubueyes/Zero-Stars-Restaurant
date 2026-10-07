@@ -4144,6 +4144,7 @@ GameObject:
   - component: {fileID: 1241087751}
   - component: {fileID: 1241087750}
   - component: {fileID: 1241087752}
+  - component: {fileID: 1241087753}
   m_Layer: 0
   m_Name: GrillStation
   m_TagString: Untagged
@@ -8857,6 +8858,8 @@ MonoBehaviour:
   _supply: {fileID: 1984766479}
   _thermalSource: {fileID: 999030024}
   _ratedWatts: 150
+  _initiallyOn: 1
+  _applianceName: Fridge
 --- !u!114 &889201012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8872,6 +8875,8 @@ MonoBehaviour:
   _supply: {fileID: 1984766479}
   _thermalSource: {fileID: 999030020}
   _ratedWatts: 200
+  _initiallyOn: 1
+  _applianceName: Freezer
 --- !u!114 &1241087752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8887,6 +8892,8 @@ MonoBehaviour:
   _supply: {fileID: 1984766479}
   _thermalSource: {fileID: 1241087750}
   _ratedWatts: 2000
+  _initiallyOn: 1
+  _applianceName: Grill
 --- !u!1 &1984766477
 GameObject:
   m_ObjectHideFlags: 0
@@ -8953,6 +8960,48 @@ Transform:
   - {fileID: 268455051}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &89879507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 717365395}
+--- !u!114 &1241087753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241087749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 1241087752}
+--- !u!114 &1340765347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 889201012}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -9412,6 +9461,7 @@ GameObject:
   - component: {fileID: 999030021}
   - component: {fileID: 999030020}
   - component: {fileID: 889201012}
+  - component: {fileID: 1340765347}
   m_Layer: 0
   m_Name: Freezer
   m_TagString: Untagged
@@ -9470,6 +9520,7 @@ GameObject:
   - component: {fileID: 999030023}
   - component: {fileID: 999030024}
   - component: {fileID: 717365395}
+  - component: {fileID: 89879507}
   m_Layer: 0
   m_Name: Fridge
   m_TagString: Untagged

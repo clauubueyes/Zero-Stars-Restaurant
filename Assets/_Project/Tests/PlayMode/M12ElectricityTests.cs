@@ -110,6 +110,100 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(energy * 2).Within(1e-12));
         }
 
+        [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)]
+        [TestCase(4)] [TestCase(5)] [TestCase(6)] [TestCase(7)]
+        public void AllIndividualCombinationsControlOnlyTheirOwnLoadAndSurviveGeneralCuts(int mask)
+        {
+            ElectricalAppliance[] appliances = _supply.Appliances.ToArray();
+            for (int index = 0; index < appliances.Length; index++)
+                Assert.That(appliances[index].SetOn((mask & (1 << index)) != 0), Is.True);
+            double expectedWatts = appliances.Where(item => item.IsOn).Sum(item => item.RatedWatts);
+            _supply.Advance(3600); Assert.That(_supply.CurrentWatts, Is.Zero);
+            _supply.PowerOn(); _supply.Advance(3600);
+            Assert.That(_supply.CurrentWatts, Is.EqualTo(expectedWatts));
+            Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(expectedWatts / 1000).Within(1e-12));
+            for (int cut = 0; cut < 2; cut++)
+            {
+                _supply.PowerOff(); _supply.Advance(3600);
+                Assert.That(_supply.CurrentWatts, Is.Zero);
+                Assert.That(appliances.All(item => !item.IsOperating), Is.True);
+                _supply.PowerOn();
+                for (int index = 0; index < appliances.Length; index++)
+                {
+                    bool selectedOn = (mask & (1 << index)) != 0;
+                    Assert.That(appliances[index].IsOn, Is.EqualTo(selectedOn));
+                    Assert.That(appliances[index].IsOperating, Is.EqualTo(selectedOn));
+                    Assert.That(appliances[index].ThermalSource.IsOperational, Is.EqualTo(selectedOn));
+                }
+                _supply.Advance(3600);
+            }
+            foreach (ElectricalAppliance item in appliances)
+                Assert.That(item.Meter.ConsumedKilowattHours, Is.EqualTo(item.IsOn ? 3 * item.RatedWatts / 1000 : 0).Within(1e-12));
+            Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(3 * expectedWatts / 1000).Within(1e-12));
+        }
+
+        [TestCase("Grill")] [TestCase("Fridge")] [TestCase("Freezer")]
+        public void IndividualEInteractionShowsTheNextActionAndWorksDuringACut(string name)
+        {
+            ApplianceSwitch control = Components<ApplianceSwitch>().Single(item => item.DisplayName == name);
+            Transform source = control.Appliance.ThermalSource.transform;
+            Transform player = Components<FirstPersonController>().Single().transform;
+            player.position = source.position - source.forward * 2; player.position = new Vector3(player.position.x, .05f, player.position.z);
+            Vector3 target = source.TransformPoint(name == "Grill" ? Vector3.up * .5f : new Vector3(0, 1.4f, .65f));
+            Components<Camera>().Single().transform.LookAt(target); Physics.SyncTransforms();
+            Assert.That(Components<InteractionDetector>().Single().Detect(), Is.SameAs(control));
+            PlayerInteraction interaction = Components<PlayerInteraction>().Single();
+            string binding = Components<InteractionInput>().Single().InteractBinding;
+            Assert.That("[" + binding + "] " + control.PromptLabel, Is.EqualTo("[E] Turn " + name + " Off"));
+            Assert.That(interaction.TryGrabPhysical(), Is.False, "Mouse hold does not toggle appliance switches.");
+            Assert.That(control.Appliance.IsOn, Is.True);
+            Assert.That(interaction.TryInteract(), Is.True); Assert.That(control.Appliance.IsOn, Is.False);
+            Assert.That(control.ActionLabel, Is.EqualTo("Turn " + name + " On"));
+            _supply.PowerOn(); Assert.That(control.Appliance.IsOperating, Is.False);
+            Assert.That(interaction.TryInteract(), Is.True); Assert.That(control.Appliance.IsOperating, Is.True);
+            _supply.PowerOff(); Assert.That(control.Appliance.IsOn, Is.True); Assert.That(control.Appliance.IsOperating, Is.False);
+            Assert.That(control.ActionLabel, Is.EqualTo("Turn " + name + " Off"));
+            Assert.That(interaction.TryInteract(), Is.True); Assert.That(control.Appliance.IsOn, Is.False);
+            _supply.PowerOn(); Assert.That(control.Appliance.IsOperating, Is.False);
+            Assert.That(_supply.Appliances.Where(item => item != control.Appliance).All(item => item.IsOn), Is.True);
+        }
+
+        [TestCase("GrillStation")] [TestCase("Fridge")] [TestCase("Freezer")]
+        public void IndividualOffRemovesThermalEnvironmentAndConsumptionWithoutReplacingFoodOrMeter(string name)
+        {
+            HeatSource source = Components<HeatSource>().Single(item => item.name == name);
+            FoodItem food = FoodAt(source); FoodState state = food.State; state.Contaminate();
+            ElectricalAppliance appliance = source.Electricity; ElectricityMeter meter = appliance.Meter;
+            _supply.PowerOn(); _simulation.Advance(30); _supply.Advance(60);
+            double temperature = state.TemperatureCelsius, dose = state.Cooking.EquivalentSeconds;
+            double energy = meter.ConsumedKilowattHours;
+            appliance.SetOn(false); Assert.That(source.TryGetEnvironment(food, out _), Is.False);
+            _supply.Advance(3600); _simulation.Advance(10);
+            Assert.That(Math.Abs(state.TemperatureCelsius - 21), Is.LessThan(Math.Abs(temperature - 21)));
+            Assert.That(state.Cooking.EquivalentSeconds, Is.EqualTo(dose));
+            Assert.That(meter.ConsumedKilowattHours, Is.EqualTo(energy));
+            Assert.That(_supply.CurrentWatts, Is.EqualTo(2350 - appliance.RatedWatts));
+            appliance.SetOn(true); Assert.That(source.TryGetEnvironment(food, out _), Is.True);
+            _supply.Advance(60); Assert.That(meter.ConsumedKilowattHours, Is.EqualTo(energy * 2).Within(1e-12));
+            Assert.That(appliance.Meter, Is.SameAs(meter)); Assert.That(food.State, Is.SameAs(state));
+            Assert.That(state.IsContaminated, Is.True); Assert.That(state.AgeSeconds, Is.EqualTo(40));
+        }
+
+        [Test]
+        public void DisableAndNextDayPreserveMixedIndividualSettingsAndExistingMeters()
+        {
+            ElectricalAppliance grill = _supply.Appliances[0]; grill.SetOn(false);
+            _supply.PowerOn(); _supply.Advance(3600); ElectricityMeter meter = grill.Meter;
+            grill.enabled = false; grill.enabled = true;
+            Assert.That(grill.IsOn, Is.False); Assert.That(grill.Meter, Is.SameAs(meter));
+            RestaurantDayController day = Components<RestaurantDayController>().Single();
+            day.State.Advance(28800, 0); Assert.That(day.StartNextDay(), Is.True);
+            Assert.That(grill.IsOn, Is.False); Assert.That(_supply.Appliances.Skip(1).All(item => item.IsOn), Is.True);
+            _supply.PowerOff(); _supply.PowerOn(); _supply.Advance(3600);
+            Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(.7).Within(1e-12));
+            Assert.That(meter.ConsumedKilowattHours, Is.Zero);
+        }
+
         [Test]
         public void MeteringUsesSimulationSecondsAndSurvivesPowerCyclesDisableAndNextDayWithoutTouchingFoodOrMoney()
         {
