@@ -8,9 +8,13 @@ namespace ZeroStarRestaurant.Utilities
     {
         public bool IsOn { get; private set; }
         public double ConsumedKilowattHours { get; private set; }
+        public double DailyConsumedKilowattHours { get; private set; }
+        private bool _recordDaily = true;
 
         public ElectricitySupplyState(bool initiallyOn = false) => IsOn = initiallyOn;
         public void SetOn(bool isOn) => IsOn = isOn;
+        public void BeginDay() { DailyConsumedKilowattHours = 0; _recordDaily = true; }
+        public void CompleteDay() => _recordDaily = false;
 
         public void Advance(double elapsedSeconds, IReadOnlyList<ElectricityMeter> operatingMeters)
         {
@@ -23,14 +27,16 @@ namespace ZeroStarRestaurant.Utilities
                 if (meter == null) throw new ArgumentException("Operating meters cannot contain null.", nameof(operatingMeters));
                 if (!unique.Add(meter) || !IsOn) continue;
                 double energy = meter.ConsumptionFor(elapsedSeconds);
-                ElectricityMeter.RequireNonnegativeFinite(meter.ConsumedKilowattHours + energy, nameof(elapsedSeconds));
+                meter.ValidateRecord(energy);
                 total += energy;
             }
             ElectricityMeter.RequireNonnegativeFinite(ConsumedKilowattHours + total, nameof(elapsedSeconds));
+            if (_recordDaily) ElectricityMeter.RequireNonnegativeFinite(DailyConsumedKilowattHours + total, nameof(elapsedSeconds));
             // Validate the complete step before mutating any meter or total.
             if (!IsOn) return;
             foreach (ElectricityMeter meter in unique) meter.Record(meter.ConsumptionFor(elapsedSeconds));
             ConsumedKilowattHours += total;
+            if (_recordDaily) DailyConsumedKilowattHours += total;
         }
     }
 }
