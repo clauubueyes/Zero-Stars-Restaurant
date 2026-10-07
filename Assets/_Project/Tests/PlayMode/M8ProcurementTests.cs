@@ -100,7 +100,7 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator GenericEInteractionSelectsProductBuysAndPicksUpRealOutput()
         {
             IngredientPurchaseButton button = Components<IngredientPurchaseButton>().Single(item => item.name == "BuyRawBeefPatty");
-            _player.transform.position = new Vector3(-4.4f, 0.03f, 2.65f);
+            _player.transform.position = new Vector3(button.transform.position.x, 0.03f, button.transform.position.z + 1.85f);
             _view.LookAt(button.transform.position); Physics.SyncTransforms();
             PlayerInteraction interaction = Components<PlayerInteraction>().Single();
             Assert.That(interaction.TryInteract(), Is.True, "E on the greybox beef product should buy.");
@@ -112,6 +112,33 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(button.CanInteract(new InteractionContext(_player.transform, _carry)), Is.False);
             Assert.That(button.TryInteract(new InteractionContext(_player.transform, _carry)), Is.False);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(920));
+            var original = food.State; var id = original.InstanceId;
+            Quaternion start = _view.rotation;
+            for (int frame = 0; frame < 60; frame++)
+            { _view.rotation = Quaternion.Slerp(start, Quaternion.Euler(0, 90, 0), (frame + 1f) / 60f); yield return new WaitForFixedUpdate(); Assert.That(_carry.HasHeldObject, Is.True); }
+            Vector3[] route = { new Vector3(-8.05f, .03f, 2.65f), new Vector3(-8.05f, .03f, 1.6f),
+                new Vector3(-6.5f, .03f, 1.6f), new Vector3(-4.4f, .03f, 1.6f),
+                new Vector3(-4.4f, .03f, 2.65f), new Vector3(-2.5f, .03f, 2.65f) };
+            CharacterController capsule = _player.GetComponent<CharacterController>();
+            Collider[] solids = Components<Collider>().Where(item => item.enabled && item.gameObject.activeInHierarchy && !item.isTrigger &&
+                !item.transform.IsChildOf(_player.transform) && item.GetComponentInParent<FoodItem>() == null &&
+                item.GetComponentInParent<CustomerMovement>() == null).ToArray();
+            foreach (Vector3 destination in route)
+            {
+                Vector3 from = _player.transform.position;
+                for (int frame = 0; frame < 65; frame++)
+                {
+                    _player.transform.position = Vector3.Lerp(from, destination, (frame + 1f) / 65f); yield return new WaitForFixedUpdate();
+                    Assert.That(_carry.HasHeldObject, Is.True,
+                        "Purchased food remains carried through the annex access: player=" + _player.transform.position + " destination=" + destination + " food=" + food.transform.position);
+                    foreach (Collider obstacle in solids)
+                        Assert.That(Physics.ComputePenetration(capsule, capsule.transform.position, capsule.transform.rotation, obstacle,
+                            obstacle.transform.position, obstacle.transform.rotation, out _, out float depth) && depth > .01f, Is.False,
+                            "Procurement access clips player through " + obstacle.name + " at " + capsule.transform.position);
+                }
+            }
+            Assert.That(food.State, Is.SameAs(original)); Assert.That(food.State.InstanceId, Is.EqualTo(id));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(920)); Assert.That(_simulation.Foods.Single(), Is.SameAs(food));
         }
 
         [UnityTest]

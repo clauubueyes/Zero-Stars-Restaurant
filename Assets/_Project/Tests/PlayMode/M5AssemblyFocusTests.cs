@@ -135,7 +135,7 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator QuickPlacementUsesTheActualFirstHitAndRejectsWallRangeAndDisabledSurface()
         {
             FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
-            _player.transform.position = new Vector3(-4.4f, 0.03f, 2.65f);
+            _player.transform.position = new Vector3(food.transform.position.x, 0.03f, food.transform.position.z + 1.4f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
             _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
@@ -185,7 +185,7 @@ namespace ZeroStarRestaurant.Tests
         {
             FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
             FoodState original = food.State;
-            _player.transform.position = new Vector3(-4.4f, .03f, 2.65f);
+            _player.transform.position = new Vector3(food.transform.position.x, .03f, food.transform.position.z + 1.4f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
             _player.transform.position = _surface.Dish.transform.position + new Vector3(0, -.935f, -1.65f);

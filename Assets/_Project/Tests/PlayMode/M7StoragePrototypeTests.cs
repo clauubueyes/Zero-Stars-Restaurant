@@ -41,9 +41,14 @@ namespace ZeroStarRestaurant.Tests
             FoodState state = food.State; var id = state.InstanceId; var cooking = state.Cooking;
             state.Contaminate(); double age = state.AgeSeconds;
             PlayerInteraction interaction = Components<PlayerInteraction>().Single();
-            _player.position = new Vector3(-4.4f, 0.03f, 2.65f);
+            _player.position = new Vector3(food.transform.position.x, 0.03f, food.transform.position.z + 1.4f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(interaction.TryInteract(), Is.True);
+            yield return Look(Quaternion.Euler(0, 90, 0));
+            yield return Move(new Vector3(-8.05f, .03f, 2.65f));
+            yield return Move(new Vector3(-8.05f, .03f, 1.6f));
+            yield return Move(new Vector3(-6.5f, .03f, 1.6f));
+            yield return Move(new Vector3(-4.4f, .03f, 1.6f));
             yield return Move(new Vector3(-3.6f, 0.03f, 2.65f));
             foreach (string name in new[] { "Fridge", "Freezer" })
             {
@@ -81,7 +86,8 @@ namespace ZeroStarRestaurant.Tests
         {
             Vector3 start = _player.position;
             for (int frame = 0; frame < 55; frame++)
-            { _player.position = Vector3.Lerp(start, destination, (frame + 1f) / 55f); yield return new WaitForFixedUpdate(); Assert.That(_carry.HasHeldObject, Is.True); }
+            { _player.position = Vector3.Lerp(start, destination, (frame + 1f) / 55f); yield return new WaitForFixedUpdate(); Assert.That(_carry.HasHeldObject, Is.True,
+                "Carried fixture route: player=" + _player.position + " destination=" + destination); }
         }
         private IEnumerator Look(Quaternion destination)
         {

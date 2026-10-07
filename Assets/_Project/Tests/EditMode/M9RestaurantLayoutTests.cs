@@ -102,6 +102,51 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
+        public void ProcurementAnnexHasWalkableAccessOutsideKitchenAndExistingWorkingRoutes()
+        {
+            Transform bench = Components<Transform>().Single(item => item.name == "FoodTestBench");
+            Assert.That(bench.GetComponent<BoxCollider>().bounds.max.x, Is.LessThan(-7.5f));
+            var probe = new GameObject("Procurement access probe", typeof(CapsuleCollider));
+            try
+            {
+                CapsuleCollider body = probe.GetComponent<CapsuleCollider>(); body.height = 1.8f;
+                body.radius = .35f; body.center = new Vector3(0, .92f, 0);
+                Vector3[] stops = { new Vector3(-3.8f, 0, 2.55f), new Vector3(-4.4f, 0, 2.65f),
+                    new Vector3(-4.4f, 0, 1.6f), new Vector3(-6.5f, 0, 1.6f), new Vector3(-8.05f, 0, 1.6f),
+                    new Vector3(-8.05f, 0, 2.65f), new Vector3(-9.7f, 0, 2.65f) };
+                BoxCollider[] floors = Components<BoxCollider>().Where(item => item.name == "Floor" || item.name == "ProcurementFloor").ToArray();
+                for (int index = 1; index < stops.Length; index++)
+                {
+                    Sweep(body, stops[index - 1], stops[index]);
+                    for (int sample = 0; sample <= 30; sample++)
+                    {
+                        Vector3 at = Vector3.Lerp(stops[index - 1], stops[index], sample / 30f);
+                        Assert.That(floors.Any(floor => floor.bounds.Contains(at + Vector3.down * .1f)), Is.True, "Access has physical floor at " + at);
+                    }
+                }
+            }
+            finally { Object.DestroyImmediate(probe); }
+        }
+
+        [Test]
+        public void RelocatingOnlyProcurementPreservesGameplayReferencesAndOtherTransforms()
+        {
+            Component[] originals = Components<Component>();
+            var references = Components<MonoBehaviour>().ToDictionary(item => item, item => EditorJsonUtility.ToJson(item));
+            Transform station = Components<Transform>().Single(item => item.name == "IngredientProcurementStation");
+            Transform foodRoot = Components<Transform>().Single(item => item.name == "FoodTestZone");
+            var unchanged = Components<Transform>().Where(item => !item.IsChildOf(station) && !item.IsChildOf(foodRoot) &&
+                item.name != "WallWest" && item.name != "ProcurementSign")
+                .ToDictionary(item => item, item => (item.position, item.rotation, item.localScale));
+            M9RestaurantLayoutBuilder.ConfigureProcurementArea(_scene);
+            int count = Components<Component>().Length;
+            M9RestaurantLayoutBuilder.ConfigureProcurementArea(_scene);
+            Assert.That(Components<Component>().Length, Is.EqualTo(count)); Assert.That(originals.All(item => item != null), Is.True);
+            foreach (var pair in references) Assert.That(EditorJsonUtility.ToJson(pair.Key), Is.EqualTo(pair.Value), pair.Key.name);
+            foreach (var pair in unchanged) Assert.That((pair.Key.position, pair.Key.rotation, pair.Key.localScale), Is.EqualTo(pair.Value), pair.Key.name);
+        }
+
+        [Test]
         public void CounterSeparatesBothSidesQueuePointsAreOnlyMarkersAndTestGeometryIsOptIn()
         {
             Transform queues = Components<Transform>().Single(item => item.name == "QueuePoints");

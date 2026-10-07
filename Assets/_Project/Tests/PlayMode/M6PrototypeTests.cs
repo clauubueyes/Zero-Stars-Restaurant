@@ -67,7 +67,7 @@ namespace ZeroStarRestaurant.Tests
             foreach (FoodItem food in new[] { buns[0], patty, buns[1] })
             {
                 player.transform.position = food.transform.position.z < 2.5f
-                    ? new Vector3(-4.4f, 0.03f, 2.65f)
+                    ? new Vector3(food.transform.position.x, 0.03f, food.transform.position.z + 1.4f)
                     : new Vector3(food.transform.position.x, 0.03f, food.transform.position.z - 1.5f);
                 view.LookAt(food.transform.position); Physics.SyncTransforms();
                 Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
