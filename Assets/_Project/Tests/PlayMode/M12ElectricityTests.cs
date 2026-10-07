@@ -98,7 +98,8 @@ namespace ZeroStarRestaurant.Tests
         {
             ElectricitySwitch button = Components<ElectricitySwitch>().Single();
             Transform player = Components<FirstPersonController>().Single().transform;
-            player.position = new Vector3(.2f, .05f, 4.4f); Components<Camera>().Single().transform.LookAt(button.transform.position);
+            player.position = new Vector3(button.transform.position.x, .05f, button.transform.position.z - 1.5f);
+            Components<Camera>().Single().transform.LookAt(button.transform.position);
             Physics.SyncTransforms(); PlayerInteraction interaction = Components<PlayerInteraction>().Single();
             Assert.That(interaction.TryInteract(), Is.True); Assert.That(_supply.IsOn, Is.True);
             Assert.That(_supply.Appliances.All(item => item.IsOperating), Is.True);
