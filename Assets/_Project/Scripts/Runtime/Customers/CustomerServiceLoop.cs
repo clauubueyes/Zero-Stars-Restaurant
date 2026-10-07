@@ -12,6 +12,8 @@ namespace ZeroStarRestaurant.Customers
     public sealed class CustomerServiceLoop : MonoBehaviour
     {
         [SerializeField] private CustomerServiceConfiguration _configuration;
+        [SerializeField] private RestaurantReputation _reputation;
+        public RestaurantReputation Reputation => _reputation;
         [SerializeField] private CustomerMovement _customer;
         [SerializeField] private CustomerDishCarrier _dishCarrier;
         [SerializeField] private FoodSimulation _foodSimulation;
@@ -65,6 +67,8 @@ namespace ZeroStarRestaurant.Customers
         private void Update() { if (_advanceAutomatically) Advance(Time.deltaTime); }
         private void OnDisable()
         {
+            // Consumed hazards still resolve if development cancels the remaining walk.
+            if (Visit?.Consequence?.Reaction == CustomerReaction.HealthIncident) _reputation?.CompleteVisit(Visit.Consequence);
             RetireSoldDish();
             if (_customer != null) _customer.Hide();
             if (_queue != null)
@@ -148,7 +152,7 @@ namespace ZeroStarRestaurant.Customers
                 case CustomerStage.Leave:
                     if (_customer.Advance(elapsedSeconds, _configuration.WalkingSpeed))
                     {
-                        Visit.Finish(); RetireSoldDish(); _customer.Hide(); Visit = null;
+                        Visit.Finish(); _reputation?.CompleteVisit(Visit.Consequence); RetireSoldDish(); _customer.Hide(); Visit = null;
                         if (_queue != null)
                         {
                             if (!_queue.CompleteHeadExit()) throw new InvalidOperationException("Exit must release the serviced queue head once.");
@@ -196,6 +200,7 @@ namespace ZeroStarRestaurant.Customers
             Visit.Resolve(); LastResult = result; LastResultCustomerNumber = CustomerNumber; ResultRevision++;
             LastConsequence = Visit.Consequence;
             if (LastConsequence != null) Statistics.TryRecord(LastConsequence);
+            _reputation?.RegisterService(LastConsequence);
             _remainingSeconds = _configuration.ResultDisplaySeconds;
             return true;
         }

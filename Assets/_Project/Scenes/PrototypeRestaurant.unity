@@ -5445,6 +5445,7 @@ GameObject:
   - component: {fileID: 1163158818}
   - component: {fileID: 1163158820}
   - component: {fileID: 1163158819}
+  - component: {fileID: 160000001}
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -5476,6 +5477,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbbbc42fde4c159458e59093ad8b1c08, type: 3}
   m_Name: 
+  _reputation: {fileID: 160000001}
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Customers.CustomerServiceLoop
   _configuration: {fileID: 11400000, guid: 9cdf954e8f1114348897b31542120763, type: 2}
   _customer: {fileID: 999010035}
@@ -8318,6 +8320,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7869dc13de14195996343d18cbc9f08, type: 3}
   m_Name: 
+  _reputation: {fileID: 160000001}
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayController
   _queue: {fileID: 1163158815}
   _startingHour: 9
@@ -15183,3 +15186,19 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &160000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd968224c3d419a9a42c17e1e2f8a60, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _service: {fileID: 999010030}
+  _day: {fileID: 1163158816}
+  _settings: {fileID: 11400000, guid: 02a38aebdc8d49be9b625dd6f7ad2522, type: 2}
+  _randomSeed: 1600

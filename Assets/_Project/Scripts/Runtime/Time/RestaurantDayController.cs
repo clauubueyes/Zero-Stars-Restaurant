@@ -10,6 +10,8 @@ namespace ZeroStarRestaurant.Restaurant
     public sealed class RestaurantDayController : MonoBehaviour
     {
         [SerializeField] private CustomerQueueController _queue;
+        [SerializeField] private RestaurantReputation _reputation;
+        public RestaurantReputation Reputation => _reputation;
         [SerializeField] private RestaurantOperatingCosts _operatingCosts;
         [SerializeField] private bool _requiresOperatingCosts;
         [SerializeField, Range(0, 23)] private int _startingHour = 9;
@@ -55,6 +57,7 @@ namespace ZeroStarRestaurant.Restaurant
             double worldSeconds = simulationSeconds * _worldSecondsPerSimulationSecond;
             if (double.IsInfinity(worldSeconds)) worldSeconds = double.MaxValue;
             State.SetPaused(_paused); State.Advance(worldSeconds, _queue.Count);
+            _reputation?.ResolveDue();
             SettleIfClosed();
         }
         public void RefreshOccupancy()
@@ -79,7 +82,7 @@ namespace ZeroStarRestaurant.Restaurant
             }
             if (!State.TryStartDay(_queue.Count)) return false;
             if (nextDay && _operatingCosts != null) _operatingCosts.BeginNextDay();
-            _queue.RestartAdmissionDelay(); return true;
+            _queue.RestartAdmissionDelay(); _reputation?.ResolveDue(); return true;
         }
         [ContextMenu("Development: Pause World Clock")]
         public void PauseClock() { _paused = true; State?.SetPaused(true); }

@@ -24,7 +24,7 @@ namespace ZeroStarRestaurant.Presentation
         [SerializeField] private DishInspectionFeedback _dish;
         private readonly Vector2[] _scroll = new Vector2[8];
         private GUIStyle _style;
-        private int _purchaseRevision, _billRevision, _deliveryRevision;
+        private int _purchaseRevision, _billRevision, _deliveryRevision, _reputationRevision;
         private string _message = "";
         private double _messageUntil;
 
@@ -50,6 +50,8 @@ namespace ZeroStarRestaurant.Presentation
             { _billRevision = _costs.BillMessageRevision; text += (text.Length == 0 ? "" : "\n") + _costs.LastBillMessage; }
             if (_deliveryRevision != _service.ResultRevision)
             { _deliveryRevision = _service.ResultRevision; text += (text.Length == 0 ? "" : "\n") + _service.LastDeliveryMessage; }
+            if (_service.Reputation != null && _reputationRevision != _service.Reputation.ResolutionRevision)
+            { _reputationRevision = _service.Reputation.ResolutionRevision; text += (text.Length == 0 ? "" : "\n") + _service.Reputation.LastResolutionMessage; }
             if (text.Length == 0) return;
             _message = text; _messageUntil = Time.unscaledTimeAsDouble + 6;
         }

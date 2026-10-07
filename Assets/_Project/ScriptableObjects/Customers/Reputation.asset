@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 794964e49bd14356bd8d40962adad2db, type: 3}
+  m_Name: Reputation
+  m_EditorClassIdentifier:
+  _minimum: 0
+  _maximum: 100
+  _initial: 50
+  _satisfiedChange: 1
+  _unhappyChange: -1
+  _complaintChange: -3
+  _confirmedIncidentChange: -8
+  _delayWorldSeconds: 7200
+  _rawMeatProbability: 0.35
+  _spoiledProbability: 0.55
+  _contaminatedProbability: 0.75

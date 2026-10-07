@@ -19,7 +19,7 @@ using ZeroStarRestaurant.Restaurant;
 
 namespace ZeroStarRestaurant.Tests
 {
-    public sealed class M11RestaurantDayTests
+    public sealed partial class M11RestaurantDayTests
     {
         private Scene _scene;
         private RestaurantDayController _day;
