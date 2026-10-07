@@ -96,4 +96,11 @@ M13 reutiliza PaymentLedger y RestaurantDay: transacciones inmutables, alquiler
 configurable y electricidad por kWh real, liquidación única al cerrar sin clientes.
 Next Day conserva dinero/objetos/estados, resetea solo diarios y retira el resumen.
 OperatingCosts.asset configura 300 céntimos de Rent y 30 céntimos/kWh. Ver
-`Docs/M13.md` y ADR 0018. Sin consecuencias de deuda, guardado ni M14.
+`Docs/M13.md` y ADR 0018. Sin consecuencias de deuda ni guardado.
+
+M14 añade DeliveryContents y OrderSatisfaction en Domain/Orders. Evalúa Dish y
+FoodItem originales sueltos en el único PASS sin exigir F. Expected/Received/
+Missing/Extra y receta se separan de snapshots de seguridad; pesos del menú
+determinan céntimos reales, extras no aumentan máximo. Ledger y FoodState.IsSold
+impiden pago/reventa duplicados. El carrier conserva todas las unidades y Plate
+hasta Exit; Summary M13 usa ingresos reales. Ver `Docs/M14.md` y ADR 0020.

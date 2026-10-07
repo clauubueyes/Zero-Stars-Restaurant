@@ -1,5 +1,11 @@
 # Zero Star Restaurant
 
+Estado actual: **M14: Order Satisfaction & Partial Payment**, desde la versión
+aprobada `cf12f9d`. PASS acepta platos e ingredientes sueltos: Hamburger completa
+paga 5 €, Patty + Bun 3,50 €, solo Patty 2 €. Extras no aumentan el máximo;
+calidad/seguridad sigue registrándose por separado. Ver [M14](Docs/M14.md) para
+reglas configurables, pruebas y comparación manual. F es opcional para entregar.
+
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
 en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.
 El objetivo es conseguir que el negocio sobreviva mediante sistemas combinables.
@@ -84,11 +90,13 @@ La escena de plantilla
    Ver [polish físico](Docs/PHYSICAL-INTERACTION-POLISH.md) para límites y pruebas.
 10. Al llegar la cabeza de cola a Service Position, el panel derecho muestra pedido y el saldo de sesión
     (inicialmente **€10.00** en esta escena de desarrollo).
-    Con el plato final sostenido, ir por detrás del mostrador, al pad verde
+    Con el plato o los ingredientes, ir por detrás del mostrador, al pad verde
     `CustomerServiceZone/DeliveryPad`, colocar parte razonable del conjunto sobre el verde
     y **soltar clic** para depositarlo desde el pase de cocina. Se evalúa al reposar: Hamburger paga
-    **€5.00**, Cheeseburger **€6.50** si coincide; incorrecto queda disponible.
-    Calidad no afecta al cobro M6. El cliente lleva el mismo Dish delante del cuerpo;
+    **€5.00**, Cheeseburger **€6.50** completas. En M14 Patty + Bun paga **€3.50**
+    y solo Patty **€2.00** ante Hamburger, sin exigir F. Solo comida irrelevante
+    se rechaza y queda disponible. Calidad se registra sin afectar al cobro.
+    El cliente lleva exactamente el mismo Dish o los ingredientes recibidos;
     sale por la puerta este sin atravesar la cocina; se limpia en la salida y los demás
     avanzan una plaza. Puede entrar otro por Entrance cuando hay espacio. El panel
     de cola muestra espera y paciencia por cliente; cero solo informa.

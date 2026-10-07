@@ -294,7 +294,8 @@ identidades y un intervalo de 3 s. Menú alternado, con override de desarrollo u
 Corrección compara ID reconocido de DishDefinition; no mira nombre, malla, color,
 frescura, contaminación ni CookingStage. Estos datos aparecen por separado en el
 resultado. Pedido correcto paga el precio completo incluso Raw/Burnt/Rotten;
-incorrecto o Custom Dish paga cero, termina visita y conserva plato vivo.
+incorrecto o Custom Dish pagaba cero en M6. M14 sustituye esa regla por
+completitud de ingredientes; ver la sección M14 y ADR 0020.
 
 OrderDelivery captura evidencia primero y registra una única transacción síncrona:
 solo tras validar IDs/duplicados/overflow modifica saldo, marca vendido y cierra
@@ -464,3 +465,27 @@ El instalador de corrección añade solo dependencias/componentes faltantes. Rec
 referencias conflictivas; GenerateScene se niega a reemplazar una escena existente.
 Ver [corrección](DELIVERY-HUD-ELECTRICITY-FIX.md) y
 [ADR 0019](Decisions/0019-pad-delivery-shared-hud-periodic-electricity.md).
+
+
+## Completitud y pago parcial M14
+
+DeliveryContents referencia las unidades originales de una entrega, independientemente
+de que exista un Dish final. OrderSatisfaction compara cantidades por ID: Expected,
+Received, Missing y Extra, con pesos copiados en OrderOffer. Reconocimiento exacto
+sigue en OrderEvaluation.CorrectOrder; aceptación depende de contenido relevante.
+El pago multiplica primero el máximo por peso recibido, divide por peso total y
+redondea hacia abajo una vez. No se paga por extras ni se mezcla seguridad con pago.
+
+DishSnapshot conserva el nombre de API por compatibilidad, pero puede describir
+comida suelta o Dish con extras. IngredientSnapshot conserva todos los hechos
+históricos de cada FoodState. Ledger deduplica pedido, entrega e IDs de todas las
+unidades; registra el importe real. FoodState.IsSold protege también ventas sueltas
+frente a otro ledger o montaje. Summary M13 consulta esas ventas reales.
+
+PhysicalDelivery agrupa referencias físicas originales. DeliveryZone comprueba
+PASS, velocidad y cadena de apoyos para todos los alimentos. Un Dish con comida
+suelta sobre el pad se procesa como una entrega, incluyendo extras en evidencia y
+transporte. CustomerDishCarrier comprueba disponibilidad antes de OrderDelivery,
+conserva esos objetos y sus cuerpos respecto al cliente y los retira solo en Exit.
+No se crea un Dish para evaluar comida suelta ni se añade driver alimentario.
+Ver ADR 0020 y Docs/M14.md.

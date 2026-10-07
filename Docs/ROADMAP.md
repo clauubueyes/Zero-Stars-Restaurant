@@ -40,7 +40,14 @@ acumulado configurable; validado en `6258bad`. Ver [M12](M12.md) y ADR 0017.
 electricidad devengada, liquidación única de costes fijos al vaciarse después del cierre, resumen y
 Next Day conservando estado. Ver [M13](M13.md) y ADR 0018. Aceptación visual pendiente.
 No se autorizan préstamos, intereses, consecuencias de deuda, game over, impuestos,
-personal, agua/gas, mantenimiento, averías, guardado ni M14.
+personal, agua/gas, mantenimiento, averías ni guardado.
+
+**M14: Order Satisfaction & Partial Payment**, desde `cf12f9d`, sustituye el
+rechazo binario M6 por cantidades esperadas/recibidas/faltantes/extra y pago
+configurable en céntimos. Dish completo/incompleto y alimentos sin F se evalúan
+en PASS; los mismos objetos acompañan al cliente hasta Exit. Calidad/seguridad
+se conserva por separado. Ver [M14](M14.md) y ADR 0020. Sin reputación,
+intoxicaciones, inspecciones ni M15. Los criterios M6 siguientes son históricos.
 
 ## Experiencia objetivo
 
@@ -111,8 +118,13 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M11 · `feature/restaurant-day` | Tiempo del mundo y jornada con apertura/cierre. | Día/hora/minuto, horario y velocidad configurables, pausa/resume de desarrollo. Solo Open admite; Closing permite terminar visitas admitidas y finaliza con restaurante vacío. Next Day conserva dinero/comida/estados; único driver FoodSimulation independiente del mundo, sin salto nocturno. HUD mínimo, tests de límites temporales, entrada bloqueada, clientes terminando, dos jornadas consecutivas y regresiones M1–M10; ver M11.md y ADR 0013. |
 | M12 · `feature/electricity-utilities` | Suministro general, ON/OFF individual y consumo sin facturas. | E conmuta Grill, Fridge y Freezer individualmente; funcionan con suministro ON y aparato ON. Cortes/restauración conservan selecciones individuales. Sin corriente o con aparato OFF, FoodSimulation aproxima alimento a ambiente y pausa calor/cocción sin recrear estado. Vatios configurables y kWh por aparato/total, sin consumo OFF ni duplicación. Prompts al apuntar, HUD, conservación en Next Day, tests de ocho combinaciones, cortes/restauración, tres aparatos, consumo, identidad y regresiones completas M1–M11; ver M12.md y ADR 0017. Sin facturas, impagos, generadores, averías ni M13. |
 | M13 · `feature/bills-operating-costs` | Facturas, costes fijos configurables y resultado diario con el ledger existente. | kWh reales M12 × tarifa, redondeo final determinista en céntimos; ventas/compras reales sin doble cobro; alquiler una vez. Closing termina clientes y Closed liquida exactamente una vez; Next Day exige resumen y no repite cargos. Saldo negativo permitido. Summary conciliado hasta Next Day; consumo eléctrico devengado separado de pagos, período pendiente entre días, herramienta Inspector para pagar exactamente una vez. Ver también ADR 0019. Reset solo diario, históricos/dinero/objetos/estados intactos. Dos días consecutivos, apagado individual/corte, éxito/rechazo/duplicados/overflow e integración/regresiones M1–M12. Ver M13.md y ADR 0018; sin M14. |
+| M14 · `feature/order-satisfaction-partial-payment` | Completitud por unidades y pago parcial configurable. | Expected/Received/Missing/Extra con multiplicidades y receta reconocida, separados de calidad y seguridad. Precio como máximo, pesos positivos por slot, céntimos deterministas, extras sin aumento y rechazo solo irrelevante. Dish completo/incompleto, alimento suelto y mezcla se evalúan por PASS; aceptación transporta todos los originales a Exit sin clonarlos. Ledger guarda importe real una vez y Summary lo conserva. Tests perfectos/ausencias/Patty/Bun/extras/otra receta/rechazo/topes/duplicados/seguridad/transporte y regresiones M1–M13; ver M14.md y ADR 0020. Sin reputación, intoxicación, inspecciones ni M15. |
 
 ## Recorrido de aceptación del slice
+
+La secuencia histórica M6 siguiente se amplía y sustituye en entregas/pagos por
+[la comparación manual M14](M14.md#comparación-manual-en-unity): perfecto,
+incompleto, solo Patty, extras, rechazo irrelevante y reintento ante otro pedido.
 
 M10 añade la comprobación de cola: cuatro reservas únicas, atención exclusiva
 de la cabeza, avance al completar Exit y entrada del siguiente sin atravesar

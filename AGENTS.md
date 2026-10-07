@@ -35,6 +35,8 @@
   `feature/electricity-utilities`; ver Docs/M12.md y ADR 0017.
   M12 está validado en `6258bad`. M13 añade facturas y costes diarios en
   `feature/bills-operating-costs`; ver Docs/M13.md y ADR 0018.
+  M1–M13 y correcciones de servicio están aprobados en `cf12f9d`.
+  M14 implementa completitud de pedidos y pago parcial; ver Docs/M14.md y ADR 0020.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -248,7 +250,20 @@ silenciosamente**: indícalo antes.
   operativo de caja y factura pagada. Un pago tras Closed reproyecta evidencia real
   en un nuevo snapshot sin volver a liquidar alquiler. Preservar diarios/histórico,
   IDs, dinero, alimentos, platos, estado y selección ON/OFF. Solo Next Day resetea
-  diarios. Sin calendario mensual, deuda avanzada ni M14. Ver ADR 0019.
+  diarios. Sin calendario mensual ni deuda avanzada. Ver ADR 0019.
+- M14 sustituye la aceptación binaria M6: DeliveryContents referencia Dish y/o
+  unidades originales sin requerir finalización para comida suelta. OrderSatisfaction
+  compara cantidades por ID (Bun repetido exige unidades distintas), separado de
+  receta reconocida y de toda calidad/seguridad. Pesos positivos por posición de
+  receta, iguales para IDs repetidos; pago floor(precio máximo × peso esperado
+  recibido / peso esperado total), multiplicando antes de dividir. Extras no pagan.
+  Algún ingrediente esperado permite aceptar; ninguno rechaza y conserva objetos.
+  Registrar céntimos reales y todos los IDs en el único ledger una sola vez;
+  FoodState.IsSold impide recomponer/revender. El carrier transporta exactamente
+  Dish/FoodItem/Plate originales hasta Exit, donde desregistra y limpia. Preservar
+  evidencia inmutable de temperatura/edad/frescura/deterioro/cocción/contaminación.
+  Montar fuera de PASS: se resuelve una entrega, sin rondas de completado posteriores.
+  No implementar reputación, intoxicación, inspección ni M15. Ver ADR 0020.
 - DeliveryZone es la única puerta espacial: todas las APIs de servicio deben pasar
   por apoyo/overlap del pad verde actual, sin posición/orientación/input del jugador.
   El carrier recibe el mismo Dish con o sin Plate, bloquea todo Pickup/colisión y
