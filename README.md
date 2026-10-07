@@ -27,6 +27,8 @@ sustituye la reposición gratuita por compras y conserva la entrega por Dish.
 M12 añade [electricidad y consumo](Docs/M12.md): suministro ON/OFF con **E**,
 Grill/Fridge/Freezer dependientes y kWh acumulados, sin facturas. La escena
 empieza **sin corriente**; encender en la pared norte antes de cocinar/enfriar.
+Cada aparato tiene ON/OFF individual con **E** al apuntar a su cuerpo; su selección
+se conserva durante cortes/restauración. Inicialmente los tres están ON.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla

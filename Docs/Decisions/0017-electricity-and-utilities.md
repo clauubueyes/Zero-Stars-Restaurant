@@ -20,6 +20,19 @@ real y evidencia de consumo, sin facturas ni modificaciones de FoodState.
 - `RestaurantElectricity` referencia explícitamente sus `ElectricalAppliance`.
   Cada aparato referencia el suministro y su HeatSource; esta referencia el mismo
   aparato. No hay descubrimiento global, eventos generales ni singleton.
+- Corrección solicitada sobre M12: `ElectricalApplianceState` separa la selección
+  ON/OFF individual del suministro y del medidor. `HasPower` exige suministro ON
+  y selección ON; cortar/restaurar nunca escribe en esa selección. Cada instancia
+  copia Initially On (por defecto true) al iniciar, conservándolo en disable/enable
+  y Next Day. El suministro general sigue inicialmente OFF. Ningún estado se guarda
+  en assets; el medidor existente conserva su acumulado al conmutar.
+- `ApplianceSwitch` reutiliza E/Interactable en la raíz de cada aparato: los
+  colliders sólidos de sus hijos resuelven esa acción, sin geometría/teclas nuevas.
+  Se puede seleccionar ON/OFF con manos libres durante un corte. Un Food/Pickup
+  enfocado sigue resolviendo su propia acción. PromptLabel conserva el formato
+  genérico previo y permite **[E] Turn Grill On/Off** sin duplicar nombres.
+  El HUD distingue selección ON/OFF y operación Running/Stopped; el instalador
+  actualiza escenas M12 generales sin cambiar ajustes y conserva idempotencia.
 - Las fuentes de la escena requieren electricidad explícitamente. Sin corriente,
   `IsOperational`/`TryGetEnvironment` dejan de ofrecer entorno y FoodSimulation
   selecciona ambiente con sus reglas existentes. Restaurar corriente solo cambia

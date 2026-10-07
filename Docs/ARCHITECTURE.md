@@ -412,4 +412,8 @@ HeatSource.IsOperational integra disponibilidad eléctrica y térmica; OFF retir
 el entorno, sin otro driver alimentario ni flags FoodState. FoodSimulation conserva
 su resolución/avance únicos. Next Day no reinicia energía ni suministro.
 El interruptor físico usa E/Interactable y el HUD muestra estado y consumo.
+ElectricalApplianceState mantiene la selección individual ON/OFF: IsPowered exige
+suministro ON y aparato ON. ApplianceSwitch reutiliza E apuntando a geometría
+existente; los cortes/Next Day conservan la selección y el medidor. El HUD separa
+selección de funcionamiento efectivo. No añade un reloj o driver térmico.
 Ver [M12](M12.md) y [ADR 0017](Decisions/0017-electricity-and-utilities.md).

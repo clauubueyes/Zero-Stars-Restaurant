@@ -180,6 +180,10 @@
   Fixtures térmicas aisladas sin requisito mantienen comportamiento histórico;
   requisito sin referencia falla apagado. No implementar facturas, impagos,
   generadores, averías ni M13. Ver Docs/M12.md y ADR 0017.
+  Cada aparato tiene ElectricalApplianceState ON/OFF y ApplianceSwitch con E;
+  Funciona = suministro general ON && aparato ON, con validaciones térmicas
+  existentes. Cortes/restauración y Next Day conservan selección y medidor.
+  Inicialmente suministro OFF y aparatos ON; selección configurable antes de Play.
 - Convenciones: C# y nombres técnicos en inglés; documentación en español;
   namespace `ZeroStarRestaurant`, con subnamespaces según responsabilidad;
   PascalCase para tipos/métodos, `_camelCase` para campos privados.
