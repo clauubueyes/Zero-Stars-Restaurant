@@ -84,7 +84,9 @@ namespace ZeroStarRestaurant.Tests
             for (int customer = 0; customer < 4; customer++)
             {
                 Assert.That(_service.Visit.InstanceId, Is.EqualTo(ids[customer])); Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
-                PlaceAndPoll(custom); Assert.That(_service.LastResult.Accepted, Is.False); _service.Advance(30);
+                PlaceAndPoll(custom); Assert.That(_service.LastResult.Accepted, Is.False);
+                Assert.That(_service.ForceNextOrder(0), Is.True); // Cheese remains irrelevant to each Hamburger in this closing fixture.
+                _service.Advance(30);
                 Assert.That(Queue.Count, Is.EqualTo(3 - customer)); Assert.That(Queue.AdmittedCount, Is.EqualTo(4)); Assert.That(Queue.TryAdmit(), Is.False);
                 custom.transform.position += Vector3.right * 3; Physics.SyncTransforms(); Components<DeliveryZone>().Single().Poll();
             }

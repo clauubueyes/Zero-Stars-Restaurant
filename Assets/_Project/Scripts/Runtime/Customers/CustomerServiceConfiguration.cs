@@ -13,8 +13,11 @@ namespace ZeroStarRestaurant.Customers
         {
             [SerializeField] private DishDefinition _dish;
             [SerializeField, Min(1)] private int _salePriceCents = 500;
+            [SerializeField, Tooltip("One positive weight per recipe slot; empty uses equal weights.")]
+            private int[] _ingredientWeights = Array.Empty<int>();
             public OrderOffer CreateOffer() => new OrderOffer(_dish != null ? _dish.CreateProfile() :
-                throw new ArgumentException("Menu entries need a dish definition."), _salePriceCents);
+                throw new ArgumentException("Menu entries need a dish definition."), _salePriceCents,
+                _ingredientWeights != null && _ingredientWeights.Length > 0 ? _ingredientWeights : null);
         }
         [SerializeField] private MenuEntry[] _menu = Array.Empty<MenuEntry>();
         [SerializeField, Min(0.1f)] private float _walkingSpeed = 1.5f;

@@ -137,9 +137,9 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator RejectedPlacementCannotBlockTheNextMatchingCustomerOrKeepThePreviousReservation()
         {
             Ready(); var firstOrderId = _service.Visit.Order.InstanceId;
-            DishItem dish = null; yield return BuildDish(true, created => dish = created);
+            DishItem dish = null; yield return BuildDish(true, created => dish = created, cheeseOnly: true);
             var dishId = dish.State.InstanceId; var foods = dish.State.Components.ToArray(); PlaceAndPoll(dish);
-            Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(825));
+            Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(975));
             var feedback = Components<OrderFeedback>().Single();
             Assert.That(feedback.Text.IndexOf("DELIVERY REJECTED"), Is.LessThan(feedback.Text.IndexOf("QUEUE ")),
                 "The rejection reason must be visible before the scrollable queue details.");
@@ -152,10 +152,10 @@ namespace ZeroStarRestaurant.Tests
             _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.True,
                 "The previous customer's rejected placement must not block the next matching order.");
             Assert.That(_service.LastResult.Accepted, Is.True);
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475)); Assert.That(dish.State.InstanceId, Is.EqualTo(dishId));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1125)); Assert.That(dish.State.InstanceId, Is.EqualTo(dishId));
             Assert.That(dish.State.Components, Is.EqualTo(foods));
             Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
-            _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475));
+            _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1125));
         }
 
         [UnityTest]
@@ -224,7 +224,7 @@ namespace ZeroStarRestaurant.Tests
             var rejectedVisit = _service.Visit;
             var matchingCustomerId = _queue.Customers[1].State.InstanceId;
             Assert.That(_service.ForceNextOrder(1), Is.True);
-            DishItem dish = null; yield return BuildDish(true, value => dish = value);
+            DishItem dish = null; yield return BuildDish(true, value => dish = value, cheeseOnly: true);
             var originalDishId = dish.State.InstanceId;
             var originalFoods = dish.State.Components.ToArray();
             Rigidbody body = dish.GetComponent<Rigidbody>();
@@ -244,7 +244,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(dish.State.Components, Is.EqualTo(originalFoods));
             Assert.That(_service.ResultRevision, Is.EqualTo(2));
             Assert.That(_service.Ledger.Transactions.Count(transaction => transaction.Category == LedgerCategory.Sales), Is.EqualTo(1));
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1125));
             Assert.That(_queue.Customers.All(customer => customer.State.InstanceId != rejectedVisit.InstanceId), Is.True);
         }
 
@@ -306,13 +306,13 @@ namespace ZeroStarRestaurant.Tests
             yield return null;
         }
 
-        private IEnumerator BuildDish(bool cheese, System.Action<DishItem> completed)
+        private IEnumerator BuildDish(bool cheese, System.Action<DishItem> completed, bool cheeseOnly = false)
         {
             BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
             PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
             FoodItem last = null;
             IngredientPurchaseStation station = Components<IngredientPurchaseStation>().Single();
-            int[] products = cheese ? new[] { 0, 1, 2, 0 } : new[] { 0, 1, 0 };
+            int[] products = cheeseOnly ? new[] { 2 } : cheese ? new[] { 0, 1, 2, 0 } : new[] { 0, 1, 0 };
             float top = support.bounds.max.y;
             foreach (int product in products)
             {
@@ -327,7 +327,7 @@ namespace ZeroStarRestaurant.Tests
                 top += 2 * half + 0.003f; last = food; Physics.SyncTransforms();
             }
             for (int frame = 0; frame < 40; frame++) yield return new WaitForFixedUpdate();
-            Assert.That(physical.PreviewName(last), Is.EqualTo(cheese ? "Cheeseburger" : "Hamburger"));
+            Assert.That(physical.PreviewName(last), Is.EqualTo(cheeseOnly ? "Custom Dish" : cheese ? "Cheeseburger" : "Hamburger"));
             Assert.That(physical.TryFinalize(last, out DishItem dish), Is.True); completed(dish);
         }
         private void PlaceAndPoll(DishItem dish)

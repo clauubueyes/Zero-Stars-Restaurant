@@ -17,7 +17,7 @@ using Object = UnityEngine.Object;
 
 namespace ZeroStarRestaurant.Tests
 {
-    public sealed class M6ServiceTests
+    public sealed partial class M6ServiceTests
     {
         private readonly List<GameObject> _objects = new List<GameObject>();
         private readonly List<ScriptableObject> _assets = new List<ScriptableObject>();
@@ -52,8 +52,8 @@ namespace ZeroStarRestaurant.Tests
             Set(_customer, "_arrivalPath", new[] { Create("Corner", _origin + new Vector3(0, 0, -3)).transform,
                 Create("Waiting", _origin + new Vector3(0, 0, -2.5f)).transform });
             var config = ScriptableObject.CreateInstance<CustomerServiceConfiguration>(); _assets.Add(config);
-            var first = new CustomerServiceConfiguration.MenuEntry(); Set(first, "_dish", _hamburger); Set(first, "_salePriceCents", 500);
-            var second = new CustomerServiceConfiguration.MenuEntry(); Set(second, "_dish", _cheeseburger); Set(second, "_salePriceCents", 650);
+            var first = new CustomerServiceConfiguration.MenuEntry(); Set(first, "_dish", _hamburger); Set(first, "_salePriceCents", 500); Set(first, "_ingredientWeights", new[] { 3, 4, 3 });
+            var second = new CustomerServiceConfiguration.MenuEntry(); Set(second, "_dish", _cheeseburger); Set(second, "_salePriceCents", 650); Set(second, "_ingredientWeights", new[] { 3, 4, 3, 3 });
             Set(config, "_menu", new[] { first, second });
             GameObject loop = Create("Service", _origin); loop.SetActive(false); _service = loop.AddComponent<CustomerServiceLoop>();
             Set(_service, "_configuration", config); Set(_service, "_customer", _customer); Set(_service, "_dishCarrier", _carrier); Set(_service, "_foodSimulation", _simulation);
@@ -113,6 +113,12 @@ namespace ZeroStarRestaurant.Tests
             if (cheese) Food(_cheese, at + Vector3.up * 0.44f);
             Food(custom ? _cheese : _bun, at + Vector3.up * 0.58f);
             surface.RefreshComposition(); Assert.That(surface.TryInteract(new InteractionContext(null, null)), Is.True); return surface.Dish;
+        }
+        private void ReadyIrrelevantOrder()
+        {
+            Set(_service, "_offers", new[] { new OrderOffer(_hamburger.CreateProfile(), 500),
+                new OrderOffer(new DishProfile("dish.cheeseplate", "Cheese plate", new[] { "food.cheese" }), 150) });
+            Ready(1);
         }
         private void Ready(int force = -1)
         {
@@ -174,22 +180,12 @@ namespace ZeroStarRestaurant.Tests
         {
             Ready(cheese ? 1 : 0); DishItem dish = FinalDish(cheese, custom: custom);
             dish.transform.localScale = Vector3.one * scale; Physics.SyncTransforms();
-            // Center lies beyond the pad edge; only part of the aggregate is on the pad.
             PlaceAt(dish, new Vector2(_pad.bounds.extents.x + dish.GetComponent<BoxCollider>().bounds.extents.x * 0.3f, 0f));
             _delivery.Poll(); _delivery.Poll();
-            Assert.That(_service.Visit.Order.IsCompleted, Is.True);
-            Assert.That(_service.LastResult.Accepted, Is.EqualTo(!custom));
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(custom ? 0 : cheese ? 650 : 500));
-            if (custom)
-            {
-                Assert.That(_carrier.Dish, Is.Null); Assert.That(dish.State.IsSold, Is.False);
-                GameObject actor = Create("Actor", _pad.transform.position + new Vector3(0, -_pad.transform.position.y, -2.5f));
-                Transform view = Create("View", actor.transform.position + Vector3.up * 1.65f).transform;
-                PhysicalCarry carry = actor.AddComponent<PhysicalCarry>(); Set(carry, "_actorRoot", actor.transform); Set(carry, "_viewTransform", view);
-                view.LookAt(dish.transform.position);
-                Assert.That(dish.GetComponent<Pickup>().TryInteract(new InteractionContext(actor.transform, carry)), Is.True);
-                Assert.That(carry.HeldBody, Is.SameAs(dish.GetComponent<Rigidbody>())); carry.Drop();
-            }
+            Assert.That(_service.Visit.Order.IsCompleted, Is.True); Assert.That(_service.LastResult.Accepted, Is.True);
+            Assert.That(_service.LastResult.Evaluation.CorrectOrder, Is.EqualTo(!custom));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(custom ? cheese ? 500 : 350 : cheese ? 650 : 500));
+            Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(dish.State.IsSold, Is.True);
         }
 
         [TestCase(0.8f, 0f, 45f, true)]
@@ -280,7 +276,7 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void RejectionKeepsDishAndDoesNotBlockTheNextMatchingCustomer()
         {
-            Ready(1); DishItem dish = FinalDish(); Place(dish); _delivery.Poll();
+            ReadyIrrelevantOrder(); DishItem dish = FinalDish(); Place(dish); _delivery.Poll();
             Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(dish.gameObject.activeSelf, Is.True);
             Assert.That(_carrier.Dish, Is.Null); Assert.That(dish.GetComponent<Pickup>().enabled, Is.True);
             Assert.That(dish.State.IsSold, Is.False); Assert.That(_simulation.Foods.Count, Is.EqualTo(3));
@@ -296,7 +292,7 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void EachOrderEvaluatesTheSameRejectedDishOnceAndOnlyTheMatchingCustomerPays()
         {
-            Ready(1); DishItem dish = FinalDish(); Place(dish);
+            ReadyIrrelevantOrder(); DishItem dish = FinalDish(); Place(dish);
             var originalDishId = dish.State.InstanceId;
             var orderIds = new HashSet<Guid>();
             var feedback = _service.gameObject.AddComponent<OrderFeedback>(); Set(feedback, "_service", _service);
@@ -315,7 +311,7 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(result.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(originalDishId));
                 Assert.That(feedback.ResultRevision, Is.EqualTo(index + 1));
                 Assert.That(feedback.LastDeliveryMessage, Does.Contain(index == 2 ? "DELIVERY ACCEPTED" : "DELIVERY REJECTED"));
-                Assert.That(feedback.LastDeliveryMessage, Does.Contain(index == 2 ? "Paid" : "Ordered: Cheeseburger | Delivered: Hamburger"));
+                Assert.That(feedback.LastDeliveryMessage, Does.Contain(index == 2 ? "Paid" : "Ordered: Cheese plate"));
                 for (int repeat = 0; repeat < 20; repeat++) _delivery.Poll();
                 Assert.That(_service.LastResult, Is.SameAs(result));
                 Assert.That(feedback.ResultRevision, Is.EqualTo(index + 1));
@@ -327,7 +323,7 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void IndividualFoodBoxesDraftDishesAndFastOrAirborneFinalDishesAreIgnored()
         {
-            Ready(); Food(_beef, _pad.transform.position + Vector3.up * 0.1f);
+            Ready(); Food(_beef, _pad.transform.position + Vector3.up * 0.3f);
             GameObject box = Create("ArbitraryBox", _pad.transform.position + Vector3.up * 0.3f); box.AddComponent<BoxCollider>(); box.AddComponent<Rigidbody>(); box.AddComponent<Pickup>();
             AssemblySurface draft = Surface(_pad.transform.position + Vector3.up * 0.02f); _delivery.Poll();
             Assert.That(_service.Visit.Order.IsCompleted, Is.False);
@@ -357,15 +353,15 @@ namespace ZeroStarRestaurant.Tests
         [TestCase(0, false, 45, false, true)]
         [TestCase(100, false, 90, false, true)]
         [TestCase(74, true, 45, false, true)]
-        [TestCase(100, false, 45, true, false)]
-        public void RuntimeEvaluationKeepsSafetySeparateAndCustomDishRemainsAvailable(float freshness, bool contaminated, double dose, bool custom, bool accepted)
+        [TestCase(100, false, 45, true, true)]
+        public void RuntimeEvaluationKeepsSafetySeparateAndIncompleteCustomDishReceivesPartialPayment(float freshness, bool contaminated, double dose, bool custom, bool accepted)
         {
             Ready(); DishItem dish = FinalDish(freshness: freshness, contaminated: contaminated, dose: dose, custom: custom); Place(dish); _delivery.Poll();
             Assert.That(_service.LastResult.Accepted, Is.EqualTo(accepted));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.ContainsContamination, Is.EqualTo(contaminated));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.MinimumFreshnessPercent, Is.EqualTo(freshness));
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(accepted ? 500 : 0));
-            Assert.That(OrderFeedback.ResultText(_service.LastResult), Does.Contain("Correct order: " + (accepted ? "YES" : "NO")));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(custom ? 350 : 500));
+            Assert.That(OrderFeedback.ResultText(_service.LastResult), Does.Contain("Correct order: " + (!custom ? "YES" : "NO")));
             Assert.That(OrderFeedback.ResultText(_service.LastResult), Does.Contain("Rotten ingredient: " + (freshness == 0 ? "YES" : "NO")));
             if (!accepted) Assert.That(dish.gameObject.activeSelf, Is.True);
         }
@@ -487,7 +483,7 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void DirectServiceApiCannotBypassPadOrItsPlacementRetryPolicy()
         {
-            Ready(1); DishItem dish = FreeDish(false);
+            ReadyIrrelevantOrder(); DishItem dish = FreeDish(false);
             Assert.That(_service.TryDeliver(dish), Is.False, "A workbench is not a delivery pad.");
             Assert.That(_service.LastResult, Is.Null); Assert.That(_service.Ledger.BalanceCents, Is.Zero);
             PlaceAt(dish, new Vector2(2, 0)); Assert.That(_service.TryDeliver(dish), Is.False);
@@ -509,26 +505,16 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void UnconfirmedHamburgerOnTheGreenPadExplainsConfirmationAndDeliversAfterFinalization()
+        public void UnconfirmedHamburgerOnTheGreenPadDeliversWithoutFinalization()
         {
-            Ready(0);
-            Vector3 at = _pad.bounds.center;
-            float top = _pad.bounds.max.y;
-            Food(_bun, new Vector3(at.x, top + .11f, at.z));
-            Food(_beef, new Vector3(at.x, top + .28f, at.z));
-            FoodItem focus = Food(_bun, new Vector3(at.x, top + .45f, at.z));
-            _delivery.Poll();
-            Assert.That(_service.LastResult, Is.Null);
-            Assert.That(_service.Ledger.BalanceCents, Is.Zero);
-            Assert.That(_delivery.PlacementMessage, Does.Contain("press F"));
-            var feedback = _service.gameObject.AddComponent<OrderFeedback>(); Set(feedback, "_service", _service);
-            Assert.That(feedback.Text, Does.Contain(_delivery.PlacementMessage));
-            var assembly = Create("Assembly input", _origin).AddComponent<PhysicalDishAssembly>();
-            Set(assembly, "_simulation", _simulation); Set(assembly, "_definitions", new[] { _hamburger, _cheeseburger });
-            Assert.That(assembly.TryFinalize(focus, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Ready(0); Vector3 at = _pad.bounds.center; float top = _pad.bounds.max.y;
+            FoodItem bottom = Food(_bun, new Vector3(at.x, top + .11f, at.z));
+            FoodItem patty = Food(_beef, new Vector3(at.x, top + .28f, at.z));
+            FoodItem upper = Food(_bun, new Vector3(at.x, top + .45f, at.z));
             _delivery.Poll(); _delivery.Poll();
-            Assert.That(_service.LastResult.Accepted, Is.True);
-            Assert.That(_carrier.Dish, Is.SameAs(dish));
+            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_carrier.Dish, Is.Null);
+            Assert.That(_carrier.Foods, Is.EquivalentTo(new[] { bottom, patty, upper }));
+            Assert.That(_service.LastResult.Evaluation.CorrectOrder, Is.True);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
 

@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
 using ZeroStarRestaurant.Economy;
@@ -25,10 +27,26 @@ namespace ZeroStarRestaurant.Orders
             }
             return text.ToString();
         }
-        public static string BriefResultText(OrderResult result) => result.Accepted ?
-            "DELIVERY ACCEPTED | Paid " + Money(result.PaymentCents) + "\n" + result.Evaluation.DeliveredDish.DisplayName + " taken by customer" :
-            "DELIVERY REJECTED | No payment\nOrdered: " + result.Evaluation.RequestedDish.DisplayName +
-            " | Delivered: " + result.Evaluation.DeliveredDish.DisplayName;
+        private static string IngredientNames(IEnumerable<string> ids, OrderEvaluation evaluation)
+        {
+            var names = ids.Select(id => evaluation.DeliveredDish.Ingredients.FirstOrDefault(food => food.Profile.Id == id)?.Profile.DisplayName ??
+                IngredientLabel(id));
+            return names.Any() ? string.Join(" + ", names) : "None";
+        }
+        private static string IngredientLabel(string id)
+        {
+            string name = id.Substring(id.LastIndexOf('.') + 1);
+            return char.ToUpperInvariant(name[0]) + name.Substring(1).Replace('_', ' ');
+        }
+        public static string BriefResultText(OrderResult result)
+        {
+            var evaluation = result.Evaluation; var satisfaction = evaluation.Satisfaction;
+            return (result.Accepted ? "DELIVERY ACCEPTED" : "DELIVERY REJECTED") +
+                " | Paid " + Money(result.PaymentCents) + " / " + Money(evaluation.BasePriceCents) +
+                "\nOrdered: " + evaluation.RequestedDish.DisplayName +
+                "\nMissing: " + IngredientNames(satisfaction.Missing, evaluation) +
+                "\nReceived: " + IngredientNames(satisfaction.Received, evaluation);
+        }
 
         public static string ResultText(OrderResult result)
         {
@@ -37,6 +55,13 @@ namespace ZeroStarRestaurant.Orders
             text.AppendLine("Requested: " + evaluation.RequestedDish.DisplayName);
             text.AppendLine("Delivered: " + dish.DisplayName + " #" + dish.InstanceId.ToString("N").Substring(0, 8));
             text.AppendLine("Correct order: " + (evaluation.CorrectOrder ? "YES" : "NO"));
+            text.AppendLine("Expected: " + IngredientNames(evaluation.Satisfaction.Expected, evaluation));
+            text.AppendLine("Received: " + IngredientNames(evaluation.Satisfaction.Received, evaluation));
+            text.AppendLine("Missing: " + IngredientNames(evaluation.Satisfaction.Missing, evaluation));
+            text.AppendLine("Extra: " + IngredientNames(evaluation.Satisfaction.Extra, evaluation));
+            text.AppendLine("Composition / recipe: " + (dish.DefinitionId ?? "Unrecognized"));
+            text.AppendLine("Base price: " + Money(evaluation.BasePriceCents));
+            text.AppendLine("Final payment: " + Money(result.PaymentCents));
             text.AppendLine(string.Format(CultureInfo.InvariantCulture, "Worst freshness: {0:0.0}%   Mean: {1:0.0}%", dish.MinimumFreshnessPercent, dish.MeanFreshnessPercent));
             text.AppendLine("Spoiled ingredient: " + (dish.ContainsSpoiled ? "YES" : "NO"));
             text.AppendLine("Rotten ingredient: " + (dish.ContainsRotten ? "YES" : "NO"));
@@ -47,7 +72,7 @@ namespace ZeroStarRestaurant.Orders
                     food.CookingStage.HasValue ? food.CookingStage.Value.ToString() : "Not cookable", food.Condition, food.TemperatureCelsius));
             text.AppendLine("Ingredient cost: " + Money(dish.TotalIngredientCostCents));
             text.AppendLine("Payment: " + Money(result.PaymentCents));
-            text.AppendLine(result.Accepted ? "Accepted / Sold" : "Rejected / Dish remains available");
+            text.AppendLine(result.Accepted ? "Accepted / Sold" : "Rejected / Food remains available");
             return text.ToString();
         }
         public string Text

@@ -24,11 +24,14 @@ namespace ZeroStarRestaurant.Customers
         [SerializeField, Min(-1), Tooltip("Development: -1 alternates the menu; 0/1 force the next served customer's menu slot once.")]
         private int _forceNextOfferIndex = -1;
         private OrderOffer[] _offers;
+        private DishProfile[] _deliveryRecipes = Array.Empty<DishProfile>();
         private double _remainingSeconds;
         private double _queueElapsedSeconds;
         private const double QueueStepSeconds = 0.05;
         public CustomerQueueController Queue => _queue;
         public DeliveryZone DeliveryZone => _deliveryZone;
+        public FoodSimulation FoodSimulation => _foodSimulation;
+        public System.Collections.Generic.IReadOnlyList<DishProfile> DeliveryRecipes => _deliveryRecipes;
         public CustomerMovement ActiveCustomer => Visit != null ? _customer : null;
         public CustomerDishCarrier ActiveDishCarrier => Visit != null ? _dishCarrier : null;
         public PaymentLedger Ledger { get; private set; }
@@ -47,6 +50,8 @@ namespace ZeroStarRestaurant.Customers
             try
             {
                 _offers = _configuration.CreateOffers();
+                _deliveryRecipes = new DishProfile[_offers.Length];
+                for (int i = 0; i < _offers.Length; i++) _deliveryRecipes[i] = _offers[i].Dish;
                 if (_queue != null) _queue.Initialize(_configuration.InitialDelaySeconds);
             }
             catch (ArgumentException exception)
@@ -170,19 +175,21 @@ namespace ZeroStarRestaurant.Customers
         }
         // Compatibility entry point: every submission still has to be on the same pad.
         public bool TryDeliver(DishItem dish) => _deliveryZone != null && _deliveryZone.TryDeliver(dish);
+        public bool TryDeliver(FoodItem food) => _deliveryZone != null && _deliveryZone.TryDeliver(food);
 
         internal bool TryAcceptDelivery(DeliveryZone source, DishItem dish)
+            => dish != null && TryAcceptDelivery(source, new PhysicalDelivery(dish));
+
+        internal bool TryAcceptDelivery(DeliveryZone source, PhysicalDelivery delivery)
         {
             if (source == null || source != _deliveryZone || !source.isActiveAndEnabled ||
-                !isActiveAndEnabled || Visit == null || Visit.Stage != CustomerStage.Wait || dish == null ||
-                !dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized || dish.State.IsSold || !dish.IsIntact) return false;
+                !isActiveAndEnabled || Visit == null || Visit.Stage != CustomerStage.Wait || delivery == null || !delivery.IsAvailable) return false;
             if (_queue != null && (!_queue.isActiveAndEnabled || _queue.Head == null || _queue.Head.State.Stage != QueuedCustomerStage.Service ||
                 _queue.Head.State.InstanceId != Visit.InstanceId || _queue.Head.Movement != _customer ||
                 (_customer.transform.position - _queue.ServicePosition.position).sqrMagnitude > 0.0001f)) return false;
-            Pickup pickup = dish.GetComponent<Pickup>();
-            if (pickup == null || !pickup.isActiveAndEnabled || pickup.IsHeld || _dishCarrier == null || !_dishCarrier.CanTake(dish)) return false;
+            if (_dishCarrier == null || !_dishCarrier.CanTake(delivery)) return false;
             Visit.Receive(); Visit.BeginEvaluation();
-            if (!_dishCarrier.TryReceive(dish, Visit.Order, Ledger, out OrderResult result))
+            if (!_dishCarrier.TryReceive(delivery, Visit.Order, Ledger, out OrderResult result))
             { Visit.ResumeWaiting(); return false; }
             Visit.Resolve(); LastResult = result; LastResultCustomerNumber = CustomerNumber; ResultRevision++;
             _remainingSeconds = _configuration.ResultDisplaySeconds;
@@ -191,9 +198,8 @@ namespace ZeroStarRestaurant.Customers
 
         private void RetireSoldDish()
         {
-            DishItem dish = _dishCarrier != null ? _dishCarrier.Dish : null;
             if (_foodSimulation != null)
-                _foodSimulation.Unregister(dish != null ? dish.GetComponentsInChildren<FoodItem>(true) : Array.Empty<FoodItem>());
+                _foodSimulation.Unregister(_dishCarrier != null ? _dishCarrier.Foods : Array.Empty<FoodItem>());
             if (_dishCarrier != null) _dishCarrier.Clear();
         }
         private void RestoreTemplateReferences()

@@ -15,8 +15,10 @@ MonoBehaviour:
   _menu:
   - _dish: {fileID: 11400000, guid: 3ba00c66be0433a4783a5c9ab3dc4456, type: 2}
     _salePriceCents: 500
+    _ingredientWeights: 030000000400000003000000
   - _dish: {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
     _salePriceCents: 650
+    _ingredientWeights: 03000000040000000300000003000000
   _walkingSpeed: 1.5
   _initialDelaySeconds: 0.5
   _orderDisplaySeconds: 1
