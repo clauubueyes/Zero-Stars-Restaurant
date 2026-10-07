@@ -160,7 +160,9 @@ silenciosamente**: indícalo antes.
   CustomerDishCarrier vincula el mismo Dish a un anchor del cliente, retira Pickup
   y colisiones; desregistrar del único FoodSimulation y destruir solo al llegar a
   salida (o cancelar servicio). Rechazo conserva el plato
-  y termina la visita; retirar/recoger antes de ofrecerlo al siguiente cliente.
+  y termina la visita. Una colocación rechazada se bloquea solo para ese pedido;
+  el siguiente cliente puede evaluar el mismo Dish que siga en el pad y recogerlo
+  si coincide con su pedido. Nunca trasladar el rechazo a todas las visitas futuras.
 - Polish histórico desde M6 aprobado `9335899`: clic izquierdo PlaceIngredient coloca la
   Food sostenida sobre la pila con bounds, sin clones ni cambios de estado. Snap
   solo pertenece a AssemblySurface; E/G y Throw derecho siguen siendo genéricos.

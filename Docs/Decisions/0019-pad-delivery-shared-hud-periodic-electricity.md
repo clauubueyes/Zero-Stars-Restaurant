@@ -20,7 +20,10 @@ y Plate opcional, mantiene escala mundial y sincroniza sus cuerpos nativos.
 LateUpdate reafirma únicamente la pose visual tras física, sin avanzar simulación.
 La salida del servicio retira las unidades del único FoodSimulation y destruye el
 agregado en Exit; la cancelación explícita del servicio conserva su cleanup previo.
-El rechazo deja el Dish disponible y exige retirarlo/recolocarlo antes de otro envío.
+El rechazo deja el Dish disponible. La corrección posterior de entrega y salida
+registra la colocación por Dish y pedido: bloquea repetición en ese pedido, pero
+otra visita puede evaluar el mismo plato que siga apoyado en el pad. Un rechazo
+no crea una reserva de cliente ni bloquea para siempre un pedido posterior correcto.
 
 DebugHudPresenter es el único OnGUI. Los componentes de feedback conservan sus
 referencias y helpers, y pasan a producir texto. DebugHudLayout distribuye zonas

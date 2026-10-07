@@ -318,9 +318,10 @@ ocupadas y exige apoyo en el pad. La entrega tolerante usa solapamiento del coll
 real con el trigger y cobertura XZ mínima del 20% del área menor pad/plato, no el
 centro del plato. Conserva tolerancia de altura y velocidades; visual y trigger
 comparten huella. Ver [corrección y límites](DELIVERY-TOLERANCE-FIX.md).
-Una colocación rechazada se registra hasta retirar
-o recoger el plato: evita venderlo involuntariamente al siguiente cliente. No exige
-una nueva tecla, input o dependencia. Ver [ADR 0007](Decisions/0007-customer-delivery-payment.md)
+Una colocación rechazada se registra por Dish y pedido. No se reevalúa repetidamente
+para ese pedido; otra visita puede evaluar el mismo agregado sobre el pad sin tener
+que retirarlo primero. Si coincide, paga una vez y se lo lleva hasta Exit. El pad
+no reserva plazas de cola. Ver [ADR 0007](Decisions/0007-customer-delivery-payment.md)
 y [M6](M6.md).
 Ver [ADR 0008](Decisions/0008-vertical-slice-polish.md) y
 [polish y validación actual](VERTICAL-SLICE-POLISH.md) para estos cambios Runtime.

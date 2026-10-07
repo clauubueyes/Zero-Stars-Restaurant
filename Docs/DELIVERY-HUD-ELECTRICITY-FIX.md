@@ -163,6 +163,8 @@ paquetes, pipeline, prefabs, recetas o configuración económica existente.
 
 ## Seguimiento de entrega sobre el pad (2026-10-07)
 
+Primera investigación, anterior a la corrección entre clientes descrita abajo.
+
 El usuario sigue observando una hamburguesa sin recoger sobre el verde y confirma
 que pulsó F y había pedido. Falta conocer la condición bloqueante y distinguir
 Order de Wait; la captura tampoco permite medir apoyo o velocidades. El caso
@@ -203,3 +205,73 @@ Assets / Refresh si hace falta. Volver a Play y repetir la colocación de la
 captura. Leer la línea **Delivery:** junto al pedido. El usuario ya confirmó F;
 ese mensaje permite distinguir geometría, apoyo y velocidad de disponibilidad
 del cliente o una colocación previamente rechazada.
+
+## Corrección del bloqueo entre clientes (2026-10-07)
+
+Se reproduce un fallo concreto de entrega tras un rechazo: el cliente anterior
+sale, la cola libera su reserva y el siguiente llega a atención con un pedido
+que coincide con el plato restante, pero el registro de colocaciones bloquea ese
+Dish para todas las visitas mientras siga en el verde. El pad no detecta comida
+como un cliente; el bloqueo estaba en DeliveryZone, separado de la reserva FIFO.
+Las dos pruebas nuevas del comportamiento solicitado fallaron antes de corregirlo.
+
+El registro de colocaciones vincula ahora Dish y Order.InstanceId. Una colocación
+rechazada se procesa una vez para ese pedido; un pedido posterior puede evaluar
+el mismo plato apoyado, sin exigir retirarlo previamente. Si coincide, el único
+PaymentLedger cobra una vez y el carrier recibe ese mismo Dish con sus FoodState
+originales. Se mantienen apoyo/overlap, F, Pickup libre y baja velocidad; los platos
+vendidos no se pueden revender. Un pedido incorrecto sigue sin pagar y el plato
+sigue disponible. Esta corrección sustituye la exigencia histórica de retirar el
+rechazado antes del siguiente cliente de M6/M10 y ADR 0019.
+
+El resultado breve queda antes del detalle de la cola y aparece seis segundos en
+la región de mensajes del único DebugHudPresenter. Indica aceptación y dinero
+pagado, o rechazo con solicitado/entregado; conserva el número del cliente que
+recibió ese resultado. La revisión cambia solo al resolver una transacción real,
+sin cobrar ni evaluar desde UI. El recibo completo permanece consultable.
+
+Se comprueba también con Update automático y pasos físicos reales que dos
+clientes consecutivos pagan, llevan exactamente sus ingredientes hasta Exit,
+retiran esos objetos del único FoodSimulation y dejan paso al siguiente cliente.
+La prueba incluye dos posiciones/yaws en el pad y verifica una venta por visita.
+Dos rechazos seguidos de un pedido correcto conservan el mismo Dish y
+producen un único pago; repetir Poll no publica otro resultado ni otra venta.
+
+Validación enfocada: **76/76 PlayMode** de M6ServiceTests, M6PrototypeTests y
+M10CustomerQueueTests. La reproducción previa del bloqueo falló **2/2**;
+la prueba física de dos visitas automáticas pasó **1/1** antes del cambio del
+registro. También pasó la prueba automática de rechazo, salida y recogida del mismo
+plato por el siguiente cliente, sin recolocación ni llamadas manuales a Poll.
+
+Suites completas finales: **244/244 PlayMode** y **256/256 EditMode**, sin fallos
+ni omitidas; Unity devuelve **0** en ambas. Incluyen regresiones M1–M13.
+XML: `TestResults/ExitQueuePlayModeFinal.xml` y `TestResults/ExitQueueEditModeFinal.xml`;
+logs homónimos bajo Logs. La primera suite completa pasó 242/243: una prueba nueva
+avanzaba incompletamente la salida antes de comprobar el siguiente pedido. Se
+corrigió esa secuencia de test y se repitió la suite completa hasta obtener verde.
+
+Aplicado a `C:/Users/Usuario/Zero Stars Restaurant Fixes`, rama
+`fix/customer-delivery-and-queue`, commit de implementación `5829204`. Los seis
+archivos de código/tests coinciden byte a byte con los validados; los otros **437**
+archivos versionados de Assets conservan sus bytes, incluidas escenas, materiales
+y metas. Las dos reglas permanentes del usuario en AGENTS.md siguen idénticas.
+No se cierra su Editor ni se ejecuta otro en esa carpeta. La importación del código
+en el Editor interactivo seguía pendiente al sincronizar: enfocar Unity fuera de
+Play, usar Assets / Refresh si hace falta y esperar a compilar antes de probar.
+
+Archivos modificados bajo `Assets/_Project`: `Scripts/Runtime/Orders/DeliveryZone.cs`,
+`Scripts/Runtime/Customers/CustomerServiceLoop.cs`, `Scripts/Runtime/Orders/OrderFeedback.cs`,
+`Scripts/Runtime/Presentation/DebugHudPresenter.cs`, `Tests/PlayMode/M6ServiceTests.cs`
+y `Tests/PlayMode/M10CustomerQueueTests.cs`. Documentación: AGENTS.md, README.md,
+Docs/ARCHITECTURE.md, Docs/M6.md, Docs/M10.md, ADR 0019 y este informe.
+No se modifican escenas, materiales, prefabs, metas, paquetes o configuración.
+
+Prueba manual: salir de Play, esperar compilación y empezar otra prueba. Preparar
+el pedido que muestra el cliente, confirmar F y soltar sobre el verde. Ver pago
+y plato siguiendo al cliente hasta Exit; el siguiente debe llegar a atención.
+Para comprobar el fallo reproducido, ofrecer Cheeseburger al primer pedido
+Hamburger: rechaza sin cobrar y sale. Dejar ese plato sobre el verde; el siguiente
+pedido Cheeseburger debe recogerlo y pagar una vez sin tener que moverlo.
+Confirmar en Game que se ve el mensaje breve y que los cambios manuales de escena
+siguen conservados. Las capturas originales sin HUD no identifican el resultado
+de aquella visita; no se afirma que se haya reproducido toda posible causa visual.

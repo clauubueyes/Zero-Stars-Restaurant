@@ -92,6 +92,9 @@ La escena de plantilla
     sale por la puerta este sin atravesar la cocina; se limpia en la salida y los demás
     avanzan una plaza. Puede entrar otro por Entrance cuando hay espacio. El panel
     de cola muestra espera y paciencia por cliente; cero solo informa.
+    El resultado breve aparece antes de la cola y durante seis segundos abajo:
+    aceptación/pago o rechazo con solicitado/entregado. Una colocación rechazada
+    bloquea solo ese pedido; otro cliente puede evaluar el plato que siga en verde.
     Ver [M10](Docs/M10.md) para probar varias ventas y [M6](Docs/M6.md) para el pipeline.
     Seguir [las pruebas actuales del polish](Docs/PHYSICAL-INTERACTION-POLISH.md) para
     manejo físico. Ver [Plate y montaje libre](Docs/PLATES-FREE-ASSEMBLY.md) para la
