@@ -8248,6 +8248,8 @@ GameObject:
   - component: {fileID: 1163158815}
   - component: {fileID: 1163158816}
   - component: {fileID: 1163158817}
+  - component: {fileID: 1163158818}
+  - component: {fileID: 1163158819}
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -14111,6 +14113,8 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayController
   _queue: {fileID: 1163158815}
+  _operatingCosts: {fileID: 1163158818}
+  _requiresOperatingCosts: 1
   _startingHour: 9
   _startingMinute: 0
   _openingHour: 9
@@ -15094,3 +15098,32 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1968268535}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1163158818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e4baa5ea69342d1b60e0581c562100c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Economy.RestaurantOperatingCosts
+  _day: {fileID: 1163158816}
+  _service: {fileID: 999010030}
+  _electricity: {fileID: 1984766479}
+  _settings: {fileID: 11400000, guid: 5a34bdd35cd00d74c84f6ae7bef5dd5d, type: 2}
+--- !u!114 &1163158819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7253184014fb468f8cc2d1e7cbec992b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Economy.OperatingCostsFeedback
+  _costs: {fileID: 1163158818}

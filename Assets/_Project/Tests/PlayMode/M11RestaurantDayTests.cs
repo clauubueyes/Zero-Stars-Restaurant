@@ -71,7 +71,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2)); Assert.That(item.State, Is.SameAs(state)); Assert.That(state.InstanceId, Is.EqualTo(id));
             Assert.That(state.AgeSeconds, Is.EqualTo(10)); Assert.That(state.TemperatureCelsius, Is.EqualTo(temperature));
             Assert.That(state.DeteriorationSeconds, Is.EqualTo(deterioration)); Assert.That(state.IsContaminated, Is.True);
-            Assert.That(_service.Ledger, Is.SameAs(ledger)); Assert.That(ledger.BalanceCents, Is.EqualTo(920));
+            Assert.That(_service.Ledger, Is.SameAs(ledger)); Assert.That(ledger.BalanceCents, Is.EqualTo(620));
             _food.Advance(5); Assert.That(state.AgeSeconds, Is.EqualTo(15)); yield return null;
         }
         [UnityTest]
@@ -89,7 +89,7 @@ namespace ZeroStarRestaurant.Tests
                 custom.transform.position += Vector3.right * 3; Physics.SyncTransforms(); Components<DeliveryZone>().Single().Poll();
             }
             Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_service.Visit, Is.Null);
-            Assert.That(custom.State.IsSold, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(975));
+            Assert.That(custom.State.IsSold, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(675));
             Assert.That(_day.StartNextDay(), Is.True); _service.Advance(0.55);
             Assert.That(Queue.Count, Is.EqualTo(1)); Assert.That(Queue.Head.State.Number, Is.EqualTo(5));
             Assert.That(ids, Has.No.Member(Queue.Head.State.InstanceId)); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2));
@@ -111,12 +111,13 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(firstVisit.Stage, Is.EqualTo(CustomerStage.Finished)); Assert.That(Queue.Count, Is.Zero); yield return null;
             Assert.That(hamburger == null, Is.True); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve }));
             Assert.That(_day.StartNextDay(), Is.True); Assert.That(_service.LastResult, Is.SameAs(receipt));
-            Assert.That(reserve.State, Is.SameAs(reserveState)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1325));
+            Assert.That(reserve.State, Is.SameAs(reserveState)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1025));
             _service.Advance(0.55); Assert.That(Queue.Head.State.Number, Is.EqualTo(2)); CloseClock(); _service.Advance(30);
             Assert.That(_service.Visit.Order.Offer.Dish.Id, Is.EqualTo("dish.cheeseburger"));
             DishItem cheese = null; yield return BuildDish(new[] { 0, 1, 2, 0 }, dish => cheese = dish); PlaceAndPoll(cheese);
-            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1800));
+            Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1500));
             _service.Advance(30); Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1200), "Both days settle rent once.");
             Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2)); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve })); yield return null;
         }
         [UnityTest]

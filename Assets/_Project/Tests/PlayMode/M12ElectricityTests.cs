@@ -205,7 +205,7 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void MeteringUsesSimulationSecondsAndSurvivesPowerCyclesDisableAndNextDayWithoutTouchingFoodOrMoney()
+        public void MeteringSurvivesPowerCyclesDisableAndNextDayAndOnlySettlementChangesMoney()
         {
             FoodItem food = FoodAt(Components<ColdStorage>().First()); double age = food.State.AgeSeconds;
             var ledger = Components<CustomerServiceLoop>().Single().Ledger; long balance = ledger.BalanceCents;
@@ -215,6 +215,7 @@ namespace ZeroStarRestaurant.Tests
             foreach (ElectricalAppliance item in _supply.Appliances)
                 Assert.That(item.Meter.ConsumedKilowattHours, Is.EqualTo(item.RatedWatts / 1000).Within(1e-12));
             Assert.That(food.State.AgeSeconds, Is.EqualTo(age)); Assert.That(food.State.TemperatureCelsius, Is.EqualTo(21));
+            Assert.That(ledger.BalanceCents, Is.EqualTo(balance), "Consumption alone never charges money.");
             RestaurantDayController day = Components<RestaurantDayController>().Single();
             day.Advance(60); day.PauseClock(); day.Advance(100); day.ResumeClock();
             day.State.Advance(28800, 0); Assert.That(day.StartNextDay(), Is.True);
@@ -223,7 +224,7 @@ namespace ZeroStarRestaurant.Tests
             _supply.enabled = true; Assert.That(_supply.IsOn, Is.True);
             _supply.PowerOff(); _supply.Advance(3600); _supply.PowerOn(); _supply.Advance(3600);
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(4.7).Within(1e-12));
-            Assert.That(ledger.BalanceCents, Is.EqualTo(balance)); Assert.That(food.State.AgeSeconds, Is.EqualTo(age));
+            Assert.That(ledger.BalanceCents, Is.EqualTo(balance - 371)); Assert.That(food.State.AgeSeconds, Is.EqualTo(age));
         }
 
         [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)]
