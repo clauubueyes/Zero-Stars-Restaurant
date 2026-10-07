@@ -147,6 +147,8 @@ namespace ZeroStarRestaurant.Customers
                     }
                     break;
             }
+            // Transfer ownership stays with the active customer through every result/exit step.
+            _dishCarrier.SynchronizePose();
         }
         private void SpawnNext(Guid? queuedCustomerId = null)
         {
@@ -172,14 +174,9 @@ namespace ZeroStarRestaurant.Customers
             Pickup pickup = dish.GetComponent<Pickup>();
             if (pickup == null || !pickup.isActiveAndEnabled || pickup.IsHeld || _dishCarrier == null || !_dishCarrier.CanTake(dish)) return false;
             Visit.Receive(); Visit.BeginEvaluation();
-            if (!OrderDelivery.TryComplete(Visit.Order, dish.State, Ledger, out OrderResult result))
+            if (!_dishCarrier.TryReceive(dish, Visit.Order, Ledger, out OrderResult result))
             { Visit.ResumeWaiting(); return false; }
             Visit.Resolve(); LastResult = result; _remainingSeconds = _configuration.ResultDisplaySeconds;
-            if (result.Accepted)
-            {
-                // Receipt is historical. The SAME sold dish remains visible with its original living units until exit.
-                _dishCarrier.Take(dish);
-            }
             return true;
         }
 
