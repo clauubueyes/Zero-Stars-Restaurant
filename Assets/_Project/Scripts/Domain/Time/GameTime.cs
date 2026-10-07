@@ -8,6 +8,8 @@ namespace ZeroStarRestaurant.Restaurant
         public const double LastSecondOfDay = 86399;
         public int DayNumber { get; private set; } = 1;
         public double SecondsOfDay { get; private set; }
+        // Actual world-clock progress only; StartDay does not simulate an overnight gap.
+        public double ElapsedWorldSeconds { get; private set; }
         public int Hour => (int)(SecondsOfDay / 3600);
         public int Minute => (int)(SecondsOfDay / 60) % 60;
 
@@ -18,7 +20,9 @@ namespace ZeroStarRestaurant.Restaurant
         public void Advance(double worldSeconds)
         {
             RequireElapsed(worldSeconds);
-            SecondsOfDay = worldSeconds >= LastSecondOfDay - SecondsOfDay ? LastSecondOfDay : SecondsOfDay + worldSeconds;
+            double next = worldSeconds >= LastSecondOfDay - SecondsOfDay ? LastSecondOfDay : SecondsOfDay + worldSeconds;
+            ElapsedWorldSeconds += next - SecondsOfDay;
+            SecondsOfDay = next;
         }
         internal static void RequireElapsed(double seconds)
         {
