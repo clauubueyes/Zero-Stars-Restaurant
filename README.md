@@ -29,6 +29,9 @@ Grill/Fridge/Freezer dependientes y kWh acumulados, sin facturas. La escena
 empieza **sin corriente**; encender en la pared norte antes de cocinar/enfriar.
 Cada aparato tiene ON/OFF individual con **E** al apuntar a su cuerpo; su selección
 se conserva durante cortes/restauración. Inicialmente los tres están ON.
+M13 añade [facturas y resultado diario](Docs/M13.md): el mismo ledger registra
+compras/ventas y liquida electricidad real más alquiler una vez al terminar el
+último cliente. El resumen permanece hasta Next Day y el saldo puede ser negativo.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -130,7 +133,15 @@ Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 El interruptor eléctrico está en la pared norte de cocina `(0.2, 1.45, 5.9)`: **E**
 con manos libres conmuta los tres aparatos. Sin corriente, la comida vuelve
 gradualmente a ambiente mediante el mismo FoodSimulation. El HUD muestra W/kWh
-totales y por aparato; ON/OFF y Next Day conservan energía. Ver [M12](Docs/M12.md).
+totales y por aparato; ON/OFF conserva energía. Next Day conserva los históricos
+y reinicia solo los diarios. Ver [M12](Docs/M12.md) y [M13](Docs/M13.md).
+
+M13 configura 3 € de alquiler/día y 30 céntimos/kWh en
+`Assets/_Project/ScriptableObjects/Economy/OperatingCosts.asset`. Cuando Closing
+queda vacío, Closed liquida una sola vez y muestra Sales/Purchases/Electricity/Rent,
+Net y Balance. Usar **Development: Start Day / Next Day** del controlador después
+del resumen: conserva saldo, objetos y estados. [Guía de prueba de beneficio,
+pérdida y saldo negativo](Docs/M13.md#prueba-manual-de-un-día-completo).
 
 ## Filosofía del prototipo
 
@@ -184,6 +195,8 @@ Con 0 € y sin esas fixtures, la primera provisión queda pendiente de diseño.
 - [Decisión sobre suministro y medición](Docs/Decisions/0017-electricity-and-utilities.md).
 - [M11: jornada, reloj, pruebas y dos días consecutivos](Docs/M11.md).
 - [Decisión sobre tiempo del mundo y simulación](Docs/Decisions/0013-restaurant-day-and-world-time.md).
+- [M13: contabilidad diaria, liquidación, tests e inventario](Docs/M13.md).
+- [Decisión sobre facturas y costes diarios](Docs/Decisions/0018-daily-bills-and-operating-costs.md).
 
 `main` apunta al último estado aprobado `144cca5` al comenzar M7. La foundation está en
 `feature/project-foundation`; M1 parte de ella en `feature/player-controller`.
@@ -204,3 +217,7 @@ Hay remoto `origin` configurado. Esta tarea no hace merge a main ni publica camb
 M12 parte de `ec2ba3e` en `feature/electricity-utilities`, con worktree aislado
 `C:/Users/Usuario/Zero Stars Restaurant M12`; las ediciones locales previas y el
 Editor original se conservan.
+
+M13 parte del último M12 validado `6258bad` en `feature/bills-operating-costs`,
+worktree `C:/Users/Usuario/Zero Stars Restaurant M13`. Ambos Editores previos y
+los cambios de la carpeta original se conservan; sin merge ni publicación.

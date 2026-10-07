@@ -410,10 +410,39 @@ con segundos de simulación independientes del mundo y del debug alimentario.
 ElectricalAppliance vincula suministro y HeatSource mediante referencias locales.
 HeatSource.IsOperational integra disponibilidad eléctrica y térmica; OFF retira
 el entorno, sin otro driver alimentario ni flags FoodState. FoodSimulation conserva
-su resolución/avance únicos. Next Day no reinicia energía ni suministro.
+su resolución/avance únicos. Next Day no reinicia energía histórica ni suministro;
+M13 reinicia únicamente los acumuladores diarios.
 El interruptor físico usa E/Interactable y el HUD muestra estado y consumo.
 ElectricalApplianceState mantiene la selección individual ON/OFF: IsPowered exige
 suministro ON y aparato ON. ApplianceSwitch reutiliza E apuntando a geometría
 existente; los cortes/Next Day conservan la selección y el medidor. El HUD separa
 selección de funcionamiento efectivo. No añade un reloj o driver térmico.
 Ver [M12](M12.md) y [ADR 0017](Decisions/0017-electricity-and-utilities.md).
+
+## Contabilidad y costes diarios M13
+
+PaymentLedger continúa como única fuente de saldo. TrySpend/TryRecord añaden
+LedgerTransaction con día, categoría, importe cobrado e IDs originales. El resumen
+usa esa evidencia, independiente del estado/precio actual y de objetos destruidos.
+OperatingCostSettings crea una OperatingCostPolicy inmutable por sesión: tarifa
+entera en céntimos/kWh y lista de gastos fijos por ID/etiqueta/importe, solo Rent.
+
+RestaurantOperatingCosts conecta día, servicio/ledger y electricidad por referencias
+explícitas, sin Update. El controlador de jornada llama al alcanzar Closed tras
+vaciarse la cola. PaymentLedger prepara/valida todos los cargos y DailySummary
+inmutable antes de publicar saldo; reintentar devuelve el mismo recibo sin cobrar.
+La fórmula contable concilia compras/ventas reales y costes. Las facturas permiten
+saldo negativo, sin consecuencias nuevas; compras mantienen sus reglas de fondos.
+
+El total diario M12 se convierte a decimal y se redondea una sola vez tras aplicar
+tarifa, al céntimo más próximo con mitades hacia arriba. No se redondean cargos
+individuales de cada aparato. El driver eléctrico −250 precede a la jornada −200
+para incluir la actualización que cierra, sin tocar FoodSimulation ni sus segundos.
+
+La liquidación congela energía diaria y bloquea Procurement hasta Next Day para
+mantener estable el recibo. El histórico puede continuar si los aparatos funcionan
+entre jornadas; no hay noche facturada. Next Day exige liquidación, usa el mismo
+ledger, conserva historial/IDs, objetos y estados y reinicia solo diarios de todos
+los medidores y el período contable. HUD provisional con resumen hasta Next Day y
+formato correcto para dinero negativo. Ver [M13](M13.md) y
+[ADR 0018](Decisions/0018-daily-bills-and-operating-costs.md).

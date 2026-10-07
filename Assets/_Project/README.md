@@ -90,4 +90,10 @@ M12 incorpora `Domain/Utilities` y `Runtime/Utilities`: suministro general OFF a
 iniciar, interruptor E y consumo nominal W/kWh por aparato/total. Grill/Fridge/Freezer
 requieren corriente; OFF retira el entorno térmico y el único FoodSimulation usa
 ambiente sin recrear alimentos. Next Day conserva suministro y medidores.
-Ver `Docs/M12.md` y ADR 0017. Sin facturas ni M13.
+Ver `Docs/M12.md` y ADR 0017; M13 extiende su medición con costes diarios.
+
+M13 reutiliza PaymentLedger y RestaurantDay: transacciones inmutables, alquiler
+configurable y electricidad por kWh real, liquidación única al cerrar sin clientes.
+Next Day conserva dinero/objetos/estados, resetea solo diarios y retira el resumen.
+OperatingCosts.asset configura 300 céntimos de Rent y 30 céntimos/kWh. Ver
+`Docs/M13.md` y ADR 0018. Sin consecuencias de deuda, guardado ni M14.

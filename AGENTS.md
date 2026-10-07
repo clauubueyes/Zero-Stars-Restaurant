@@ -33,6 +33,8 @@
   ADR 0014: hold/release, montaje sobre apoyos y reposición de bandejas.
   M12 implementa electricidad y consumo desde `ec2ba3e` en
   `feature/electricity-utilities`; ver Docs/M12.md y ADR 0017.
+  M12 está validado en `6258bad`. M13 añade facturas y costes diarios en
+  `feature/bills-operating-costs`; ver Docs/M13.md y ADR 0018.
   Los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
@@ -156,7 +158,7 @@
   contiene cuatro marcadores sin scripts; M10 los referencia desde su controlador.
   Cajas/obstáculos de tests permanecen inactivos y recuperables; el opt-in de
   DevelopmentIngredientSupply activa también el soporte de fixtures apartado.
-  Rebuild aplica M9–M11; sus instaladores adaptan una escena cerrada conservando objetos.
+  Rebuild aplica M9–M13 y el polish; sus instaladores adaptan escenas cerradas conservando objetos.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.
 - Crear interfaces y assemblies solo cuando una dependencia real lo necesite.
@@ -175,15 +177,28 @@
   ElectricityMeter son Domain; potencia nominal W, acumulados kWh por aparato y
   total, sin otro ledger. HeatSource requiere ElectricalAppliance explícito en
   escena; OFF retira su entorno y FoodSimulation resuelve ambiente sin tocar
-  FoodState. ON/OFF, disable/enable y Next Day no reinician energía ni alimentos.
+  FoodState. ON/OFF, disable/enable y Next Day no reinician energía histórica ni alimentos.
   Potencia configurable antes de Play; consumo continuo vacío si fuente operativa.
   Fixtures térmicas aisladas sin requisito mantienen comportamiento histórico;
-  requisito sin referencia falla apagado. No implementar facturas, impagos,
-  generadores, averías ni M13. Ver Docs/M12.md y ADR 0017.
+  requisito sin referencia falla apagado. M13 añade únicamente liquidación diaria;
+  no implementar impagos, generadores ni averías. Ver Docs/M12.md y ADR 0017.
   Cada aparato tiene ElectricalApplianceState ON/OFF y ApplianceSwitch con E;
   Funciona = suministro general ON && aparato ON, con validaciones térmicas
   existentes. Cortes/restauración y Next Day conservan selección y medidor.
   Inicialmente suministro OFF y aparatos ON; selección configurable antes de Play.
+- M13: PaymentLedger conserva el único saldo, transacciones por día y DailySummary
+  inmutable. No volver a cobrar compras/ventas ni reconstruirlas desde objetos.
+  RestaurantOperatingCosts no tiene Update; RestaurantDayController liquida una
+  vez al llegar a Closed después del último Exit y exige resumen antes de Next Day.
+  Tarifa configurable en céntimos/kWh; usar kWh diarios reales M12, convertir a
+  decimal y redondear el cargo final una vez, mitades hacia arriba. Fixed Costs
+  es una lista configurable; solo rent instalado. Facturas permiten saldo negativo,
+  TrySpend mantiene fondos suficientes. Procurement se bloquea tras liquidar hasta
+  Next Day antes de crear objetos. Resetear solo diarios del ledger/medidores;
+  conservar histórico, IDs, dinero, alimentos, platos y ON/OFF. El driver eléctrico
+  precede al reloj del mundo para incluir el último frame. No simular noche ni
+  implementar consecuencias de deuda, préstamos, intereses, game over, impuestos,
+  personal, agua/gas, mantenimiento, averías, guardado o M14. Ver Docs/M13.md/ADR 0018.
 - Convenciones: C# y nombres técnicos en inglés; documentación en español;
   namespace `ZeroStarRestaurant`, con subnamespaces según responsabilidad;
   PascalCase para tipos/métodos, `_camelCase` para campos privados.
