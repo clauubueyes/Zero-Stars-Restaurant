@@ -1,5 +1,9 @@
 # Vertical slice y roadmap
 
+El [ajuste de Plate y montaje libre](PLATES-FREE-ASSEMBLY.md) añade un utensilio
+comprable opcional, elimina la reposición gratuita y confirma por soporte físico
+sin AssemblySurface. No cambia la distribución ni avanza a M12.
+
 La [zona independiente de Procurement](PROCUREMENT-AREA.md) sitúa la estación M8
 en un pequeño anexo oeste con acceso directo. Conserva funcionalidad y referencias;
 Storage/Prep/Grill/Assembly y servicio no cambian. No añade tienda ni milestone.

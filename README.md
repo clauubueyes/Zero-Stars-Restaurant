@@ -22,7 +22,8 @@ física FIFO de hasta cuatro clientes, un solo pedido activo y paciencia de debu
 M10 está validado en `bd8d33c`. M11 añade jornada y reloj del mundo: apertura,
 cierre sin nuevas entradas, final al vaciarse y siguiente día conservando estados.
 M11 está validado en `0c81923`. El [polish físico previo a M12](Docs/PHYSICAL-INTERACTION-POLISH.md)
-añade hold/release, montaje sobre apoyos normales y reposición de bandejas.
+añade hold/release y montaje sobre apoyos normales. El [ajuste de Plate opcional](Docs/PLATES-FREE-ASSEMBLY.md)
+sustituye la reposición gratuita por compras y conserva la entrega por Dish.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -50,8 +51,8 @@ La escena de plantilla
 7. Ir a Procurement en el pequeño anexo exterior al oeste del local, pasando por
    el hueco de la pared oeste desde cocina. Su banco está en `(−9,7; 1,25)` en XZ;
    [guía del acceso y validación](Docs/PROCUREMENT-AREA.md). Mirar un
-   botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)** o
-   **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger manteniendo clic y
+   botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)**,
+   **Cheese (0,25 €)** o **Plate (0,50 € configurable)**. Aparece una unidad real en **OUTPUT**; recoger manteniendo clic y
    retirarla antes de comprar otra. Saldo y rechazo son visibles. Sin fondos o
    con salida ocupada no se cobra ni se crea comida. Ver [M8](Docs/M8.md).
    Las antiguas provisiones gratuitas están desactivadas; solo para desarrollo,
@@ -67,8 +68,10 @@ La escena de plantilla
    el ingrediente automáticamente; G permite soltar libremente y un gesto rápido
    conserva el lanzamiento natural. Mirar la pila muestra `Recognized: Hamburger`/`Cheeseburger`/`Custom Dish`;
    **F** confirma con manos libres. El plato final se recoge manteniendo clic.
-   Las tres estaciones `AssemblyStation1/2/3` reponen una bandeja vacía al retirar
-   el plato, esperando si el espacio está bloqueado. Grill sigue calentando solo
+   Los antiguos apoyos de `AssemblyStation1/2/3` son geometría fija: no regalan
+   ni reponen platos. Plate se compra y es opcional; con o sin él se monta y sirve
+   el mismo Dish. Al finalizar sobre Plate, el agregado incorpora ese objeto.
+   Grill sigue calentando solo
    los ingredientes que toquen su zona, incluso después de confirmar.
    Ver [polish físico](Docs/PHYSICAL-INTERACTION-POLISH.md) para límites y pruebas.
 10. Al llegar la cabeza de cola a Service Position, el panel derecho muestra pedido y el saldo de sesión
@@ -83,7 +86,8 @@ La escena de plantilla
     de cola muestra espera y paciencia por cliente; cero solo informa.
     Ver [M10](Docs/M10.md) para probar varias ventas y [M6](Docs/M6.md) para el pipeline.
     Seguir [las pruebas actuales del polish](Docs/PHYSICAL-INTERACTION-POLISH.md) para
-    manejo físico y reposición. Las posiciones vigentes y el
+    manejo físico. Ver [Plate y montaje libre](Docs/PLATES-FREE-ASSEMBLY.md) para la
+    compra y entrega con/sin utensilio. Las posiciones vigentes y el
     loop comprar → almacenar → cocinar → montar → entregar → cobrar están en [M9](Docs/M9.md).
     La [entrega tolerante](Docs/DELIVERY-TOLERANCE-FIX.md) admite bordes y colocación
     parcial: basta soltar y dejar reposar; no exige centrar el plato.

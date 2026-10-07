@@ -1,5 +1,10 @@
 # Polish de interacción física antes de M12
 
+La reposición descrita en esta entrega histórica queda sustituida por
+[Plate comprable y montaje libre](PLATES-FREE-ASSEMBLY.md). Los tres apoyos siguen
+en sus posiciones, sin AssemblySurface ni identidad Dish; no se generan platos
+gratis. Plate es opcional para montar, transportar y entregar.
+
 Base `0c81923`, rama `fix/physical-interaction-polish`. M11 está validado;
 este cambio no implementa M12, electricidad, inventario ni recetas nuevas.
 
