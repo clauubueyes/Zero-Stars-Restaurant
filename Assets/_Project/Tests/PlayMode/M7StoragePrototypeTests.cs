@@ -24,6 +24,7 @@ namespace ZeroStarRestaurant.Tests
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity", new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Components<ZeroStarRestaurant.Utilities.RestaurantElectricity>().Single().PowerOn();
             Components<DevelopmentIngredientSupply>().Single().EnableForDevelopment();
             FirstPersonController controller = Components<FirstPersonController>().Single(); controller.enabled = false;
             _player = controller.transform; _view = Components<Camera>().Single().transform;
