@@ -37,7 +37,7 @@ opcional están en la base `ec2ba3e`. **M12: Electricity & Utilities** introduce
 suministro eléctrico ON/OFF, dependencia térmica de Grill/Fridge/Freezer y consumo
 acumulado configurable; validado en `6258bad`. Ver [M12](M12.md) y ADR 0017.
 **M13: Bills & Operating Costs** añade contabilidad de compras/ventas, alquiler y
-electricidad real, liquidación única al vaciarse después del cierre, resumen y
+electricidad devengada, liquidación única de costes fijos al vaciarse después del cierre, resumen y
 Next Day conservando estado. Ver [M13](M13.md) y ADR 0018. Aceptación visual pendiente.
 No se autorizan préstamos, intereses, consecuencias de deuda, game over, impuestos,
 personal, agua/gas, mantenimiento, averías, guardado ni M14.
@@ -110,7 +110,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M10 · `feature/customer-queue` | Cola física FIFO de cuatro clientes y paciencia de debug. | Entrance → Queue → Service Position → Order/Wait → Receive → Exit. Reservas únicas desde entrada hasta salida; al terminar avanza el resto y admite otro. Solo la cabeza llegada tiene pedido/recibe comida; IDs independientes y pipeline M6 de evaluación/pago único/transporte intacto. Paciencia configurable por unidad, cero sin penalización. Movimiento determinista público sin NavMesh; tests de aforo, avance, salida, relevo, identidad, pago y regresiones M1–M9; ver M10.md y ADR 0012. |
 | M11 · `feature/restaurant-day` | Tiempo del mundo y jornada con apertura/cierre. | Día/hora/minuto, horario y velocidad configurables, pausa/resume de desarrollo. Solo Open admite; Closing permite terminar visitas admitidas y finaliza con restaurante vacío. Next Day conserva dinero/comida/estados; único driver FoodSimulation independiente del mundo, sin salto nocturno. HUD mínimo, tests de límites temporales, entrada bloqueada, clientes terminando, dos jornadas consecutivas y regresiones M1–M10; ver M11.md y ADR 0013. |
 | M12 · `feature/electricity-utilities` | Suministro general, ON/OFF individual y consumo sin facturas. | E conmuta Grill, Fridge y Freezer individualmente; funcionan con suministro ON y aparato ON. Cortes/restauración conservan selecciones individuales. Sin corriente o con aparato OFF, FoodSimulation aproxima alimento a ambiente y pausa calor/cocción sin recrear estado. Vatios configurables y kWh por aparato/total, sin consumo OFF ni duplicación. Prompts al apuntar, HUD, conservación en Next Day, tests de ocho combinaciones, cortes/restauración, tres aparatos, consumo, identidad y regresiones completas M1–M11; ver M12.md y ADR 0017. Sin facturas, impagos, generadores, averías ni M13. |
-| M13 · `feature/bills-operating-costs` | Facturas, costes fijos configurables y resultado diario con el ledger existente. | kWh reales M12 × tarifa, redondeo final determinista en céntimos; ventas/compras reales sin doble cobro; alquiler una vez. Closing termina clientes y Closed liquida exactamente una vez; Next Day exige resumen y no repite cargos. Saldo negativo permitido. Summary estable y conciliado hasta Next Day; reset solo diario, históricos/dinero/objetos/estados intactos. Dos días consecutivos, apagado individual/corte, éxito/rechazo/duplicados/overflow e integración/regresiones M1–M12. Ver M13.md y ADR 0018; sin M14. |
+| M13 · `feature/bills-operating-costs` | Facturas, costes fijos configurables y resultado diario con el ledger existente. | kWh reales M12 × tarifa, redondeo final determinista en céntimos; ventas/compras reales sin doble cobro; alquiler una vez. Closing termina clientes y Closed liquida exactamente una vez; Next Day exige resumen y no repite cargos. Saldo negativo permitido. Summary conciliado hasta Next Day; consumo eléctrico devengado separado de pagos, período pendiente entre días, herramienta Inspector para pagar exactamente una vez. Ver también ADR 0019. Reset solo diario, históricos/dinero/objetos/estados intactos. Dos días consecutivos, apagado individual/corte, éxito/rechazo/duplicados/overflow e integración/regresiones M1–M12. Ver M13.md y ADR 0018; sin M14. |
 
 ## Recorrido de aceptación del slice
 
@@ -120,7 +120,7 @@ cocina. Ver la secuencia de dos ventas, rechazo y paciencia cero en [M10](M10.md
 M11 añade horario y dos jornadas consecutivas en [M11](M11.md): cerrar admisiones,
 terminar clientes y empezar otro día conservando saldo y estados alimentarios.
 M13 añade [liquidación y resultado real](M13.md#prueba-manual-de-un-día-completo):
-al terminar el último cliente, alquiler y electricidad se cobran una vez, se consulta
+al terminar el último cliente, alquiler se cobra una vez y electricidad queda pendiente; se consulta
 Summary y se inicia el siguiente día conservando todo salvo acumuladores diarios.
 
 1. Abrir `PrototypeRestaurant`; iniciar Play y comprobar 10 € de desarrollo

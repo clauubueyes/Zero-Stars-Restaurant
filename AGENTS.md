@@ -187,7 +187,7 @@ silenciosamente**: indícalo antes.
   contiene cuatro marcadores sin scripts; M10 los referencia desde su controlador.
   Cajas/obstáculos de tests permanecen inactivos y recuperables; el opt-in de
   DevelopmentIngredientSupply activa también el soporte de fixtures apartado.
-  Rebuild aplica M9–M13 y el polish; sus instaladores adaptan escenas cerradas conservando objetos.
+  GenerateScene rechaza reemplazar una escena existente. Usar instaladores incrementales; conservar cambios manuales, objetos, transforms, materiales y referencias.
   Evitar service locators, singletons globales, buses de eventos generales,
   contenedores DI, jerarquías y abstracciones para sistemas que aún no existen.
 - Crear interfaces y assemblies solo cuando una dependencia real lo necesite.
@@ -209,25 +209,28 @@ silenciosamente**: indícalo antes.
   FoodState. ON/OFF, disable/enable y Next Day no reinician energía histórica ni alimentos.
   Potencia configurable antes de Play; consumo continuo vacío si fuente operativa.
   Fixtures térmicas aisladas sin requisito mantienen comportamiento histórico;
-  requisito sin referencia falla apagado. M13 añade únicamente liquidación diaria;
+  requisito sin referencia falla apagado. M13 añade devengo eléctrico y liquidación diaria de costes fijos;
   no implementar impagos, generadores ni averías. Ver Docs/M12.md y ADR 0017.
   Cada aparato tiene ElectricalApplianceState ON/OFF y ApplianceSwitch con E;
   Funciona = suministro general ON && aparato ON, con validaciones térmicas
   existentes. Cortes/restauración y Next Day conservan selección y medidor.
   Inicialmente suministro OFF y aparatos ON; selección configurable antes de Play.
-- M13: PaymentLedger conserva el único saldo, transacciones por día y DailySummary
-  inmutable. No volver a cobrar compras/ventas ni reconstruirlas desde objetos.
-  RestaurantOperatingCosts no tiene Update; RestaurantDayController liquida una
-  vez al llegar a Closed después del último Exit y exige resumen antes de Next Day.
-  Tarifa configurable en céntimos/kWh; usar kWh diarios reales M12, convertir a
-  decimal y redondear el cargo final una vez, mitades hacia arriba. Fixed Costs
-  es una lista configurable; solo rent instalado. Facturas permiten saldo negativo,
-  TrySpend mantiene fondos suficientes. Procurement se bloquea tras liquidar hasta
-  Next Day antes de crear objetos. Resetear solo diarios del ledger/medidores;
-  conservar histórico, IDs, dinero, alimentos, platos y ON/OFF. El driver eléctrico
-  precede al reloj del mundo para incluir el último frame. No simular noche ni
-  implementar consecuencias de deuda, préstamos, intereses, game over, impuestos,
-  personal, agua/gas, mantenimiento, averías, guardado o M14. Ver Docs/M13.md/ADR 0018.
+- M13/corrección: PaymentLedger es el único saldo, con transacciones por día y
+  snapshots DailySummary inmutables. Closed cobra solo costes fijos una vez tras
+  vaciarse la cola; Next Day exige resumen. Electricidad diaria devengada y período
+  pendiente salen del mismo ElectricitySupplyState; no cobrar en Next Day ni sumar
+  redondeos diarios. La factura de desarrollo paga un período exactamente una vez,
+  conserva recibo y resetea solo pendiente; permite saldo negativo. Separar neto
+  operativo de caja y factura pagada. Un pago tras Closed reproyecta evidencia real
+  en un nuevo snapshot sin volver a liquidar alquiler. Preservar diarios/histórico,
+  IDs, dinero, alimentos, platos, estado y selección ON/OFF. Solo Next Day resetea
+  diarios. Sin calendario mensual, deuda avanzada ni M14. Ver ADR 0019.
+- DeliveryZone es la única puerta espacial: todas las APIs de servicio deben pasar
+  por apoyo/overlap del pad verde actual, sin posición/orientación/input del jugador.
+  El carrier recibe el mismo Dish con o sin Plate, bloquea todo Pickup/colisión y
+  conserva originales hasta Exit. LateUpdate solo sincroniza representación; no
+  avanza simulación. DebugHudPresenter es el único OnGUI; feedback produce texto y
+  DebugHudLayout asigna regiones disjuntas con clipping/scroll.
 - Convenciones: C# y nombres técnicos en inglés; documentación en español;
   namespace `ZeroStarRestaurant`, con subnamespaces según responsabilidad;
   PascalCase para tipos/métodos, `_camelCase` para campos privados.

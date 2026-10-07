@@ -421,28 +421,45 @@ Ver [M12](M12.md) y [ADR 0017](Decisions/0017-electricity-and-utilities.md).
 
 ## Contabilidad y costes diarios M13
 
-PaymentLedger continúa como única fuente de saldo. TrySpend/TryRecord añaden
-LedgerTransaction con día, categoría, importe cobrado e IDs originales. El resumen
-usa esa evidencia, independiente del estado/precio actual y de objetos destruidos.
-OperatingCostSettings crea una OperatingCostPolicy inmutable por sesión: tarifa
-entera en céntimos/kWh y lista de gastos fijos por ID/etiqueta/importe, solo Rent.
+PaymentLedger continúa como único saldo. TrySpend/TryRecord registran transacciones
+reales por día e IDs originales; resumir no vuelve a cobrar ni consulta objetos
+destruidos. OperatingCostSettings crea una política inmutable de tarifa y lista
+de costes fijos, solo Rent (300 céntimos/día). Closed cobra esa lista una vez al
+vaciarse la cola. RestaurantOperatingCosts conecta día, ledger y suministro sin
+otro Update. Next Day conserva objetos, estados, IDs e historial y reinicia diarios.
 
-RestaurantOperatingCosts conecta día, servicio/ledger y electricidad por referencias
-explícitas, sin Update. El controlador de jornada llama al alcanzar Closed tras
-vaciarse la cola. PaymentLedger prepara/valida todos los cargos y DailySummary
-inmutable antes de publicar saldo; reintentar devuelve el mismo recibo sin cobrar.
-La fórmula contable concilia compras/ventas reales y costes. Las facturas permiten
-saldo negativo, sin consecuencias nuevas; compras mantienen sus reglas de fondos.
+ElectricitySupplyState mantiene kWh históricos, diarios y pendientes del período,
+con ID único. El pendiente cruza días e incluye aparatos funcionando con el día
+cerrado. DailySummary distingue ElectricityAccruedCents, ElectricityPaidCents,
+OperatingNetCents y NetCents (caja). Solo las facturas pagadas afectan saldo; no se
+suman redondeos diarios para calcular el importe pendiente. Tarifa 30 céntimos/kWh;
+convertir kWh reales a decimal y redondear una vez a long céntimos, mitades hacia
+arriba. El orden eléctrico −250 sigue precediendo a la jornada −200, sin tocar comida.
 
-El total diario M12 se convierte a decimal y se redondea una sola vez tras aplicar
-tarifa, al céntimo más próximo con mitades hacia arriba. No se redondean cargos
-individuales de cada aparato. El driver eléctrico −250 precede a la jornada −200
-para incluir la actualización que cierra, sin tocar FoodSimulation ni sus segundos.
+Development: Settle Electricity Bill paga exactamente una vez el ID de período
+con PaymentLedger y conserva ElectricityBillReceipt inmutable. Tras éxito resetea
+únicamente PendingKilowattHours. Sin nuevo consumo no registra ni cobra otra factura.
+Se permiten pagos durante Open o Closed; tras Closed se genera un nuevo snapshot
+del mismo día con evidencia real y saldo conciliado, sin repetir alquiler. Las
+instancias previas de resumen siguen inmutables. Saldo negativo permitido; Procurement
+mantiene fondos suficientes y bloqueo tras Closed hasta Next Day. No hay calendario.
 
-La liquidación congela energía diaria y bloquea Procurement hasta Next Day para
-mantener estable el recibo. El histórico puede continuar si los aparatos funcionan
-entre jornadas; no hay noche facturada. Next Day exige liquidación, usa el mismo
-ledger, conserva historial/IDs, objetos y estados y reinicia solo diarios de todos
-los medidores y el período contable. HUD provisional con resumen hasta Next Day y
-formato correcto para dinero negativo. Ver [M13](M13.md) y
-[ADR 0018](Decisions/0018-daily-bills-and-operating-costs.md).
+## Entrega y presentación provisional
+
+DeliveryZone referencia el pad verde y el servicio. CustomerServiceLoop.TryDeliver
+delega en esa misma zona; no puede entregar desde otra mesa. La posición/rotación y
+footprint proceden del pad, y el sensor previo solo aporta altura/habilitación.
+Apoyo tolerante, baja velocidad, estado íntegro y no sostenido siguen siendo requisitos.
+El cliente activo recibe el Dish exacto con o sin Plate y pago único; se bloquea
+Pickup/colisiones y se mantiene la pose de los cuerpos hasta Exit. LateUpdate
+solo reafirma representación tras física. No se consulta al jugador.
+
+DebugHudPresenter es el único OnGUI y recibe referencias explícitas a los proveedores
+de texto existentes. DebugHudLayout organiza regiones disjuntas y paneles con scroll
+y clipping; resumen/contexto son mutuamente excluyentes en la región central. Mensajes
+separados del saldo, electricidad y contexto. No altera controles FPS.
+
+El instalador de corrección añade solo dependencias/componentes faltantes. Rechaza
+referencias conflictivas; GenerateScene se niega a reemplazar una escena existente.
+Ver [corrección](DELIVERY-HUD-ELECTRICITY-FIX.md) y
+[ADR 0019](Decisions/0019-pad-delivery-shared-hud-periodic-electricity.md).

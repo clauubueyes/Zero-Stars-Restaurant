@@ -3,6 +3,11 @@
 Fecha: 2026-10-07. Estado: implementado desde M12 `6258bad` en
 `feature/bills-operating-costs`; aceptación visual pendiente.
 
+Nota: el cobro eléctrico diario y el intervalo no facturado descritos aquí fueron
+sustituidos por [ADR 0019](0019-pad-delivery-shared-hud-periodic-electricity.md).
+Este ADR conserva la decisión histórica de M13; la implementación actual devenga
+electricidad en un período y solo paga con la herramienta de desarrollo.
+
 ## Contexto
 
 PaymentLedger ya cobra ventas y compras con protección por IDs. RestaurantDay

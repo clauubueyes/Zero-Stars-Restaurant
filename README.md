@@ -29,8 +29,8 @@ Grill/Fridge/Freezer dependientes y kWh acumulados, sin facturas. La escena
 empieza **sin corriente**; encender en la pared norte antes de cocinar/enfriar.
 Cada aparato tiene ON/OFF individual con **E** al apuntar a su cuerpo; su selección
 se conserva durante cortes/restauración. Inicialmente los tres están ON.
-M13 añade [facturas y resultado diario](Docs/M13.md): el mismo ledger registra
-compras/ventas y liquida electricidad real más alquiler una vez al terminar el
+M13 añade [costes y resultado diario](Docs/M13.md): el mismo ledger registra
+compras/ventas y liquida alquiler una vez al terminar el
 último cliente. El resumen permanece hasta Next Day y el saldo puede ser negativo.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
@@ -138,8 +138,11 @@ y reinicia solo los diarios. Ver [M12](Docs/M12.md) y [M13](Docs/M13.md).
 
 M13 configura 3 € de alquiler/día y 30 céntimos/kWh en
 `Assets/_Project/ScriptableObjects/Economy/OperatingCosts.asset`. Cuando Closing
-queda vacío, Closed liquida una sola vez y muestra Sales/Purchases/Electricity/Rent,
-Net y Balance. Usar **Development: Start Day / Next Day** del controlador después
+queda vacío, Closed cobra alquiler una sola vez y muestra Sales/Purchases/Fixed costs,
+Operating net y Balance. La electricidad se devenga y permanece pendiente entre días;
+**Development: Settle Electricity Bill** en RestaurantOperatingCosts paga el período
+una vez. [Corrección de entrega, HUD y facturación](Docs/DELIVERY-HUD-ELECTRICITY-FIX.md).
+Usar **Development: Start Day / Next Day** del controlador después
 del resumen: conserva saldo, objetos y estados. [Guía de prueba de beneficio,
 pérdida y saldo negativo](Docs/M13.md#prueba-manual-de-un-día-completo).
 

@@ -61,7 +61,7 @@ namespace ZeroStarRestaurant.Economy
         public bool TrySettleDay(OperatingCostPolicy policy, double consumedKilowattHours, out DailySummary summary)
         {
             summary = CurrentSummary;
-            if (IsDaySettled) return true; // The first immutable receipt is authoritative on every retry.
+            if (IsDaySettled) return true; // Return the current cash snapshot; retries post no new daily costs.
             if (policy == null) throw new ArgumentNullException(nameof(policy));
             // Electricity is accrued evidence, not an automatic daily cash payment.
             var charges = new List<LedgerTransaction>();
