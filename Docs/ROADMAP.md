@@ -1,5 +1,9 @@
 # Vertical slice y roadmap
 
+La [zona independiente de Procurement](PROCUREMENT-AREA.md) sitúa la estación M8
+en un pequeño anexo oeste con acceso directo. Conserva funcionalidad y referencias;
+Storage/Prep/Grill/Assembly y servicio no cambian. No añade tienda ni milestone.
+
 Estado actual: **M0–M6 aprobados por el usuario; M6 aprobado en `9335899`**.
 La [corrección de transferencia](DISH-CUSTOMER-HANDOFF-FIX.md) refuerza la entrega
 Dish/DeliveryZone: aceptación y fijación al cliente en una operación, seguimiento

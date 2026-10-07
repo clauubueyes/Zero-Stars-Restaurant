@@ -47,7 +47,9 @@ La escena de plantilla
    El texto provisional muestra objeto, acción y binding. Las cajas M2 están
    conservadas en `PhysicalTestObjects`, inactivo; activarlo solo para desarrollo.
    Consultar [M2](Docs/M2.md) para probar masas, paredes y límites físicos.
-7. Ir a Procurement sobre `FoodTestBench`, al oeste de la cocina, junto a Prep. Mirar un
+7. Ir a Procurement en el pequeño anexo exterior al oeste del local, pasando por
+   el hueco de la pared oeste desde cocina. Su banco está en `(−9,7; 1,25)` en XZ;
+   [guía del acceso y validación](Docs/PROCUREMENT-AREA.md). Mirar un
    botón y **E** compra **Bun (0,35 €)**, **Raw Beef Patty (0,80 €)** o
    **Cheese (0,25 €)**. Aparece una unidad real en **OUTPUT**; recoger manteniendo clic y
    retirarla antes de comprar otra. Saldo y rechazo son visibles. Sin fondos o

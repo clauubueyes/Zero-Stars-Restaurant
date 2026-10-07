@@ -38,6 +38,13 @@ espacial de una cola futura, manteniendo exactamente un cliente activo.
 
 ## Consecuencias
 
+Ajuste posterior solicitado: Procurement se traslada con su banco, botones,
+OUTPUT y fixtures de desarrollo a un pequeño anexo al oeste del perímetro de
+cocina. Un hueco local en WallWest mantiene acceso directo sin cruzar el servicio.
+El resto de zonas y recorridos conserva su posición. La adaptación específica y
+Rebuild reutilizan el mismo procedimiento idempotente; referencias, precios,
+prefabs, estado y código Runtime permanecen intactos. Ver [zona de Procurement](../PROCUREMENT-AREA.md).
+
 Se conservan Domain, saldo, precios, IDs de comida/platos, único FoodSimulation,
 input, assets y GUID. Los tests de interacción física dependientes de posiciones
 antiguas se adaptan al acceso actual. Se verifican las rutas contra colliders
