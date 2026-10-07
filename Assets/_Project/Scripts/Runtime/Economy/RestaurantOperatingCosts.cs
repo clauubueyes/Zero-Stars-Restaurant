@@ -18,6 +18,13 @@ namespace ZeroStarRestaurant.Economy
         public RestaurantDayController Day => _day;
         public CustomerServiceLoop Service => _service;
         public RestaurantElectricity Electricity => _electricity;
+        public long PendingElectricityCents => _policy != null && _electricity != null && _electricity.State != null ?
+            _policy.ElectricityCostCents(_electricity.State.PendingKilowattHours) : 0;
+        public long DailyElectricityAccruedCents => _policy != null && _electricity != null && _electricity.State != null ?
+            _policy.ElectricityCostCents(_electricity.State.DailyConsumedKilowattHours) : 0;
+        private string _lastBillMessage = "";
+        public int BillMessageRevision { get; private set; }
+        public string LastBillMessage { get => _lastBillMessage; private set { _lastBillMessage = value; BillMessageRevision++; } }
         public DailySummary Summary => _service != null && _service.Ledger != null ? _service.Ledger.CurrentSummary : null;
 
         public void Validate()
@@ -55,6 +62,28 @@ namespace ZeroStarRestaurant.Economy
             if (!_service.Ledger.TryBeginNextDay(_day.State.Clock.DayNumber))
                 throw new InvalidOperationException("Next day requires the previous day's settled ledger.");
             _electricity.BeginDay();
+        }
+
+        public bool TrySettleElectricityBill(out ElectricityBillReceipt receipt)
+        {
+            receipt = null;
+            if (!Application.isPlaying || !isActiveAndEnabled || _policy == null || _electricity.State == null ||
+                _service.Ledger == null) return false;
+            ElectricitySupplyState supply = _electricity.State;
+            if (supply.PendingKilowattHours == 0)
+            { LastBillMessage = "Electricity bill: no pending consumption (€0.00)."; return true; }
+            Guid period = supply.BillingPeriodId;
+            if (!_service.Ledger.TryPayElectricityBill(period, _policy, supply.PendingKilowattHours, out receipt)) return false;
+            if (!supply.TryCompleteBillingPeriod(period))
+                throw new InvalidOperationException("Paid electricity period could not be completed.");
+            LastBillMessage = "Electricity bill paid: " + IngredientPurchaseStation.FormatCents(receipt.AmountCents) + ".";
+            return true;
+        }
+
+        [ContextMenu("Development: Settle Electricity Bill")]
+        public void SettleElectricityBill()
+        {
+            if (TrySettleElectricityBill(out _)) Debug.Log(LastBillMessage, this);
         }
     }
 }

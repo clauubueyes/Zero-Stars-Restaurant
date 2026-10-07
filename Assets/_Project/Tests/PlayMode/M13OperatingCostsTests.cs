@@ -58,20 +58,20 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1000));
             Close(); DailySummary summary = _costs.Summary;
             Assert.That(summary.ConsumedKilowattHours, Is.EqualTo(2.35).Within(1e-12));
-            Assert.That(summary.ElectricityCents, Is.EqualTo(71)); Assert.That(summary.FixedCostsCents, Is.EqualTo(300));
-            Assert.That(summary.NetCents, Is.EqualTo(-371)); Assert.That(summary.ClosingBalanceCents, Is.EqualTo(629));
+            Assert.That(summary.ElectricityAccruedCents, Is.EqualTo(71)); Assert.That(summary.FixedCostsCents, Is.EqualTo(300));
+            Assert.That(summary.NetCents, Is.EqualTo(-300)); Assert.That(summary.ClosingBalanceCents, Is.EqualTo(700));
             Assert.That(summary.Transactions.Count(item => item.CostId == "rent"), Is.EqualTo(1));
             for (int index = 0; index < 5; index++) { _day.RefreshOccupancy(); _day.Advance(1000); Assert.That(_costs.TrySettleClosedDay(), Is.True); }
             _supply.Advance(3600);
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(4.7).Within(1e-12));
             Assert.That(_supply.State.DailyConsumedKilowattHours, Is.EqualTo(2.35).Within(1e-12));
-            Assert.That(_costs.Summary, Is.SameAs(summary)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(629));
+            Assert.That(_costs.Summary, Is.SameAs(summary)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(700));
             int objects = Components<Transform>().Length;
             Assert.That(_station.TryPurchase(0, out FoodItem food), Is.False); Assert.That(food, Is.Null);
             Assert.That(_station.TryPurchasePlate(out PlateItem plate), Is.False); Assert.That(plate, Is.Null);
             Assert.That(_station.LastMessage, Does.Contain("Day settled")); Assert.That(Components<Transform>().Length, Is.EqualTo(objects));
             Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.StartNextDay(), Is.False);
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(629)); Assert.That(_costs.Summary, Is.Null);
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(700)); Assert.That(_costs.Summary, Is.Null);
             Assert.That(_supply.State.DailyConsumedKilowattHours, Is.Zero);
         }
         [Test]
@@ -83,7 +83,66 @@ namespace ZeroStarRestaurant.Tests
             _supply.PowerOff(); _supply.Advance(3600); _supply.PowerOn();
             _supply.Appliances[2].SetOn(false); _supply.Advance(3600);
             Close(); Assert.That(_costs.Summary.ConsumedKilowattHours, Is.EqualTo(.5).Within(1e-12));
-            Assert.That(_costs.Summary.ElectricityCents, Is.EqualTo(15)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(685));
+            Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(15)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(700));
+        }
+
+        [Test]
+        public void MultiDayPendingBillSettlesFromInspectorOnceWithoutChangingObjectsDayOrOtherCosts()
+        {
+            Assert.That(_station.TryPurchase(2, out FoodItem reserve), Is.True);
+            reserve.GetComponent<Rigidbody>().isKinematic = true; reserve.transform.position = new Vector3(-3, 2, 2);
+            reserve.State.Contaminate(); var state = reserve.State; double age = state.AgeSeconds;
+            Assert.That(_station.TryPurchasePlate(out PlateItem plate), Is.True);
+            plate.GetComponent<Rigidbody>().isKinematic = true; plate.transform.position = new Vector3(-2, 2, 2);
+            Transform[] objects = Components<Transform>();
+            _supply.PowerOn(); _supply.Advance(3600); Close();
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(625)); Assert.That(_costs.Summary.ElectricityPaidCents, Is.Zero);
+            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(625));
+            Assert.That(_supply.State.PendingKilowattHours, Is.EqualTo(2.35).Within(1e-12));
+            _supply.Advance(3600); Close(); DailySummary before = _costs.Summary;
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(325)); Assert.That(_costs.PendingElectricityCents, Is.EqualTo(141));
+            Assert.That(Components<ElectricityFeedback>().Single().Text, Does.Contain("€1.41"));
+            var dayState = _day.State; int number = dayState.Clock.DayNumber;
+            var meters = _supply.Appliances.Select(item => (item.Meter.DailyConsumedKilowattHours, item.Meter.ConsumedKilowattHours)).ToArray();
+            _costs.SettleElectricityBill(); // Exactly the Inspector context-menu entry point.
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(184)); Assert.That(_costs.PendingElectricityCents, Is.Zero);
+            Assert.That(_service.Ledger.ElectricityBills, Has.Count.EqualTo(1));
+            Assert.That(_service.Ledger.ElectricityBills[0].ConsumedKilowattHours, Is.EqualTo(4.7).Within(1e-12));
+            Assert.That(_supply.State.DailyConsumedKilowattHours, Is.EqualTo(2.35).Within(1e-12));
+            Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(4.7).Within(1e-12));
+            Assert.That(_supply.Appliances.Select(item => (item.Meter.DailyConsumedKilowattHours, item.Meter.ConsumedKilowattHours)), Is.EqualTo(meters));
+            Assert.That(_costs.Summary.ElectricityPaidCents, Is.EqualTo(141)); Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(71));
+            Assert.That(_costs.Summary.OperatingNetCents, Is.EqualTo(-300)); Assert.That(_costs.Summary.NetCents, Is.EqualTo(-441));
+            Assert.That(_costs.Summary.ClosingBalanceCents, Is.EqualTo(184)); Assert.That(before.ClosingBalanceCents, Is.EqualTo(325));
+            Assert.That(Components<OperatingCostsFeedback>().Single().Text, Does.Contain("Electricity bill pending: €0.00"));
+            _costs.SettleElectricityBill(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(184));
+            Assert.That(_service.Ledger.ElectricityBills, Has.Count.EqualTo(1));
+            Assert.That(_costs.TrySettleClosedDay(), Is.True); Assert.That(_costs.Summary.FixedCostsCents, Is.EqualTo(300));
+            Assert.That(_day.State, Is.SameAs(dayState)); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(number));
+            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed));
+            Assert.That(Components<Transform>(), Is.EquivalentTo(objects)); Assert.That(reserve.State, Is.SameAs(state));
+            Assert.That(state.IsContaminated, Is.True); Assert.That(state.AgeSeconds, Is.EqualTo(age));
+            Assert.That(plate.transform.position, Is.EqualTo(new Vector3(-2, 2, 2)));
+            _supply.Advance(1800); Assert.That(_costs.PendingElectricityCents, Is.EqualTo(35));
+            Assert.That(_costs.TrySettleElectricityBill(out ElectricityBillReceipt second), Is.True);
+            Assert.That(second.AmountCents, Is.EqualTo(35)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(149));
+            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(149));
+            Assert.That(_supply.State.DailyConsumedKilowattHours, Is.Zero); Assert.That(_supply.State.PendingKilowattHours, Is.Zero);
+            Assert.That(_service.Ledger.ElectricityBills, Has.Count.EqualTo(2));
+        }
+
+        [Test]
+        public void BillPaymentDuringOpenDayAppearsInCashSummaryAndAllowsNegativeBalance()
+        {
+            _supply.PowerOn(); _supply.Advance(36000);
+            Assert.That(_costs.TrySettleElectricityBill(out ElectricityBillReceipt paid), Is.True);
+            Assert.That(paid.AmountCents, Is.EqualTo(705)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(295));
+            Close(); Assert.That(_costs.Summary.OperatingNetCents, Is.EqualTo(-300));
+            Assert.That(_costs.Summary.ElectricityPaidCents, Is.EqualTo(705)); Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(705));
+            Assert.That(_costs.Summary.NetCents, Is.EqualTo(-1005)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(-5));
+            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(-5));
+            Assert.That(_costs.TrySettleElectricityBill(out ElectricityBillReceipt empty), Is.True); Assert.That(empty, Is.Null);
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(-5));
         }
         [UnityTest]
         public IEnumerator TwoPhysicalServiceDaysIncludeClosingSalesAndPreserveLedgerFoodPlateAndSwitches()
@@ -107,15 +166,15 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(receipt.Accepted, Is.True); Assert.That(_costs.Summary, Is.Null);
             _service.Advance(30); DailySummary first = _costs.Summary; yield return null;
             Assert.That(burger == null, Is.True); Assert.That(first.SalesCents, Is.EqualTo(500));
-            Assert.That(first.PurchasesCents, Is.EqualTo(225)); Assert.That(first.ElectricityCents, Is.EqualTo(2));
-            Assert.That(first.NetCents, Is.EqualTo(-27)); Assert.That(first.ClosingBalanceCents, Is.EqualTo(973));
+            Assert.That(first.PurchasesCents, Is.EqualTo(225)); Assert.That(first.ElectricityAccruedCents, Is.EqualTo(2));
+            Assert.That(first.NetCents, Is.EqualTo(-25)); Assert.That(first.ClosingBalanceCents, Is.EqualTo(975));
             Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.StartNextDay(), Is.False);
             Assert.That(_service.Ledger, Is.SameAs(ledger)); Assert.That(_service.LastResult, Is.SameAs(receipt));
             Assert.That(_supply.IsOn, Is.True); Assert.That(_supply.Appliances[2].IsOn, Is.False);
             Assert.That(_supply.State.DailyConsumedKilowattHours, Is.Zero);
             Assert.That(_supply.Appliances.All(item => item.Meter.DailyConsumedKilowattHours == 0), Is.True);
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(.075).Within(1e-12));
-            Assert.That(ledger.BalanceCents, Is.EqualTo(973)); Assert.That(_costs.Summary, Is.Null);
+            Assert.That(ledger.BalanceCents, Is.EqualTo(975)); Assert.That(_costs.Summary, Is.Null);
             Assert.That(reserve.State, Is.SameAs(state)); Assert.That(state.InstanceId, Is.EqualTo(reserveId));
             Assert.That(state.AgeSeconds, Is.EqualTo(age)); Assert.That(state.TemperatureCelsius, Is.EqualTo(temperature));
             Assert.That(state.DeteriorationSeconds, Is.EqualTo(deterioration)); Assert.That(state.IsContaminated, Is.True);
@@ -124,11 +183,11 @@ namespace ZeroStarRestaurant.Tests
             DishItem cheese = null; yield return BuildDish(new[] { 0, 1, 2, 0 }, item => cheese = item); Deliver(cheese);
             _supply.Appliances[0].SetOn(false); _supply.Advance(120);
             _service.Advance(30); DailySummary second = _costs.Summary;
-            Assert.That(second.DayNumber, Is.EqualTo(2)); Assert.That(second.OpeningBalanceCents, Is.EqualTo(973));
+            Assert.That(second.DayNumber, Is.EqualTo(2)); Assert.That(second.OpeningBalanceCents, Is.EqualTo(975));
             Assert.That(second.SalesCents, Is.EqualTo(650)); Assert.That(second.PurchasesCents, Is.EqualTo(175));
-            Assert.That(second.ElectricityCents, Is.Zero); Assert.That(second.NetCents, Is.EqualTo(175));
-            Assert.That(second.ClosingBalanceCents, Is.EqualTo(1148)); Assert.That(ledger.Summaries, Has.Count.EqualTo(2));
-            Assert.That(first.ClosingBalanceCents, Is.EqualTo(973)); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve }));
+            Assert.That(second.ElectricityAccruedCents, Is.Zero); Assert.That(second.NetCents, Is.EqualTo(175));
+            Assert.That(second.ClosingBalanceCents, Is.EqualTo(1150)); Assert.That(ledger.Summaries, Has.Count.EqualTo(2));
+            Assert.That(first.ClosingBalanceCents, Is.EqualTo(975)); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve }));
             Assert.That(OperatingCostsFeedback.SummaryText(second), Does.Contain("Sales: €6.50"));
         }
         [Test]
@@ -168,7 +227,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_costs.Summary, Is.Not.Null);
             Assert.That(_costs.Summary.ConsumedKilowattHours, Is.GreaterThan(0));
             Assert.That(_costs.Summary.ConsumedKilowattHours, Is.EqualTo(_supply.State.DailyConsumedKilowattHours));
-            Assert.That(_costs.Summary.ElectricityCents, Is.EqualTo(
+            Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(
                 new OperatingCostPolicy(30, new DailyFixedCost[0]).ElectricityCostCents(_supply.State.DailyConsumedKilowattHours)));
         }
         private IEnumerator BuildDish(int[] products, System.Action<DishItem> completed)

@@ -21,8 +21,8 @@ namespace ZeroStarRestaurant.Tests
             var ledger = new PaymentLedger(1000);
             ledger.TrySettleDay(Policy(), supply.DailyConsumedKilowattHours, out DailySummary summary);
             Assert.That(summary.ConsumedKilowattHours, Is.EqualTo(meter.DailyConsumedKilowattHours));
-            Assert.That(summary.ElectricityCents, Is.EqualTo(cents));
-            Assert.That(summary.ClosingBalanceCents, Is.EqualTo(700 - cents));
+            Assert.That(summary.ElectricityAccruedCents, Is.EqualTo(cents));
+            Assert.That(summary.ClosingBalanceCents, Is.EqualTo(700));
         }
         [Test]
         public void ConsumptionPartitionsAndSupplyCutsProduceOneRoundedCharge()
@@ -46,12 +46,12 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(ledger.BalanceCents, Is.EqualTo(1420), "No continuous electricity/rent charges.");
             ledger.TrySettleDay(Policy(), 2.35, out DailySummary summary);
             Assert.That(summary.SalesCents, Is.EqualTo(500)); Assert.That(summary.PurchasesCents, Is.EqualTo(80));
-            Assert.That(summary.ElectricityCents, Is.EqualTo(71)); Assert.That(summary.FixedCostsCents, Is.EqualTo(300));
-            Assert.That(summary.NetCents, Is.EqualTo(49)); Assert.That(summary.ClosingBalanceCents, Is.EqualTo(1049));
+            Assert.That(summary.ElectricityAccruedCents, Is.EqualTo(71)); Assert.That(summary.FixedCostsCents, Is.EqualTo(300));
+            Assert.That(summary.NetCents, Is.EqualTo(120)); Assert.That(summary.ClosingBalanceCents, Is.EqualTo(1120));
             Assert.That(ledger.BalanceCents, Is.EqualTo(summary.OpeningBalanceCents + summary.NetCents));
             Assert.That(summary.Transactions.Single(item => item.Category == LedgerCategory.Procurement).ObjectId, Is.EqualTo(unit));
             Assert.That(summary.Transactions.Single(item => item.Category == LedgerCategory.Sales).TransactionId, Is.EqualTo(order));
-            Assert.That(summary.Transactions, Has.Count.EqualTo(4));
+            Assert.That(summary.Transactions, Has.Count.EqualTo(3));
         }
         [Test]
         public void RepeatedSettlementAndNextDayCallsNeverChargeTwiceAndRetainHistory()
@@ -65,7 +65,7 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(repeated, Is.SameAs(first));
                 Assert.That(ledger.TryBeginNextDay(3), Is.False);
             }
-            Assert.That(ledger.BalanceCents, Is.EqualTo(-300)); Assert.That(ledger.Transactions, Has.Count.EqualTo(2));
+            Assert.That(ledger.BalanceCents, Is.EqualTo(-300)); Assert.That(ledger.Transactions, Has.Count.EqualTo(1));
             Assert.That(ledger.TrySpend(Guid.NewGuid(), Guid.NewGuid(), 1), Is.False);
             Assert.That(ledger.TryRecord(Guid.NewGuid(), Guid.NewGuid(), 500, true), Is.False);
             Assert.That(ledger.TryBeginNextDay(2), Is.True); Assert.That(ledger.TryBeginNextDay(2), Is.False);
@@ -112,7 +112,7 @@ namespace ZeroStarRestaurant.Tests
             var ledger = new PaymentLedger(0); ledger.TrySettleDay(policy, 0, out DailySummary first); ledger.TryBeginNextDay(2);
             Assert.That(first.FixedCostsCents, Is.EqualTo(320));
             Assert.That(first.Transactions.Single(item => item.CostId == "rent").Label, Is.EqualTo("Rent"));
-            Assert.That(first.Transactions, Has.Count.EqualTo(3));
+            Assert.That(first.Transactions, Has.Count.EqualTo(2));
             Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<LedgerTransaction>)first.Transactions).Clear());
             Assert.Throws<ArgumentException>(() => new OperatingCostPolicy(0, new[] { entries[0], entries[0] }));
         }
@@ -144,8 +144,9 @@ namespace ZeroStarRestaurant.Tests
             var ledger = new PaymentLedger(0); ledger.TryRecord(Guid.NewGuid(), Guid.NewGuid(), 500, true);
             ledger.TrySettleDay(Policy(), 2.35, out DailySummary summary);
             Assert.That(OperatingCostsFeedback.SummaryText(summary).Replace("\r\n", "\n"), Is.EqualTo(
-                "DAY 1 SUMMARY\nOpening balance: €0.00\nSales: €5.00\nPurchases: -€0.00\nElectricity: -€0.71\n" +
-                "  2.350000 kWh at 30 cents/kWh\nRent: -€3.00\nNet: €1.29\nBalance: €1.29"));
+                "DAY 1 SUMMARY\nOpening balance: €0.00\nSales: €5.00\nPurchases: -€0.00\nFixed daily costs: -€3.00\n" +
+                "  Rent: -€3.00\nOperating net: €2.00\nElectricity bills paid: -€0.00\nCash net: €2.00\nBalance: €2.00\n" +
+                "Electricity used today: 2.350000 kWh\nElectricity cost accrued today: €0.71"));
         }
     }
 }

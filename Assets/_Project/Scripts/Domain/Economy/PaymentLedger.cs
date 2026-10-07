@@ -11,6 +11,9 @@ namespace ZeroStarRestaurant.Economy
         private readonly HashSet<Guid> _purchasedUnits = new HashSet<Guid>();
         private readonly List<LedgerTransaction> _transactions = new List<LedgerTransaction>();
         private readonly List<DailySummary> _summaries = new List<DailySummary>();
+        private readonly Dictionary<Guid, ElectricityBillReceipt> _paidBills = new Dictionary<Guid, ElectricityBillReceipt>();
+        private readonly List<ElectricityBillReceipt> _electricityBills = new List<ElectricityBillReceipt>();
+        public IReadOnlyList<ElectricityBillReceipt> ElectricityBills { get; }
         private readonly IReadOnlyList<LedgerTransaction> _transactionView;
         private readonly IReadOnlyList<DailySummary> _summaryView;
         private int _dayTransactionStart;
@@ -27,6 +30,7 @@ namespace ZeroStarRestaurant.Economy
             BalanceCents = initialBalanceCents;
             _openingBalanceCents = initialBalanceCents;
             _transactionView = _transactions.AsReadOnly(); _summaryView = _summaries.AsReadOnly();
+            ElectricityBills = _electricityBills.AsReadOnly();
         }
         // No knowledge of customers, ingredients, cooking, freshness or recognition rules.
         public bool TrySpend(Guid purchaseId, Guid unitId, int priceCents)
@@ -59,12 +63,9 @@ namespace ZeroStarRestaurant.Economy
             summary = CurrentSummary;
             if (IsDaySettled) return true; // The first immutable receipt is authoritative on every retry.
             if (policy == null) throw new ArgumentNullException(nameof(policy));
-            long electricity = policy.ElectricityCostCents(consumedKilowattHours);
-            var charges = new List<LedgerTransaction>
-            {
-                new LedgerTransaction(DayNumber, Guid.NewGuid(), Guid.Empty, LedgerCategory.Electricity, electricity, "electricity", "Electricity")
-            };
-            long total = electricity;
+            // Electricity is accrued evidence, not an automatic daily cash payment.
+            var charges = new List<LedgerTransaction>();
+            long total = 0;
             foreach (DailyFixedCost cost in policy.FixedCosts)
             {
                 total = checked(total + cost.AmountCents);
@@ -79,6 +80,36 @@ namespace ZeroStarRestaurant.Economy
             // Complete all arithmetic/validation before committing any balance, receipt or charge.
             _transactions.AddRange(charges); BalanceCents = closingBalance;
             CurrentSummary = candidate; _summaries.Add(candidate); summary = candidate;
+            return true;
+        }
+
+        public bool TryPayElectricityBill(Guid periodId, OperatingCostPolicy policy, double consumedKilowattHours,
+            out ElectricityBillReceipt receipt)
+        {
+            receipt = null;
+            if (periodId == Guid.Empty || _paidBills.ContainsKey(periodId)) return false;
+            if (policy == null) throw new ArgumentNullException(nameof(policy));
+            long charge = policy.ElectricityCostCents(consumedKilowattHours);
+            if (consumedKilowattHours == 0) return false;
+            long balance = checked(BalanceCents - charge);
+            var transaction = new LedgerTransaction(DayNumber, periodId, Guid.Empty,
+                LedgerCategory.Electricity, charge, "electricity.bill", "Electricity bill paid");
+            DailySummary updated = null;
+            // A development payment may happen while the closed day's summary is displayed.
+            // Reproject actual cash evidence into a new immutable snapshot; never re-settle rent.
+            if (IsDaySettled)
+            {
+                var evidence = _transactions.GetRange(_dayTransactionStart, _transactions.Count - _dayTransactionStart);
+                evidence.Add(transaction);
+                updated = new DailySummary(DayNumber, _openingBalanceCents, CurrentSummary.ConsumedKilowattHours,
+                    CurrentSummary.ElectricityCentsPerKilowattHour, evidence);
+                if (updated.ClosingBalanceCents != balance) throw new InvalidOperationException("Bill payment must reconcile the ledger.");
+            }
+            receipt = new ElectricityBillReceipt(periodId, DayNumber, consumedKilowattHours,
+                policy.ElectricityCentsPerKilowattHour, charge);
+            _transactions.Add(transaction); _paidBills.Add(periodId, receipt); _electricityBills.Add(receipt);
+            BalanceCents = balance;
+            if (updated != null) { CurrentSummary = updated; _summaries[_summaries.Count - 1] = updated; }
             return true;
         }
 

@@ -224,7 +224,7 @@ namespace ZeroStarRestaurant.Tests
             _supply.enabled = true; Assert.That(_supply.IsOn, Is.True);
             _supply.PowerOff(); _supply.Advance(3600); _supply.PowerOn(); _supply.Advance(3600);
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(4.7).Within(1e-12));
-            Assert.That(ledger.BalanceCents, Is.EqualTo(balance - 371)); Assert.That(food.State.AgeSeconds, Is.EqualTo(age));
+            Assert.That(ledger.BalanceCents, Is.EqualTo(balance - 300)); Assert.That(food.State.AgeSeconds, Is.EqualTo(age));
         }
 
         [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)] [TestCase(4)] [TestCase(5)]

@@ -7,36 +7,26 @@ namespace ZeroStarRestaurant.Economy
     public sealed class OperatingCostsFeedback : MonoBehaviour
     {
         [SerializeField] private RestaurantOperatingCosts _costs;
-        private GUIStyle _style;
-        private Vector2 _scroll;
         public static string SummaryText(DailySummary summary)
         {
             var text = new StringBuilder("DAY " + summary.DayNumber + " SUMMARY\n");
             text.AppendLine("Opening balance: " + IngredientPurchaseStation.FormatCents(summary.OpeningBalanceCents));
             text.AppendLine("Sales: " + IngredientPurchaseStation.FormatCents(summary.SalesCents));
             text.AppendLine("Purchases: -" + IngredientPurchaseStation.FormatCents(summary.PurchasesCents));
-            text.AppendLine("Electricity: -" + IngredientPurchaseStation.FormatCents(summary.ElectricityCents));
-            text.AppendLine(string.Format(CultureInfo.InvariantCulture, "  {0:F6} kWh at {1} cents/kWh",
-                summary.ConsumedKilowattHours, summary.ElectricityCentsPerKilowattHour));
+            text.AppendLine("Fixed daily costs: -" + IngredientPurchaseStation.FormatCents(summary.FixedCostsCents));
             foreach (LedgerTransaction transaction in summary.Transactions)
                 if (transaction.Category == LedgerCategory.FixedCost)
-                    text.AppendLine(transaction.Label + ": -" + IngredientPurchaseStation.FormatCents(transaction.AmountCents));
-            text.AppendLine("Net: " + IngredientPurchaseStation.FormatCents(summary.NetCents));
-            text.Append("Balance: " + IngredientPurchaseStation.FormatCents(summary.ClosingBalanceCents));
+                    text.AppendLine("  " + transaction.Label + ": -" + IngredientPurchaseStation.FormatCents(transaction.AmountCents));
+            text.AppendLine("Operating net: " + IngredientPurchaseStation.FormatCents(summary.OperatingNetCents));
+            text.AppendLine("Electricity bills paid: -" + IngredientPurchaseStation.FormatCents(summary.ElectricityPaidCents));
+            text.AppendLine("Cash net: " + IngredientPurchaseStation.FormatCents(summary.NetCents));
+            text.AppendLine("Balance: " + IngredientPurchaseStation.FormatCents(summary.ClosingBalanceCents));
+            text.AppendLine(string.Format(CultureInfo.InvariantCulture, "Electricity used today: {0:F6} kWh", summary.ConsumedKilowattHours));
+            text.Append("Electricity cost accrued today: " + IngredientPurchaseStation.FormatCents(summary.ElectricityAccruedCents));
             return text.ToString();
         }
-        private void OnGUI()
-        {
-            DailySummary summary = _costs != null ? _costs.Summary : null;
-            if (summary == null) return;
-            if (_style == null) _style = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
-            float width = Mathf.Min(380, Screen.width - 24), height = Mathf.Min(360, Screen.height - 48);
-            GUILayout.BeginArea(new Rect((Screen.width - width) / 2, 24, width, height), GUI.skin.box);
-            _scroll = GUILayout.BeginScrollView(_scroll);
-            GUILayout.Label(SummaryText(summary), _style);
-            GUILayout.EndScrollView();
-            GUILayout.Label("Next Day: RestaurantDayController in Inspector.");
-            GUILayout.EndArea();
-        }
+        public string Text => _costs == null || _costs.Summary == null ? "" : SummaryText(_costs.Summary) +
+            "\nElectricity bill pending: " + IngredientPurchaseStation.FormatCents(_costs.PendingElectricityCents) +
+            "\nNext Day: RestaurantDayController in Inspector.";
     }
 }
