@@ -1,7 +1,0 @@
-{
-    "name": "ZeroStarRestaurant.Tests.EditMode",
-    "references": ["ZeroStarRestaurant.Runtime", "ZeroStarRestaurant.Domain", "ZeroStarRestaurant.Editor", "Unity.InputSystem"],
-    "includePlatforms": ["Editor"],
-    "optionalUnityReferences": ["TestAssemblies"],
-    "autoReferenced": false
-}
