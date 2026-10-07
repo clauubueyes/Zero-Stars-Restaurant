@@ -12,13 +12,15 @@ namespace ZeroStarRestaurant.Cooking
         [SerializeField, Min(0f), Tooltip("Thermal response multiplier; zero disables heat transfer.")]
         private float _transferMultiplier = 4f;
 
+        public override bool IsOperational => base.IsOperational &&
+            _effectiveZone != null && _effectiveZone.enabled && _effectiveZone.gameObject.activeInHierarchy &&
+            _effectiveZone.isTrigger && Finite(_temperatureCelsius) && _temperatureCelsius >= -273.15f &&
+            Finite(_transferMultiplier) && _transferMultiplier > 0f;
+
         public override bool TryGetEnvironment(FoodItem food, out ThermalEnvironment environment)
         {
             environment = default;
-            if (!isActiveAndEnabled || food == null || !food.isActiveAndEnabled ||
-                _effectiveZone == null || !_effectiveZone.enabled || !_effectiveZone.gameObject.activeInHierarchy ||
-                !_effectiveZone.isTrigger || !Finite(_temperatureCelsius) || _temperatureCelsius < -273.15f ||
-                !Finite(_transferMultiplier) || _transferMultiplier <= 0f)
+            if (!IsOperational || food == null || !food.isActiveAndEnabled)
                 return false;
 
             Transform zone = _effectiveZone.transform;

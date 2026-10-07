@@ -13,13 +13,15 @@ namespace ZeroStarRestaurant.Food
         [SerializeField, Min(0f), Tooltip("Zero disables thermal transfer; disabled storage falls back to ambient.")]
         private float _transferMultiplier = 2f;
 
+        public override bool IsOperational => base.IsOperational && _interior != null &&
+            _interior.enabled && _interior.isTrigger && _interior.gameObject.activeInHierarchy &&
+            Finite(_temperatureCelsius) && _temperatureCelsius >= FoodState.AbsoluteZeroCelsius &&
+            Finite(_transferMultiplier) && _transferMultiplier > 0f;
+
         public override bool TryGetEnvironment(FoodItem food, out ThermalEnvironment environment)
         {
             environment = default;
-            if (!isActiveAndEnabled || food == null || !food.isActiveAndEnabled || _interior == null ||
-                !_interior.enabled || !_interior.isTrigger || !_interior.gameObject.activeInHierarchy ||
-                !Finite(_temperatureCelsius) || _temperatureCelsius < FoodState.AbsoluteZeroCelsius ||
-                !Finite(_transferMultiplier) || _transferMultiplier <= 0f)
+            if (!IsOperational || food == null || !food.isActiveAndEnabled)
                 return false;
             // Query the current unit position in the oriented interior. This also works for the
             // original FoodItems inside a finalized Dish, whose individual colliders are disabled.
