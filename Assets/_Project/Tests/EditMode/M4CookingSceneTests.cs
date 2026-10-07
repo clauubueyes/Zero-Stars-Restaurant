@@ -17,7 +17,7 @@ namespace ZeroStarRestaurant.Tests
         [SetUp] public void SetUp() => _scene = EditorSceneManager.OpenPreviewScene(M1GreyboxBuilder.ScenePath);
         [TearDown] public void TearDown() => EditorSceneManager.ClosePreviewScene(_scene);
         private T[] Components<T>() where T : Component => _scene.GetRootGameObjects()
-            .SelectMany(root => root.GetComponentsInChildren<T>()).ToArray();
+            .SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
 
         [Test]
         public void GrillHasSolidSurfaceThinTriggerAndSingleExplicitDriver()
@@ -46,12 +46,12 @@ namespace ZeroStarRestaurant.Tests
             FoodItem[] foods = Components<FoodItem>();
             // Preserve M3/M4's eight fixtures while M5 adds assembly supplies.
             FoodItem[] baseline = _scene.GetRootGameObjects().Where(root => root.name == "FoodTestZone" || root.name == "CookingTestZone")
-                .SelectMany(root => root.GetComponentsInChildren<FoodItem>()).ToArray();
+                .SelectMany(root => root.GetComponentsInChildren<FoodItem>(true)).ToArray();
             Assert.That(baseline, Has.Length.EqualTo(8));
             foreach (FoodItem food in foods)
                 Assert.That(food.Definition.CreateProfile().IsCookable, Is.EqualTo(food.Definition.Id == "food.raw_beef_patty"));
             FoodItem[] fixtures = _scene.GetRootGameObjects().Single(root => root.name == "CookingTestZone")
-                .GetComponentsInChildren<FoodItem>();
+                .GetComponentsInChildren<FoodItem>(true);
             Assert.That(fixtures, Has.Length.EqualTo(4));
             Assert.That(fixtures.Select(f => f.Definition).Distinct().Count(), Is.EqualTo(1));
             Assert.That(fixtures.Select(f => new SerializedObject(f).FindProperty("_initialTemperatureCelsius").floatValue),

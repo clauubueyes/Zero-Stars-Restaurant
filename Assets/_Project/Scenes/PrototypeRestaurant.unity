@@ -5442,6 +5442,9 @@ GameObject:
   - component: {fileID: 1163158815}
   - component: {fileID: 1163158816}
   - component: {fileID: 1163158817}
+  - component: {fileID: 1163158818}
+  - component: {fileID: 1163158820}
+  - component: {fileID: 1163158819}
   m_Layer: 0
   m_Name: CustomerServiceZone
   m_TagString: Untagged
@@ -5482,6 +5485,7 @@ MonoBehaviour:
   _advanceAutomatically: 1
   _developmentInitialBalanceCents: 1000
   _forceNextOfferIndex: -1
+  _deliveryZone: {fileID: 999010018}
 --- !u!4 &999010031
 Transform:
   m_ObjectHideFlags: 0
@@ -6261,6 +6265,8 @@ GameObject:
   m_Component:
   - component: {fileID: 999030021}
   - component: {fileID: 999030020}
+  - component: {fileID: 288771098}
+  - component: {fileID: 288771099}
   m_Layer: 0
   m_Name: Freezer
   m_TagString: Untagged
@@ -6283,6 +6289,8 @@ MonoBehaviour:
   _interior: {fileID: 999030057}
   _temperatureCelsius: -18
   _transferMultiplier: 2
+  _electricity: {fileID: 288771098}
+  _requiresElectricity: 1
 --- !u!4 &999030021
 Transform:
   m_ObjectHideFlags: 0
@@ -6316,6 +6324,8 @@ GameObject:
   m_Component:
   - component: {fileID: 999030023}
   - component: {fileID: 999030024}
+  - component: {fileID: 1163601737}
+  - component: {fileID: 1163601736}
   m_Layer: 0
   m_Name: Fridge
   m_TagString: Untagged
@@ -6361,6 +6371,8 @@ MonoBehaviour:
   _interior: {fileID: 999030013}
   _temperatureCelsius: 4
   _transferMultiplier: 2
+  _electricity: {fileID: 1163601737}
+  _requiresElectricity: 1
 --- !u!1 &999030025
 GameObject:
   m_ObjectHideFlags: 0
@@ -8318,6 +8330,8 @@ MonoBehaviour:
   _startAutomatically: 1
   _advanceAutomatically: 1
   _paused: 0
+  _operatingCosts: {fileID: 1163158818}
+  _requiresOperatingCosts: 1
 --- !u!114 &1163158817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8824,6 +8838,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1241087751}
   - component: {fileID: 1241087750}
+  - component: {fileID: 1241087752}
+  - component: {fileID: 1241087753}
   m_Layer: 0
   m_Name: GrillStation
   m_TagString: Untagged
@@ -8846,6 +8862,8 @@ MonoBehaviour:
   _effectiveZone: {fileID: 1701492718}
   _temperatureCelsius: 180
   _transferMultiplier: 4
+  _electricity: {fileID: 1241087752}
+  _requiresElectricity: 1
 --- !u!4 &1241087751
 Transform:
   m_ObjectHideFlags: 0
@@ -14487,6 +14505,7 @@ SceneRoots:
   - {fileID: 999010031}
   - {fileID: 1730434019}
   - {fileID: 1231204885}
+  - {fileID: 371741238}
 --- !u!1 &1535797325
 GameObject:
   m_ObjectHideFlags: 0
@@ -14720,3 +14739,447 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1968268535}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &288771098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5538751cd105429ca4d9571b87e99552, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ElectricalAppliance
+  _supply: {fileID: 371741237}
+  _thermalSource: {fileID: 999030020}
+  _ratedWatts: 200
+  _initiallyOn: 1
+  _applianceName: Freezer
+--- !u!114 &288771099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 288771098}
+--- !u!1 &371741235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 371741238}
+  - component: {fileID: 371741237}
+  - component: {fileID: 371741236}
+  m_Layer: 0
+  m_Name: RestaurantUtilities
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &371741236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371741235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1409ef2f222145bbbd8801d891c318bd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ElectricityFeedback
+  _supply: {fileID: 371741237}
+  _costs: {fileID: 1163158818}
+--- !u!114 &371741237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371741235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ce636dcd6c4fc9bf35b38cd297b3da, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.RestaurantElectricity
+  _appliances:
+  - {fileID: 1241087752}
+  - {fileID: 1163601737}
+  - {fileID: 288771098}
+  _initiallyOn: 0
+  _advanceAutomatically: 1
+--- !u!4 &371741238
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371741235}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 791971135}
+  - {fileID: 1772304872}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &791971134
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 791971135}
+  - component: {fileID: 791971139}
+  - component: {fileID: 791971138}
+  - component: {fileID: 791971137}
+  - component: {fileID: 791971136}
+  m_Layer: 0
+  m_Name: ElectricitySwitch
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &791971135
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791971134}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.2, y: 1.45, z: 5.9}
+  m_LocalScale: {x: 0.5, y: 0.65, z: 0.15}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 371741238}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &791971136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791971134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf28980ceb8b46549f1d03b1e6f133e3, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ElectricitySwitch
+  _displayName:
+  _supply: {fileID: 371741237}
+  _label: {fileID: 1772304873}
+--- !u!23 &791971137
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791971134}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 7b3d4a64a432e154e8fee8b612cee16e, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &791971138
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791971134}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!33 &791971139
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791971134}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1163158818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e4baa5ea69342d1b60e0581c562100c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Economy.RestaurantOperatingCosts
+  _day: {fileID: 1163158816}
+  _service: {fileID: 999010030}
+  _electricity: {fileID: 371741237}
+  _settings: {fileID: 11400000, guid: 5a34bdd35cd00d74c84f6ae7bef5dd5d, type: 2}
+--- !u!114 &1163158819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22bc8e2276404369ad2b0cac0cab02db, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Presentation.DebugHudPresenter
+  _day: {fileID: 1163158817}
+  _procurement: {fileID: 1231204884}
+  _electricity: {fileID: 371741236}
+  _service: {fileID: 999010029}
+  _summary: {fileID: 1163158820}
+  _costs: {fileID: 1163158818}
+  _interaction: {fileID: 923074285}
+  _food: {fileID: 923074284}
+  _dish: {fileID: 923074283}
+--- !u!114 &1163158820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999010028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7253184014fb468f8cc2d1e7cbec992b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Economy.OperatingCostsFeedback
+  _costs: {fileID: 1163158818}
+--- !u!114 &1163601736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 1163601737}
+--- !u!114 &1163601737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 999030022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5538751cd105429ca4d9571b87e99552, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ElectricalAppliance
+  _supply: {fileID: 371741237}
+  _thermalSource: {fileID: 999030024}
+  _ratedWatts: 150
+  _initiallyOn: 1
+  _applianceName: Fridge
+--- !u!114 &1241087752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241087749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5538751cd105429ca4d9571b87e99552, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ElectricalAppliance
+  _supply: {fileID: 371741237}
+  _thermalSource: {fileID: 1241087750}
+  _ratedWatts: 2000
+  _initiallyOn: 1
+  _applianceName: Grill
+--- !u!114 &1241087753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241087749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 644ac7d9b80649c895f1014ba2ae5b64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Utilities.ApplianceSwitch
+  _displayName:
+  _appliance: {fileID: 1241087752}
+--- !u!1 &1772304871
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1772304872}
+  - component: {fileID: 1772304874}
+  - component: {fileID: 1772304873}
+  m_Layer: 0
+  m_Name: ElectricityLabel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1772304872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772304871}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0.2, y: 1.45, z: 5.81}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 371741238}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!102 &1772304873
+TextMesh:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772304871}
+  m_Text: 'ELECTRICITY OFF
+
+    Power ON [E]'
+  m_OffsetZ: 0
+  m_CharacterSize: 0.015
+  m_LineSpacing: 1
+  m_Anchor: 4
+  m_Alignment: 1
+  m_TabSize: 4
+  m_FontSize: 48
+  m_FontStyle: 0
+  m_RichText: 1
+  m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Color:
+    serializedVersion: 2
+    rgba: 4294967295
+--- !u!23 &1772304874
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772304871}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}

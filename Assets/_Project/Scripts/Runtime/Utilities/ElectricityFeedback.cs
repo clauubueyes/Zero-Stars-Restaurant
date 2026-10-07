@@ -1,26 +1,31 @@
 using System.Globalization;
 using System.Text;
 using UnityEngine;
+using ZeroStarRestaurant.Economy;
 
 namespace ZeroStarRestaurant.Utilities
 {
     public sealed class ElectricityFeedback : MonoBehaviour
     {
         [SerializeField] private RestaurantElectricity _supply;
-        private void OnGUI()
+        [SerializeField] private RestaurantOperatingCosts _costs;
+        public string Text
         {
-            if (_supply == null || _supply.State == null) return;
-            var text = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
-                "Electricity {0} | {1:F0} W\nDay: {2:F6} kWh | Total: {3:F6} kWh\n", _supply.IsOn ? "ON" : "OFF",
-                _supply.CurrentWatts, _supply.State.DailyConsumedKilowattHours, _supply.State.ConsumedKilowattHours));
-            foreach (ElectricalAppliance appliance in _supply.Appliances)
+            get
             {
-                if (appliance == null || appliance.Meter == null) continue;
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1} | {2} | {3:F0} W | Day {4:F6} / Total {5:F6} kWh\n", appliance.DisplayName,
-                    appliance.IsOn ? "ON" : "OFF", appliance.IsOperating ? "Running" : "Stopped",
-                    appliance.RatedWatts, appliance.Meter.DailyConsumedKilowattHours, appliance.Meter.ConsumedKilowattHours);
+                if (_supply == null || _supply.State == null) return "";
+                var text = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
+                    "ELECTRICITY {0} | {1:F0} W\nToday: {2:F4} kWh | {3} accrued\nBill pending: {4:F4} kWh | {5}\n",
+                    _supply.IsOn ? "ON" : "OFF", _supply.CurrentWatts, _supply.State.DailyConsumedKilowattHours,
+                    IngredientPurchaseStation.FormatCents(_costs != null ? _costs.DailyElectricityAccruedCents : 0),
+                    _supply.State.PendingKilowattHours, IngredientPurchaseStation.FormatCents(_costs != null ? _costs.PendingElectricityCents : 0)));
+                foreach (ElectricalAppliance appliance in _supply.Appliances)
+                    if (appliance != null && appliance.Meter != null)
+                        text.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1} | {2:F0} W | Today {3:F4} kWh\n",
+                            appliance.DisplayName, appliance.IsOperating ? "Running" : "Stopped",
+                            appliance.IsOperating ? appliance.RatedWatts : 0, appliance.Meter.DailyConsumedKilowattHours);
+                return text.ToString();
             }
-            GUI.Box(new Rect(Screen.width - 532, Screen.height - 135, 520, 123), text.ToString());
         }
     }
 }

@@ -26,10 +26,12 @@ namespace ZeroStarRestaurant.Editor
         [MenuItem("Zero Star Restaurant/Prototype/Rebuild Greybox Scene")]
         private static void RebuildFromMenu()
         {
-            if (File.Exists(ScenePath) && !EditorUtility.DisplayDialog("Rebuild prototype greybox",
-                    "Replace the saved PrototypeRestaurant scene with the current prototype layout? " +
-                    "Custom scene edits will be lost. Material assets are preserved.", "Rebuild", "Cancel"))
+            if (File.Exists(ScenePath))
+            {
+                EditorUtility.DisplayDialog("Preserve user-authored scene",
+                    "PrototypeRestaurant already exists. Use incremental installers to preserve manual Unity edits.", "OK");
                 return;
+            }
             GenerateScene();
         }
 
@@ -43,6 +45,8 @@ namespace ZeroStarRestaurant.Editor
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 throw new InvalidOperationException("Stop Play Mode before generating the prototype scene.");
+            if (File.Exists(ScenePath))
+                throw new InvalidOperationException("PrototypeRestaurant already exists. User-authored Unity changes must be preserved; use incremental installers.");
             if (SceneManager.GetSceneByPath(ScenePath).IsValid())
                 throw new InvalidOperationException("Close PrototypeRestaurant before rebuilding it. Other open scenes are preserved.");
 
@@ -278,6 +282,7 @@ namespace ZeroStarRestaurant.Editor
                 PhysicalInteractionPolishBuilder.ConfigureScene(scene);
                 M12ElectricityBuilder.ConfigureScene(scene);
                 M13OperatingCostsBuilder.ConfigureScene(scene);
+                DeliveryHudBillingBuilder.ConfigureScene(scene);
 
                 if (!EditorSceneManager.SaveScene(scene, ScenePath))
                     throw new InvalidOperationException("Could not save the prototype scene.");

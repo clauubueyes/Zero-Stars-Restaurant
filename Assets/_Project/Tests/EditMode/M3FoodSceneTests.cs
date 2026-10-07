@@ -21,10 +21,10 @@ namespace ZeroStarRestaurant.Tests
         public void TearDown() => EditorSceneManager.ClosePreviewScene(_scene);
 
         private T[] Components<T>() where T : Component => _scene.GetRootGameObjects()
-            .SelectMany(root => root.GetComponentsInChildren<T>()).ToArray();
+            .SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
         // Preserve the original M3 fixtures while later milestones add their own food units.
         private FoodItem[] M3Foods() => _scene.GetRootGameObjects().Single(root => root.name == "FoodTestZone")
-            .GetComponentsInChildren<FoodItem>();
+            .GetComponentsInChildren<FoodItem>(true);
 
         [Test]
         public void FourPhysicalFoodsUseThreeValidDefinitionsAndExplicitSimulationReferences()

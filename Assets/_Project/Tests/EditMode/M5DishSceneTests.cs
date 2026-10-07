@@ -16,7 +16,7 @@ namespace ZeroStarRestaurant.Tests
         private Scene _scene;
         [SetUp] public void SetUp() => _scene = EditorSceneManager.OpenPreviewScene(M1GreyboxBuilder.ScenePath);
         [TearDown] public void TearDown() => EditorSceneManager.ClosePreviewScene(_scene);
-        private T[] Components<T>() where T : Component => _scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>()).ToArray();
+        private T[] Components<T>() where T : Component => _scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
 
         [Test]
         public void ThreePreparationSupportsAreFixedGeometryWithoutFreePlateOrOrderIdentity()

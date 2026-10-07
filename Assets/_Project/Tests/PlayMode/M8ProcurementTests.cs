@@ -298,6 +298,30 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
+        public IEnumerator DevelopmentStartupOptInActivatesSerializedInactiveFixtures()
+        {
+            GameObject root = new GameObject("Development startup opt-in"); root.SetActive(false);
+            SceneManager.MoveGameObjectToScene(root, _scene);
+            try
+            {
+                DevelopmentIngredientSupply original = Components<DevelopmentIngredientSupply>().Single();
+                var supply = root.AddComponent<DevelopmentIngredientSupply>();
+                var data = new SerializedObject(supply);
+                data.CopyFromSerializedProperty(new SerializedObject(original).FindProperty("_simulation"));
+                data.CopyFromSerializedProperty(new SerializedObject(original).FindProperty("_fixtures"));
+                data.CopyFromSerializedProperty(new SerializedObject(original).FindProperty("_fixtureSupports"));
+                data.FindProperty("_enableOnStart").boolValue = true; data.ApplyModifiedPropertiesWithoutUndo();
+                root.SetActive(true);
+                Assert.That(_simulation.Foods.Count, Is.EqualTo(18));
+                Assert.That(_simulation.Foods.All(food => food.State != null && food.gameObject.activeInHierarchy), Is.True);
+                Assert.That(Components<Transform>().Single(item => item.name == "AssemblySupplyBench").gameObject.activeSelf, Is.True);
+                Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1000));
+                yield return null;
+            }
+            finally { Object.Destroy(root); }
+        }
+
+        [UnityTest]
         public IEnumerator SessionRestartRestoresDevelopmentSeedAndCreatesNoPersistentSupplyOrBalance()
         {
             Buy(0, new Vector3(-5, 1.12f, -3.75f)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(965));

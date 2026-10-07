@@ -20,7 +20,9 @@ namespace ZeroStarRestaurant.Economy
         private int[] _prices;
         private PlateItem _platePrefab;
         private int _platePrice;
-        public string LastMessage { get; private set; } = "Look at a product and press E. Collect it from the output.";
+        private string _lastMessage = "Look at a product and press E. Collect it from the output.";
+        public int MessageRevision { get; private set; }
+        public string LastMessage { get => _lastMessage; private set { _lastMessage = value; MessageRevision++; } }
         public int ProductCount => _prefabs == null ? 0 : _prefabs.Length + (_platePrefab != null ? 1 : 0);
         public string ProductName(int index) => IsPlateIndex(index) ? "Plate" : ValidIndex(index) ? _prefabs[index].Definition.DisplayName : "Unavailable";
         public int PriceCents(int index) => IsPlateIndex(index) ? _platePrice : ValidIndex(index) ? _prices[index] : 0;
@@ -123,11 +125,7 @@ namespace ZeroStarRestaurant.Economy
         private void PurchasedMessage(int index) => LastMessage = "Purchased " + ProductName(index) + " for " +
             FormatCents(PriceCents(index)) + ". Collect it from the output.";
 
-        private void OnGUI()
-        {
-            if (_service == null || _service.Ledger == null) return;
-            GUI.Box(new Rect(12, Screen.height - 82, 470, 70),
-                "Procurement — Balance: " + FormatCents(_service.Ledger.BalanceCents) + "\n" + LastMessage);
-        }
+        public string BalanceText => _service == null || _service.Ledger == null ? "" :
+            "BALANCE " + FormatCents(_service.Ledger.BalanceCents) + "\nPROCUREMENT\nLook at a product and press E. Collect it from the output.";
     }
 }

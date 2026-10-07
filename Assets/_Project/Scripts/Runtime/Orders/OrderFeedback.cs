@@ -9,8 +9,6 @@ namespace ZeroStarRestaurant.Orders
     public sealed class OrderFeedback : MonoBehaviour
     {
         [SerializeField] private CustomerServiceLoop _service;
-        private GUIStyle _style;
-        private Vector2 _scroll;
         public static string Money(long cents) => IngredientPurchaseStation.FormatCents(cents);
         public static string QueueText(CustomerQueueController queue)
         {
@@ -44,38 +42,19 @@ namespace ZeroStarRestaurant.Orders
             text.AppendLine(result.Accepted ? "Accepted / Sold" : "Rejected / Dish remains available");
             return text.ToString();
         }
-        private void OnGUI()
+        public string Text
         {
-            if (_service == null || _service.Ledger == null) return;
-            if (_style == null)
+            get
             {
-                _style = new GUIStyle(GUI.skin.label) { fontSize = 16, wordWrap = true };
-                _style.normal.textColor = Color.white;
+                if (_service == null || _service.Ledger == null) return "";
+                string order = _service.Visit == null ? (_service.Queue != null && _service.Queue.Count > 0 ?
+                    "Customer approaching Service Position" : "Waiting for customers") :
+                    "Customer #" + _service.CustomerNumber.ToString("D3") + " | " + _service.Visit.Stage +
+                    "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + " | " + Money(_service.Visit.Order.Offer.SalePriceCents);
+                if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
+                if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult);
+                return order;
             }
-            float width = Mathf.Min(360f, Screen.width - 24f);
-            GUI.Box(new Rect(Screen.width - width - 12f, 12f, width, 120f), GUIContent.none);
-            string order = "Balance: " + Money(_service.Ledger.BalanceCents) + "\n";
-            if (_service.Visit == null)
-                order += _service.Queue != null && _service.Queue.Count > 0 ? "Customer approaching Service Position" :
-                    "Next customer in " + _service.NextCustomerSeconds.ToString("0.0", CultureInfo.InvariantCulture) + " s";
-            else order += "Customer #" + _service.CustomerNumber.ToString("D3") + "   " + _service.Visit.Stage +
-                "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + "\nPrice: " + Money(_service.Visit.Order.Offer.SalePriceCents);
-            GUI.Label(new Rect(Screen.width - width - 4f, 20f, width - 16f, 104f), order, _style);
-            float resultTop = 144f;
-            if (_service.Queue != null)
-            {
-                float height = 30f + 42f * _service.Queue.Count;
-                GUI.Box(new Rect(Screen.width - width - 12f, 144f, width, height), GUIContent.none);
-                GUI.Label(new Rect(Screen.width - width - 4f, 150f, width - 16f, height - 8f), QueueText(_service.Queue), _style);
-                resultTop = 156f + height;
-            }
-            if (_service.LastResult == null) return;
-            if (Screen.height - resultTop < 48f) return;
-            var rect = new Rect(Screen.width - width - 12f, resultTop, width, Mathf.Min(370f, Screen.height - resultTop - 12f));
-            GUI.Box(rect, GUIContent.none);
-            GUILayout.BeginArea(new Rect(rect.x + 8f, rect.y + 8f, rect.width - 16f, rect.height - 16f));
-            _scroll = GUILayout.BeginScrollView(_scroll); GUILayout.Label(ResultText(_service.LastResult), _style);
-            GUILayout.EndScrollView(); GUILayout.EndArea();
         }
     }
 }
