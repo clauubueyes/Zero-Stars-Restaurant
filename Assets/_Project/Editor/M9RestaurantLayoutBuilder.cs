@@ -56,8 +56,7 @@ namespace ZeroStarRestaurant.Editor
 
             MoveBenchAndFixtures("CookingPrepBench", new Vector3(-2.5f, 0.4f, 1.75f), "CookingTestZone");
             MoveBenchAndFixtures("AssemblySupplyBench", new Vector3(5.2f, 0.4f, 4.8f), "AssemblyTestZone");
-            Find("Fridge").position = new Vector3(-6.2f, 0, 4.9f);
-            Find("Freezer").position = new Vector3(-6.2f, 0, 3.1f);
+            ConfigureColdStorage(scene);
             Find("GrillStation").position = new Vector3(-2f, 0, 3.7f);
 
             Transform development = Child(greybox, "DevelopmentGeometry");
@@ -68,9 +67,16 @@ namespace ZeroStarRestaurant.Editor
             Find("PhysicalTestObjects").gameObject.SetActive(false);
             GameObject supplyBench = Find("AssemblySupplyBench").gameObject; supplyBench.SetActive(false);
             var supply = new SerializedObject(Find("FoodTestZone").GetComponent<DevelopmentIngredientSupply>());
+            supply.FindProperty("_enableOnStart").boolValue = false;
             supply.FindProperty("_fixtureSupports").arraySize = 1;
             supply.FindProperty("_fixtureSupports").GetArrayElementAtIndex(0).objectReferenceValue = supplyBench;
             supply.ApplyModifiedPropertiesWithoutUndo();
+            SerializedProperty fixtures = supply.FindProperty("_fixtures");
+            for (int index = 0; index < fixtures.arraySize; index++)
+            {
+                var fixture = fixtures.GetArrayElementAtIndex(index).objectReferenceValue as FoodItem;
+                if (fixture != null) fixture.gameObject.SetActive(false);
+            }
 
             Find("CustomerEntrance").position = new Vector3(-4.75f, 0, -7.4f);
             Find("CustomerExit").position = new Vector3(4.75f, 0, -7.4f);
@@ -116,6 +122,19 @@ namespace ZeroStarRestaurant.Editor
                 Transform bench = Find(benchName); Vector3 delta = destination - bench.position; bench.position = destination;
                 foreach (FoodItem food in Find(fixtureRoot).GetComponentsInChildren<FoodItem>(true)) food.transform.position += delta;
             }
+        }
+
+        public static void ConfigureColdStorage(Scene scene)
+        {
+            Transform[] existing = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)).ToArray();
+            Transform Find(string name) => existing.Single(item => item.name == name);
+            Physics.SyncTransforms();
+            // Cabinets span 1.6 m north/south: keep 0.3 m to the actual north wall
+            // and 0.2 m between them, including scenes with a resized kitchen.
+            float fridgeZ = Find("WallNorth").GetComponent<BoxCollider>().bounds.min.z - 1.1f;
+            Find("Fridge").position = new Vector3(-6.2f, 0, fridgeZ);
+            Find("Freezer").position = new Vector3(-6.2f, 0, fridgeZ - 1.8f);
+            EditorSceneManager.MarkSceneDirty(scene);
         }
 
         [MenuItem("Zero Star Restaurant/Prototype/Move Procurement Outside Kitchen")]

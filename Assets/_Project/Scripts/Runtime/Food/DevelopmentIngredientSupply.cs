@@ -16,7 +16,11 @@ namespace ZeroStarRestaurant.Food
         private void Awake()
         {
             foreach (GameObject support in _fixtureSupports) if (support != null) support.SetActive(_enableOnStart);
-            if (_enableOnStart) return;
+            if (_enableOnStart)
+            {
+                EnableForDevelopment();
+                return;
+            }
             if (_simulation != null) _simulation.Unregister(_fixtures);
             foreach (FoodItem food in _fixtures) if (food != null) food.gameObject.SetActive(false);
         }

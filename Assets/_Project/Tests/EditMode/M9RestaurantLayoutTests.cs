@@ -149,6 +149,39 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
+        public void ColdStorageFitsInsideWallsWithSeparateCabinets()
+        {
+            AssertColdStorageClearance();
+            Transform northWall = Components<Transform>().Single(item => item.name == "WallNorth");
+            northWall.position += Vector3.forward;
+            M9RestaurantLayoutBuilder.ConfigureColdStorage(_scene);
+            AssertColdStorageClearance();
+        }
+
+        private void AssertColdStorageClearance()
+        {
+            Physics.SyncTransforms();
+            ColdStorage[] cabinets = Components<ColdStorage>();
+            Collider[] shells = cabinets.SelectMany(cabinet => cabinet.GetComponentsInChildren<Collider>())
+                .Where(collider => !collider.isTrigger).ToArray();
+            foreach (Collider shell in shells)
+                foreach (Collider obstacle in Solids().Except(shells))
+                    Assert.That(Physics.ComputePenetration(shell, shell.transform.position, shell.transform.rotation,
+                        obstacle, obstacle.transform.position, obstacle.transform.rotation, out _, out float depth) && depth > 0.005f,
+                        Is.False, shell.transform.parent.name + "/" + shell.name + " overlaps " + obstacle.name);
+            Bounds[] bounds = cabinets.Select(cabinet =>
+            {
+                Collider[] solids = cabinet.GetComponentsInChildren<Collider>().Where(collider => !collider.isTrigger).ToArray();
+                Bounds result = solids[0].bounds;
+                foreach (Collider solid in solids.Skip(1)) result.Encapsulate(solid.bounds);
+                return result;
+            }).OrderBy(box => box.center.z).ToArray();
+            Assert.That(bounds[1].min.z - bounds[0].max.z, Is.GreaterThanOrEqualTo(0.19f));
+            BoxCollider wall = Components<BoxCollider>().Single(item => item.name == "WallNorth");
+            Assert.That(wall.bounds.min.z - bounds[1].max.z, Is.GreaterThanOrEqualTo(0.29f));
+        }
+
+        [Test]
         public void CounterSeparatesBothSidesQueuePointsAreOnlyMarkersAndTestGeometryIsOptIn()
         {
             Transform queues = Components<Transform>().Single(item => item.name == "QueuePoints");
@@ -167,6 +200,8 @@ namespace ZeroStarRestaurant.Tests
             var supply = new SerializedObject(Components<DevelopmentIngredientSupply>().Single());
             Assert.That(supply.FindProperty("_fixtureSupports").arraySize, Is.EqualTo(1));
             Assert.That(supply.FindProperty("_enableOnStart").boolValue, Is.False);
+            Assert.That(Components<FoodItem>().All(food => !food.gameObject.activeSelf), Is.True,
+                "Free ingredients must also be hidden before Play Mode.");
         }
 
         [Test]

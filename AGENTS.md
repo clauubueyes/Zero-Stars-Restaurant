@@ -54,6 +54,35 @@
 - Si Unity tiene abierto el proyecto, no lanzar otro Editor sobre esa misma
   carpeta ni cerrar procesos del usuario. Indicar qué comprobación queda pendiente.
 
+## User-authored Unity changes
+
+Los cambios manuales realizados por el usuario en Unity tienen prioridad y **no
+deben sobrescribirse ni revertirse** durante milestones, fixes, rebuilds o
+regeneraciones.
+
+Esto incluye especialmente:
+
+- distribución/posición/rotación/escala de objetos en escenas;
+- cambios manuales en `PrototypeRestaurant`;
+- materiales;
+- prefabs;
+- modelos, texturas y otros assets;
+- configuración visual;
+- nuevos objetos/assets añadidos manualmente.
+
+Antes de modificar o regenerar una escena/prefab/asset existente, inspecciona el
+estado actual y preserva los cambios del usuario.
+
+Los generadores/Editor tools no deben reconstruir automáticamente toda la escena
+si eso destruye modificaciones manuales. Prefiere cambios incrementales y por
+componentes.
+
+No uses una versión anterior de la escena como fuente de verdad si la versión
+actual contiene cambios manuales del usuario.
+
+Si una tarea requiere inevitablemente sobrescribir un cambio manual, **no lo hagas
+silenciosamente**: indícalo antes.
+
 ## Git disciplinado
 
 - Mantener `main` estable. Para trabajo nuevo crear ramas `feature/...`,
