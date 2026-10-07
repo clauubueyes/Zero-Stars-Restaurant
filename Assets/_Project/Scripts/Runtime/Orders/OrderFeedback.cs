@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
 using ZeroStarRestaurant.Economy;
+using ZeroStarRestaurant.Food;
 
 namespace ZeroStarRestaurant.Orders
 {
@@ -13,7 +14,8 @@ namespace ZeroStarRestaurant.Orders
         [SerializeField] private CustomerServiceLoop _service;
         public int ResultRevision => _service != null ? _service.ResultRevision : 0;
         public string LastDeliveryMessage => _service == null || _service.LastResult == null ? "" :
-            "Customer #" + _service.LastResultCustomerNumber.ToString("D3") + " | " + BriefResultText(_service.LastResult);
+            "Customer #" + _service.LastResultCustomerNumber.ToString("D3") + " | " + BriefResultText(_service.LastResult) +
+            "\n" + ConsequenceText(_service.LastConsequence);
         public static string Money(long cents) => IngredientPurchaseStation.FormatCents(cents);
         public static string QueueText(CustomerQueueController queue)
         {
@@ -75,6 +77,22 @@ namespace ZeroStarRestaurant.Orders
             text.AppendLine(result.Accepted ? "Accepted / Sold" : "Rejected / Food remains available");
             return text.ToString();
         }
+        public static string ConsequenceText(CustomerConsequence consequence, bool includeCauses = false)
+        {
+            if (consequence == null) return "Quality: Not consumed | Reaction: None";
+            string issues = consequence.Quality.IsGood ? "Good" : string.Join(" + ", consequence.Quality.Issues);
+            var text = new StringBuilder("Quality: " + issues + "\nReaction: " +
+                (consequence.Reaction == CustomerReaction.HealthIncident ? "Health Incident" : consequence.Reaction.ToString()));
+            if (includeCauses)
+                foreach (FoodQualityCause cause in consequence.Quality.Causes)
+                    text.AppendFormat(CultureInfo.InvariantCulture, "\n{0} #{1}: {2}{3} | Freshness {4:0.0}% | {5:0.0}°C",
+                        cause.Ingredient.Profile.DisplayName, cause.Ingredient.InstanceId.ToString("N").Substring(0, 8), cause.Issue,
+                        cause.IsHealthHazard ? " (health hazard)" : "", cause.Ingredient.FreshnessPercent, cause.Ingredient.TemperatureCelsius);
+            return text.ToString();
+        }
+        public static string StatisticsText(CustomerServiceStatistics statistics) =>
+            "Customers served: " + statistics.CustomersServed + " | Satisfied: " + statistics.Satisfied +
+            " | Unhappy: " + statistics.Unhappy + "\nComplaints: " + statistics.Complaints + " | Health incidents: " + statistics.HealthIncidents;
         public string Text
         {
             get
@@ -86,8 +104,9 @@ namespace ZeroStarRestaurant.Orders
                     "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + " | " + Money(_service.Visit.Order.Offer.SalePriceCents);
                 if (_service.DeliveryZone != null) order += "\n" + _service.DeliveryZone.PlacementMessage;
                 if (_service.LastResult != null) order += "\nLast delivery: " + LastDeliveryMessage;
+                order += "\n" + StatisticsText(_service.Statistics);
                 if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
-                if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult);
+                if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult) + "\n" + ConsequenceText(_service.LastConsequence, true);
                 return order;
             }
         }
