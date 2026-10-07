@@ -18,13 +18,14 @@ namespace ZeroStarRestaurant.Orders
         public bool ContainsSpoiledOrRotten => ContainsSpoiled || ContainsRotten;
         public bool ContainsContamination { get; }
         public long TotalIngredientCostCents { get; }
-        internal DishSnapshot(DishState dish)
+        internal DishSnapshot(DeliveryContents delivery)
         {
-            InstanceId = dish.InstanceId.Value;
-            DefinitionId = dish.RecognizedDefinition?.Id; DisplayName = dish.DisplayName;
+            InstanceId = delivery.InstanceId;
+            DefinitionId = delivery.RecognizedRecipe?.Id;
+            DisplayName = delivery.RecognizedRecipe?.DisplayName ?? (delivery.Dish != null ? "Custom Dish" : "Loose ingredients");
             var ingredients = new List<IngredientSnapshot>();
             double sum = 0, minimum = 100; long cost = 0;
-            foreach (FoodState food in dish.Components)
+            foreach (FoodState food in delivery.Foods)
             {
                 var snapshot = new IngredientSnapshot(food); ingredients.Add(snapshot);
                 sum += snapshot.FreshnessPercent; minimum = Math.Min(minimum, snapshot.FreshnessPercent);

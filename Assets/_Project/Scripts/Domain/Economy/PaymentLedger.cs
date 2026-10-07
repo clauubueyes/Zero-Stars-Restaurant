@@ -7,6 +7,7 @@ namespace ZeroStarRestaurant.Economy
     {
         private readonly HashSet<Guid> _processedOrders = new HashSet<Guid>();
         private readonly HashSet<Guid> _soldDishes = new HashSet<Guid>();
+        private readonly HashSet<Guid> _soldUnits = new HashSet<Guid>();
         private readonly HashSet<Guid> _processedPurchases = new HashSet<Guid>();
         private readonly HashSet<Guid> _purchasedUnits = new HashSet<Guid>();
         private readonly List<LedgerTransaction> _transactions = new List<LedgerTransaction>();
@@ -46,13 +47,21 @@ namespace ZeroStarRestaurant.Economy
         }
 
         public bool TryRecord(Guid orderId, Guid dishId, int salePriceCents, bool accepted)
+            => TryRecord(orderId, dishId, salePriceCents, accepted ? salePriceCents : 0, accepted, Array.Empty<Guid>());
+
+        public bool TryRecord(Guid orderId, Guid dishId, int basePriceCents, int paymentCents, bool accepted, IReadOnlyList<Guid> unitIds)
         {
-            if (IsDaySettled || orderId == Guid.Empty || dishId == Guid.Empty || salePriceCents <= 0 ||
+            if (IsDaySettled || orderId == Guid.Empty || dishId == Guid.Empty || basePriceCents <= 0 ||
+                paymentCents < 0 || paymentCents > basePriceCents || (!accepted && paymentCents != 0) || unitIds == null ||
                 _processedOrders.Contains(orderId) || _soldDishes.Contains(dishId)) return false;
-            int payment = accepted ? salePriceCents : 0;
+            var seen = new HashSet<Guid>();
+            foreach (Guid unitId in unitIds)
+                if (unitId == Guid.Empty || !seen.Add(unitId) || _soldUnits.Contains(unitId)) return false;
+            int payment = paymentCents;
             if (BalanceCents > long.MaxValue - payment) return false;
             _processedOrders.Add(orderId);
             if (accepted) _soldDishes.Add(dishId);
+            if (accepted) foreach (Guid unitId in unitIds) _soldUnits.Add(unitId);
             BalanceCents += payment;
             if (accepted) _transactions.Add(new LedgerTransaction(DayNumber, orderId, dishId, LedgerCategory.Sales, payment));
             return true;

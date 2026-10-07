@@ -7,6 +7,8 @@ namespace ZeroStarRestaurant.Food
     {
         public const double AbsoluteZeroCelsius = -273.15;
         public Guid InstanceId { get; }
+        public bool IsSold { get; private set; }
+        internal void MarkSold() => IsSold = true;
         internal Guid? AssemblyOwnerId { get; private set; }
         public FoodProfile Profile { get; }
         public double AgeSeconds { get; private set; }
@@ -90,6 +92,7 @@ namespace ZeroStarRestaurant.Food
 
         internal bool TryClaimAssembly(Guid owner)
         {
+            if (IsSold) return false;
             if (AssemblyOwnerId.HasValue && AssemblyOwnerId.Value != owner) return false;
             AssemblyOwnerId = owner;
             return true;

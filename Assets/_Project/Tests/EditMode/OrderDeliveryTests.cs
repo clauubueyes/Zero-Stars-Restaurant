@@ -27,6 +27,10 @@ namespace ZeroStarRestaurant.Tests
             dish.TrySetOrder(components.Select(food => food.InstanceId).ToArray(), true);
             Assert.That(dish.TryFinalize(new[] { Hamburger, Cheeseburger }), Is.True); return dish;
         }
+        private static DishState IrrelevantDish()
+        {
+            var dish = new DishState(); dish.TryAdd(Food("tomato")); dish.TryFinalize(new[] { Hamburger, Cheeseburger }); return dish;
+        }
         private static OrderState Order(bool cheese = false, Guid? id = null) => new OrderState(new OrderOffer(cheese ? Cheeseburger : Hamburger, cheese ? 650 : 500), id);
 
         [Test]
@@ -57,15 +61,15 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void WrongKnownDishRejectsWithoutSellingOrChangingBalanceAndMayBeOfferedToANewOrder()
+        public void IrrelevantDishRejectsWithoutSellingOrChangingBalanceAndMayBeOfferedToANewOrder()
         {
-            var ledger = new PaymentLedger(); DishState hamburger = Dish(); var order = Order(true);
+            var ledger = new PaymentLedger(); DishState hamburger = IrrelevantDish(); var order = Order(true);
             Assert.That(OrderDelivery.TryComplete(order, hamburger, ledger, out OrderResult result), Is.True);
             Assert.That(result.Evaluation.CorrectOrder, Is.False); Assert.That(result.Accepted, Is.False);
             Assert.That(result.PaymentCents, Is.Zero); Assert.That(ledger.BalanceCents, Is.Zero);
             Assert.That(hamburger.IsSold, Is.False); Assert.That(hamburger.IsDisposed, Is.False);
-            Assert.That(OrderDelivery.TryComplete(Order(), hamburger, ledger, out _), Is.True);
-            Assert.That(ledger.BalanceCents, Is.EqualTo(500));
+            Assert.That(OrderDelivery.TryComplete(new OrderState(new OrderOffer(new DishProfile("tomato", "Tomato", new[] { "tomato" }), 100)), hamburger, ledger, out _), Is.True);
+            Assert.That(ledger.BalanceCents, Is.EqualTo(100));
         }
 
         [Test]
@@ -130,7 +134,7 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void RejectedOrderAlsoClosesExactlyOnce()
         {
-            var ledger = new PaymentLedger(); var order = Order(true); var dish = Dish();
+            var ledger = new PaymentLedger(); var order = Order(true); var dish = IrrelevantDish();
             Assert.That(OrderDelivery.TryComplete(order, dish, ledger, out _), Is.True);
             Assert.That(OrderDelivery.TryComplete(order, Dish(true), ledger, out _), Is.False);
             Assert.That(OrderDelivery.TryComplete(Order(true, order.InstanceId), Dish(true), ledger, out _), Is.False);
@@ -172,7 +176,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(visit.Arrive(), Is.True); Assert.That(visit.BeginWaiting(), Is.True);
             Assert.That(visit.Receive(), Is.True); Assert.That(visit.BeginEvaluation(), Is.True);
             Assert.That(visit.Resolve(), Is.False);
-            Assert.That(OrderDelivery.TryComplete(order, Dish(), new PaymentLedger(), out _), Is.True);
+            Assert.That(OrderDelivery.TryComplete(order, reject ? IrrelevantDish() : Dish(), new PaymentLedger(), out _), Is.True);
             Assert.That(visit.Resolve(), Is.True); Assert.That(visit.Stage, Is.EqualTo(reject ? CustomerStage.Reject : CustomerStage.Pay));
             Assert.That(visit.Receive(), Is.False); Assert.That(visit.ResumeWaiting(), Is.False);
             Assert.That(visit.BeginLeaving(), Is.True); Assert.That(visit.Finish(), Is.True);
