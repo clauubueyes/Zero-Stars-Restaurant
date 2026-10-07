@@ -18,18 +18,10 @@ namespace ZeroStarRestaurant.Tests
         [TearDown] public void TearDown() => EditorSceneManager.ClosePreviewScene(_scene);
         private T[] Components<T>() where T : Component => _scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
         [Test]
-        public void EveryStationHasACleanSupplyAndFreeAssemblyUsesTheSameSimulationAndRecipes()
+        public void NoFreeTrayOrStationClaimsAndFreeAssemblyUsesTheSameSimulationAndRecipes()
         {
-            AssemblySurface[] surfaces = Components<AssemblySurface>(); Assert.That(surfaces, Has.Length.EqualTo(3));
-            foreach (AssemblySurface surface in surfaces)
-            {
-                DishTraySupply supply = surface.GetComponent<DishTraySupply>(); Assert.That(supply, Is.Not.Null);
-                var data = new SerializedObject(supply);
-                Assert.That(data.FindProperty("_surface").objectReferenceValue, Is.SameAs(surface));
-                var prefab = (DishItem)data.FindProperty("_emptyTrayPrefab").objectReferenceValue;
-                Assert.That(AssetDatabase.GetAssetPath(prefab), Is.EqualTo(PhysicalInteractionPolishBuilder.TrayPrefabPath));
-                Assert.That(prefab.gameObject.activeSelf, Is.False); Assert.That(prefab.GetComponentsInChildren<FoodItem>(true), Is.Empty);
-            }
+            Assert.That(Components<AssemblySurface>(), Is.Empty); Assert.That(Components<DishTraySupply>(), Is.Empty);
+            Assert.That(Components<PlateItem>(), Is.Empty); Assert.That(Components<DishItem>(), Is.Empty);
             PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
             var assembly = new SerializedObject(physical);
             Assert.That(assembly.FindProperty("_simulation").objectReferenceValue, Is.SameAs(Components<FoodSimulation>().Single()));
@@ -42,8 +34,10 @@ namespace ZeroStarRestaurant.Tests
         public void InstallingPolishAgainPreservesSceneObjectsAndGuids()
         {
             Component[] before = Components<Component>();
+            var poses = Components<Transform>().ToDictionary(item => item, item => (item.position, item.rotation, item.localScale));
             PhysicalInteractionPolishBuilder.ConfigureScene(_scene); PhysicalInteractionPolishBuilder.ConfigureScene(_scene);
             Assert.That(Components<Component>(), Is.EquivalentTo(before));
+            foreach (var pair in poses) Assert.That((pair.Key.position, pair.Key.rotation, pair.Key.localScale), Is.EqualTo(pair.Value), pair.Key.name);
         }
     }
 }

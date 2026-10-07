@@ -92,7 +92,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_station.LastMessage, Does.Contain("Insufficient")); Assert.That(_service.Ledger.BalanceCents, Is.Zero);
             Assert.That(_simulation.Foods.Count, Is.EqualTo(1)); Assert.That(first.State.InstanceId, Is.EqualTo(id));
             Assert.That(Components<FoodItem>().Count(food => food.State != null), Is.EqualTo(1));
-            Assert.That(_station.TryPurchase(-1, out _), Is.False); Assert.That(_station.TryPurchase(3, out _), Is.False);
+            Assert.That(_station.TryPurchase(-1, out _), Is.False); Assert.That(_station.TryPurchase(_station.ProductCount), Is.False);
             yield return null;
         }
 
@@ -162,7 +162,7 @@ namespace ZeroStarRestaurant.Tests
             food.transform.position = new Vector3(-3, 1.2f, 0); Physics.SyncTransforms();
             double frozen = state.TemperatureCelsius; _simulation.Advance(20); age += 20;
             Assert.That(state.TemperatureCelsius, Is.GreaterThan(frozen));
-            food.transform.position = new Vector3(-2.5f, 1.07f, 3.7f); Physics.SyncTransforms();
+            food.transform.position = Components<GrillHeatSource>().Single().transform.position + new Vector3(-.5f, 1.07f, 0); Physics.SyncTransforms();
             for (int frame = 0; frame < 45; frame++) yield return new WaitForFixedUpdate();
             Assert.That(Components<GrillHeatSource>().Single().TryGetEnvironment(food, out _), Is.True);
             for (int step = 0; step < 50 && cooking.Stage != CookingStage.Cooked; step++)
@@ -177,7 +177,8 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator PurchasedIngredientsStoreCookAssembleDeliverPayOnceAndFundAnotherPurchase()
         {
             _service.Advance(1); _service.Advance(100); _service.Advance(1);
-            AssemblySurface surface = Components<AssemblySurface>().OrderBy(item => item.name).Last();
+            BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
+            PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
             FoodItem bottom = Buy(0, new Vector3(-5, 1.12f, -3.75f));
             FoodItem patty = Buy(1, new Vector3(-2.5f, 1.07f, 3.7f));
             FoodItem top = Buy(0, new Vector3(-3, 1.12f, -3.75f));
@@ -202,15 +203,14 @@ namespace ZeroStarRestaurant.Tests
                 _player.transform.position = new Vector3(food.transform.position.x, 0.03f, food.transform.position.z - 1.5f);
                 _view.LookAt(food.transform.position); Physics.SyncTransforms();
                 Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
-                _player.transform.position = new Vector3(surface.Dish.transform.position.x, 0.03f, 1.95f);
-                _view.LookAt(surface.Dish.transform.position); Physics.SyncTransforms();
+                _player.transform.position = new Vector3(support.transform.position.x, 0.03f, support.transform.position.z - 1.75f);
+                _view.LookAt(support.transform.position); Physics.SyncTransforms();
                 Assert.That(assembly.TryPlace(), Is.True);
                 for (int frame = 0; frame < 10; frame++) yield return new WaitForFixedUpdate();
             }
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
-            surface.RefreshComposition(); Assert.That(surface.PreviewDefinition?.DisplayName, Is.EqualTo("Hamburger"));
-            Assert.That(surface.TryInteract(new InteractionContext(_player.transform, _carry)), Is.True);
-            DishItem dish = surface.Dish; Assert.That(dish.State.Components, Is.EqualTo(originalStates));
+            Assert.That(physical.PreviewName(top), Is.EqualTo("Hamburger"));
+            Assert.That(physical.TryFinalize(top, out DishItem dish), Is.True); Assert.That(dish.State.Components, Is.EqualTo(originalStates));
             Vector3 pickupSpot = _player.transform.position;
             Assert.That(_carry.TryPickUp(dish.GetComponent<Pickup>()), Is.True);
             Quaternion start = _view.rotation;

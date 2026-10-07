@@ -31,14 +31,29 @@ namespace ZeroStarRestaurant.Dishes
             for (int index = 0; index < stack.Count; index++)
                 foreach (FoodItem candidate in _simulation.Foods)
                     if (Eligible(candidate) && !stack.Contains(candidate) && Touching(stack[index], candidate)) stack.Add(candidate);
-            stack.Sort((a, b) =>
+            Sort(stack);
+            if (!TrySupport(stack[0], stack, out Collider support)) { stack.Clear(); return stack; }
+            PlateItem plate = support.GetComponentInParent<PlateItem>();
+            if (plate != null)
+            {
+                if (!plate.CanAttach) { stack.Clear(); return stack; }
+                // A real utensil groups food it physically supports, unlike a broad worktop area.
+                foreach (FoodItem candidate in _simulation.Foods)
+                    if (Eligible(candidate) && !stack.Contains(candidate) &&
+                        RestsOn(candidate, plate.GetComponent<BoxCollider>())) stack.Add(candidate);
+                for (int index = 0; index < stack.Count; index++)
+                    foreach (FoodItem candidate in _simulation.Foods)
+                        if (Eligible(candidate) && !stack.Contains(candidate) && Touching(stack[index], candidate)) stack.Add(candidate);
+                Sort(stack);
+            }
+            return stack;
+        }
+
+        private static void Sort(List<FoodItem> stack) => stack.Sort((a, b) =>
             {
                 int height = a.GetComponent<Rigidbody>().worldCenterOfMass.y.CompareTo(b.GetComponent<Rigidbody>().worldCenterOfMass.y);
                 return height != 0 ? height : a.State.InstanceId.CompareTo(b.State.InstanceId);
             });
-            if (!HasSupport(stack)) stack.Clear();
-            return stack;
-        }
 
         private static bool Contains(IReadOnlyList<FoodItem> foods, FoodItem food)
         { foreach (FoodItem unit in foods) if (unit == food) return true; return false; }
@@ -63,25 +78,60 @@ namespace ZeroStarRestaurant.Dishes
         {
             BoundsFor(a, out Bounds first); BoundsFor(b, out Bounds second);
             float gap = Mathf.Min(Mathf.Abs(first.max.y - second.min.y), Mathf.Abs(second.max.y - first.min.y));
-            return gap <= _contactTolerance && first.min.x < second.max.x && first.max.x > second.min.x &&
-                first.min.z < second.max.z && first.max.z > second.min.z;
+            if (gap > _contactTolerance || first.min.x >= second.max.x || first.max.x <= second.min.x ||
+                first.min.z >= second.max.z || first.max.z <= second.min.z) return false;
+            FoodItem upper = first.center.y >= second.center.y ? a : b;
+            FoodItem lower = upper == a ? b : a;
+            foreach (Collider collider in lower.GetComponentsInChildren<Collider>())
+                if (collider.enabled && !collider.isTrigger && RestsOn(upper, collider)) return true;
+            return false;
         }
 
-        private bool HasSupport(List<FoodItem> stack)
+        private IEnumerable<Vector3> BottomPoints(FoodItem food)
         {
-            BoundsFor(stack[0], out Bounds bottom);
-            Vector3 start = new Vector3(bottom.center.x, bottom.min.y + _contactTolerance, bottom.center.z);
-            RaycastHit? nearest = null;
-            foreach (RaycastHit hit in Physics.RaycastAll(start, Vector3.down, _contactTolerance * 2f,
-                ~0, QueryTriggerInteraction.Ignore))
+            foreach (Collider shape in food.GetComponentsInChildren<Collider>())
             {
-                FoodItem food = hit.collider.GetComponentInParent<FoodItem>();
-                if (food != null && stack.Contains(food)) continue;
-                if (!nearest.HasValue || hit.distance < nearest.Value.distance) nearest = hit;
+                if (!shape.enabled || shape.isTrigger) continue;
+                Bounds bounds = shape.bounds;
+                for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++)
+                {
+                    Vector3 start = new Vector3(bounds.center.x + x * bounds.extents.x * .8f,
+                        bounds.min.y - .1f, bounds.center.z + z * bounds.extents.z * .8f);
+                    if (shape.Raycast(new Ray(start, Vector3.up), out RaycastHit bottom, bounds.size.y + .2f) && bottom.normal.y <= -.6f)
+                        yield return bottom.point;
+                }
             }
-            return nearest.HasValue && nearest.Value.normal.y >= .6f &&
-                nearest.Value.collider.GetComponentInParent<FoodItem>() == null &&
-                nearest.Value.collider.GetComponentInParent<CharacterController>() == null;
+        }
+
+        private bool RestsOn(FoodItem food, Collider support)
+        {
+            foreach (Vector3 bottom in BottomPoints(food))
+                if (support.Raycast(new Ray(bottom + Vector3.up * _contactTolerance, Vector3.down), out RaycastHit hit,
+                    _contactTolerance * 2f) && hit.normal.y >= .6f) return true;
+            return false;
+        }
+
+        private bool TrySupport(FoodItem food, IReadOnlyList<FoodItem> stack, out Collider support)
+        {
+            support = null;
+            foreach (Vector3 bottom in BottomPoints(food))
+            {
+                RaycastHit? nearest = null;
+                foreach (RaycastHit hit in Physics.RaycastAll(bottom + Vector3.up * _contactTolerance,
+                    Vector3.down, _contactTolerance * 2f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    FoodItem unit = hit.collider.GetComponentInParent<FoodItem>();
+                    if (unit != null && Contains(stack, unit)) continue;
+                    if (!nearest.HasValue || hit.distance < nearest.Value.distance) nearest = hit;
+                }
+                if (!nearest.HasValue || nearest.Value.normal.y < .6f ||
+                    nearest.Value.collider.GetComponentInParent<FoodItem>() != null ||
+                    nearest.Value.collider.GetComponentInParent<CharacterController>() != null ||
+                    nearest.Value.collider.GetComponentInParent<DishItem>() != null) continue;
+                support = nearest.Value.collider;
+                return true;
+            }
+            return false;
         }
 
         private bool Compose(DishState state, IReadOnlyList<FoodItem> stack)
@@ -162,13 +212,16 @@ namespace ZeroStarRestaurant.Dishes
             dish = null;
             IReadOnlyList<FoodItem> stack = FindStack(focus);
             if (stack.Count == 0) return false;
+            if (!TrySupport(stack[0], stack, out Collider support)) return false;
+            PlateItem plate = support.GetComponentInParent<PlateItem>();
             // Invisible transport root: the original food visuals are the dish. No tray/food cloning.
             var root = new GameObject("Physical Dish", typeof(Rigidbody), typeof(BoxCollider), typeof(DishItem));
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, gameObject.scene);
             root.transform.position = stack[0].transform.position;
             root.GetComponent<BoxCollider>().size = Vector3.one * .001f;
             Physics.SyncTransforms();
             DishItem result = root.GetComponent<DishItem>();
-            if (!Compose(result.State, stack) || !result.FinalizeAssembly(stack, Profiles()))
+            if (!Compose(result.State, stack) || !result.FinalizeAssembly(stack, Profiles(), plate))
             { result.State.Dispose(); root.SetActive(false); Destroy(root); return false; }
             dish = result;
             return true;

@@ -112,7 +112,9 @@ namespace ZeroStarRestaurant.Dishes
             // Release any previous draft's claim on this held unit before selecting the current first hit.
             foreach (AssemblySurface candidate in _surfaces) if (candidate != null) candidate.RefreshComposition();
             AssemblySurface surface = FindFocusedSurface();
-            return surface != null && surface.TryPlaceHeld(_carry);
+            if (surface != null) return surface.TryPlaceHeld(_carry);
+            return _physicalAssembly != null && _detector.TryDetectHit(out RaycastHit hit, _carry != null ? _carry.HeldBody : null) &&
+                _physicalAssembly.TryPlaceHeld(_carry, hit, float.PositiveInfinity);
         }
 
         public string AssistedPlacementPrompt

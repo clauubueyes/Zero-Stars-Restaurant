@@ -6,6 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Customers;
+using ZeroStarRestaurant.Dishes;
 using ZeroStarRestaurant.Economy;
 using ZeroStarRestaurant.Editor;
 using ZeroStarRestaurant.Food;
@@ -44,8 +45,11 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(food.FindProperty("_initialFreshnessPercent").floatValue, Is.EqualTo(100));
                 Assert.That(food.FindProperty("_initiallyContaminated").boolValue, Is.False);
             }
-            IngredientPurchaseButton[] buttons = Components<IngredientPurchaseButton>(); Assert.That(buttons, Has.Length.EqualTo(3));
-            Assert.That(buttons.Select(button => new SerializedObject(button).FindProperty("_productIndex").intValue), Is.EquivalentTo(new[] { 0, 1, 2 }));
+            PlateProduct plate = (PlateProduct)station.FindProperty("_plateProduct").objectReferenceValue;
+            Assert.DoesNotThrow(plate.Validate); Assert.That(plate.PriceCents, Is.EqualTo(50));
+            Assert.That(plate.Prefab.GetComponent<DishItem>(), Is.Null); Assert.That(plate.Prefab.GetComponent<FoodItem>(), Is.Null);
+            IngredientPurchaseButton[] buttons = Components<IngredientPurchaseButton>(); Assert.That(buttons, Has.Length.EqualTo(4));
+            Assert.That(buttons.Select(button => new SerializedObject(button).FindProperty("_productIndex").intValue), Is.EquivalentTo(new[] { 0, 1, 2, 3 }));
             foreach (IngredientPurchaseButton button in buttons)
             {
                 Assert.That(button.GetComponent<BoxCollider>().isTrigger, Is.False);
@@ -81,6 +85,19 @@ namespace ZeroStarRestaurant.Tests
             {
                 var data = new SerializedObject(copy); data.FindProperty("_priceCents").intValue = price; data.ApplyModifiedPropertiesWithoutUndo();
                 Assert.Throws<ArgumentException>(copy.Validate); Assert.That(original.PriceCents, Is.EqualTo(35));
+            }
+            finally { Object.DestroyImmediate(copy); }
+        }
+
+        [TestCase(0)] [TestCase(-1)]
+        public void PlateRejectsInvalidPriceWithoutChangingItsSharedAsset(int price)
+        {
+            PlateProduct original = AssetDatabase.LoadAssetAtPath<PlateProduct>(PlateProcurementBuilder.ProductPath);
+            PlateProduct copy = Object.Instantiate(original);
+            try
+            {
+                var data = new SerializedObject(copy); data.FindProperty("_priceCents").intValue = price; data.ApplyModifiedPropertiesWithoutUndo();
+                Assert.Throws<ArgumentException>(copy.Validate); Assert.That(original.PriceCents, Is.EqualTo(50));
             }
             finally { Object.DestroyImmediate(copy); }
         }

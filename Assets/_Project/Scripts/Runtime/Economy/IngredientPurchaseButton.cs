@@ -16,6 +16,6 @@ namespace ZeroStarRestaurant.Economy
         }
         public override bool CanInteract(InteractionContext context) => isActiveAndEnabled && _station != null &&
             _station.IsAvailable(_productIndex) && context.Carry != null && context.Carry.isActiveAndEnabled && !context.Carry.HasHeldObject;
-        public override bool TryInteract(InteractionContext context) => CanInteract(context) && _station.TryPurchase(_productIndex, out _);
+        public override bool TryInteract(InteractionContext context) => CanInteract(context) && _station.TryPurchase(_productIndex);
     }
 }

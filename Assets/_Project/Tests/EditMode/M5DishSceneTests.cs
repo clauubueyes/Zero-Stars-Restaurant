@@ -19,22 +19,16 @@ namespace ZeroStarRestaurant.Tests
         private T[] Components<T>() where T : Component => _scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>()).ToArray();
 
         [Test]
-        public void ThreeAssemblyStationsHaveLocalTraySensorDefinitionsAndTheExistingSingleClock()
+        public void ThreePreparationSupportsAreFixedGeometryWithoutFreePlateOrOrderIdentity()
         {
-            AssemblySurface[] surfaces = Components<AssemblySurface>();
-            Assert.That(surfaces, Has.Length.EqualTo(3));
-            Assert.That(Components<DishItem>(), Has.Length.EqualTo(3));
-            foreach (AssemblySurface surface in surfaces)
+            Assert.That(Components<AssemblySurface>(), Is.Empty); Assert.That(Components<DishItem>(), Is.Empty);
+            Transform[] supports = Components<Transform>().Where(item => item.name.StartsWith("PrepSupport")).ToArray();
+            Assert.That(supports, Has.Length.EqualTo(3));
+            foreach (Transform support in supports)
             {
-                var data = new SerializedObject(surface);
-                var dish = (DishItem)data.FindProperty("_dish").objectReferenceValue;
-                Assert.That(dish.GetComponent<Rigidbody>().isKinematic, Is.True);
-                Assert.That(dish.GetComponent<Pickup>(), Is.Null);
-                var zone = (BoxCollider)data.FindProperty("_assemblyZone").objectReferenceValue;
-                Assert.That(zone.isTrigger, Is.True);
-                Assert.That(zone.size.y, Is.GreaterThan(0.7f));
-                Assert.That(data.FindProperty("_simulation").objectReferenceValue, Is.EqualTo(Components<FoodSimulation>().Single()));
-                Assert.That(data.FindProperty("_definitions").arraySize, Is.EqualTo(2));
+                Assert.That(support.GetComponent<Rigidbody>().isKinematic, Is.True);
+                Assert.That(support.GetComponent<Pickup>(), Is.Null); Assert.That(support.GetComponent<PlateItem>(), Is.Null);
+                Assert.That(support.GetComponent<BoxCollider>().isTrigger, Is.False);
             }
             Assert.That(Components<FoodItem>(), Has.Length.EqualTo(18));
             Assert.That(Components<FoodItem>().Count(food => food.Definition.Id == "food.bun"), Is.GreaterThanOrEqualTo(4));
@@ -54,10 +48,7 @@ namespace ZeroStarRestaurant.Tests
             var assembly = Components<DishAssemblyInteraction>().Single();
             Assert.That(feedback.FindProperty("_assembly").objectReferenceValue, Is.EqualTo(assembly));
             var assemblyData = new SerializedObject(assembly);
-            Assert.That(assemblyData.FindProperty("_surfaces").arraySize, Is.EqualTo(3));
-            for (int index = 0; index < 3; index++)
-                Assert.That(assemblyData.FindProperty("_surfaces").GetArrayElementAtIndex(index).objectReferenceValue,
-                    Is.InstanceOf<AssemblySurface>());
+            Assert.That(assemblyData.FindProperty("_surfaces").arraySize, Is.Zero);
             var actions = (UnityEngine.InputSystem.InputActionAsset)assemblyData.FindProperty("_inputActions").objectReferenceValue;
             Assert.That(actions.FindAction("Player/FinalizeDish").bindings.Single().path, Is.EqualTo("<Keyboard>/f"));
         }

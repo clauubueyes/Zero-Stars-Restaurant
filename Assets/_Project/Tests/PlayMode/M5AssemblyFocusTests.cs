@@ -19,7 +19,9 @@ namespace ZeroStarRestaurant.Tests
     public sealed class M5AssemblyFocusTests
     {
         private Scene _scene;
-        private AssemblySurface _surface;
+        private BoxCollider _support;
+        private PhysicalDishAssembly _physical;
+        private FoodItem _focus;
         private DishAssemblyInteraction _assembly;
         private InteractionDetector _detector;
         private PhysicalCarry _carry;
@@ -37,7 +39,8 @@ namespace ZeroStarRestaurant.Tests
             yield return null;
             Components<DevelopmentIngredientSupply>().Single().EnableForDevelopment();
             _scene.GetRootGameObjects().Single(root => root.name == "PhysicalTestObjects").SetActive(true);
-            _surface = Components<AssemblySurface>().OrderBy(surface => surface.name).First();
+            _support = Components<BoxCollider>().Single(item => item.name == "PrepSupport1");
+            _physical = Components<PhysicalDishAssembly>().Single();
             _assembly = Components<DishAssemblyInteraction>().Single();
             _detector = Components<InteractionDetector>().Single();
             _carry = Components<PhysicalCarry>().Single();
@@ -54,21 +57,21 @@ namespace ZeroStarRestaurant.Tests
             FoodItem[] buns = Components<FoodItem>().Where(food => food.Definition.Id == "food.bun").Take(2).ToArray();
             FoodItem beef = Components<FoodItem>().First(food => food.Definition.Id == "food.raw_beef_patty");
             FoodItem[] stack = { buns[0], beef, buns[1] };
-            float height = _surface.Dish.GetComponent<BoxCollider>().bounds.max.y;
+            float height = _support.bounds.max.y;
             foreach (FoodItem food in stack)
             {
                 Rigidbody body = food.GetComponent<Rigidbody>();
                 body.rotation = Quaternion.identity;
                 float half = food.GetComponent<BoxCollider>().bounds.extents.y;
-                body.position = new Vector3(_surface.Dish.transform.position.x, height + half + 0.003f, _surface.Dish.transform.position.z);
+                body.position = new Vector3(_support.transform.position.x, height + half + 0.003f, _support.transform.position.z);
                 body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
                 height += half * 2f + 0.003f;
             }
             Physics.SyncTransforms();
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
-            _surface.RefreshComposition();
-            Assert.That(_surface.PreviewDefinition?.DisplayName, Is.EqualTo("Hamburger"));
-            _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
+            _focus = buns[1];
+            Assert.That(_physical.PreviewName(_focus), Is.EqualTo("Hamburger"));
+            _player.transform.position = _support.transform.position + new Vector3(0f, -0.935f, -1.65f);
             _view.LookAt(buns[1].GetComponent<BoxCollider>().bounds.center);
             Physics.SyncTransforms();
         }
@@ -80,20 +83,19 @@ namespace ZeroStarRestaurant.Tests
             Interactable firstHit = _detector.Detect();
             Assert.That(firstHit, Is.TypeOf<Pickup>(), "The solid top bun really occludes the tray raycast.");
             Assert.That(firstHit.GetComponent<FoodItem>().Definition.Id, Is.EqualTo("food.bun"));
-            Assert.That(_assembly.FindFocusedSurface(), Is.SameAs(_surface));
-            Assert.That(_surface.ActionLabel + " " + _surface.DisplayName, Is.EqualTo("Finalize Hamburger"));
-            Assert.That(DishInspectionFeedback.RecognitionLabel(_surface.Dish, _surface), Is.EqualTo("Recognized: Hamburger"));
-            Assert.That(_assembly.ConfirmationPrompt(_surface), Is.EqualTo("[F] Finalize Hamburger"));
-            FoodState[] original = _surface.Dish.State.Components.ToArray();
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Does.Contain("Hamburger"));
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Does.Contain("[F] Finalize Hamburger"));
+            FoodState[] original = _physical.FindStack(_focus).Select(food => food.State).ToArray();
             Assert.That(_assembly.TryFinalize(), Is.True);
             Physics.SyncTransforms();
             Interactable aggregate = _detector.Detect();
-            Assert.That(aggregate, Is.SameAs(_surface.Dish.GetComponent<Pickup>()));
+            DishItem dish = aggregate.GetComponent<DishItem>();
+            Assert.That(dish, Is.Not.Null); Assert.That(dish.Plate, Is.Null);
             Assert.That(aggregate.ActionLabel + " " + aggregate.DisplayName, Is.EqualTo("Pick up Hamburger"));
-            Assert.That(_surface.Dish.State.Components, Is.EqualTo(original));
-            Assert.That(_surface.Dish.GetComponentsInChildren<FoodItem>().All(food => !food.GetComponent<Pickup>().enabled &&
+            Assert.That(dish.State.Components, Is.EqualTo(original));
+            Assert.That(dish.GetComponentsInChildren<FoodItem>().All(food => !food.GetComponent<Pickup>().enabled &&
                 food.GetComponentsInChildren<Collider>().All(collider => !collider.enabled)), Is.True);
-            Assert.That(_assembly.FindFocusedSurface(), Is.Null);
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null);
             Assert.That(_assembly.TryFinalize(), Is.False);
             Assert.That(aggregate.TryInteract(new InteractionContext(_player.transform, _carry)), Is.True);
             _carry.Drop();
@@ -105,53 +107,53 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator ContextNeverSeesThroughWallsUnrelatedObjectsOrBeyondReachAndRejectsOccupiedHands()
         {
             yield return StackHamburger();
-            Assert.That(_assembly.FindFocusedSurface(), Is.SameAs(_surface));
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Does.Contain("Hamburger"));
             Vector3 start = _view.position;
             var wall = new GameObject("Focus blocker", typeof(BoxCollider));
             SceneManager.MoveGameObjectToScene(wall, _scene);
             wall.transform.position = start + _view.forward * 0.4f;
             wall.transform.rotation = _view.rotation; wall.transform.localScale = new Vector3(0.6f, 0.6f, 0.04f);
             Physics.SyncTransforms();
-            Assert.That(_assembly.FindFocusedSurface(), Is.Null);
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null);
             Assert.That(_assembly.TryFinalize(), Is.False);
             wall.SetActive(false);
             var unrelated = Components<Pickup>().First(pickup => pickup.GetComponent<FoodItem>() == null);
             unrelated.Body.position = start + _view.forward * 0.65f; Physics.SyncTransforms();
             Assert.That(_detector.Detect(), Is.SameAs(unrelated));
-            Assert.That(_assembly.FindFocusedSurface(), Is.Null);
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null);
             unrelated.Body.position = start + Vector3.right * 5f; Physics.SyncTransforms();
             _player.transform.position -= _view.forward * 5f; Physics.SyncTransforms();
-            Assert.That(_assembly.FindFocusedSurface(), Is.Null);
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null);
             Assert.That(_assembly.TryFinalize(), Is.False);
             _player.transform.position += _view.forward * 5f; Physics.SyncTransforms();
             unrelated.Body.position = start + Vector3.left * 0.7f; Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(unrelated), Is.True);
-            Assert.That(_assembly.ConfirmationPrompt(_surface), Does.Contain("held object"));
+            Assert.That(_assembly.PhysicalConfirmationPrompt(), Is.Null, "Held hands cannot finalize.");
             Assert.That(_assembly.TryFinalize(), Is.False);
             _carry.Drop();
         }
 
         [UnityTest]
-        public IEnumerator QuickPlacementUsesTheActualFirstHitAndRejectsWallRangeAndDisabledSurface()
+        public IEnumerator QuickPlacementUsesTheActualFirstHitAndRejectsWallRangeAndDisabledAssembly()
         {
             FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
             _player.transform.position = new Vector3(food.transform.position.x, 0.03f, food.transform.position.z + 1.4f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
-            _player.transform.position = _surface.Dish.transform.position + new Vector3(0f, -0.935f, -1.65f);
-            _view.LookAt(_surface.Dish.transform.position); Physics.SyncTransforms();
-            Assert.That(_assembly.FindFocusedSurface(), Is.SameAs(_surface));
-            Assert.That(_assembly.ConfirmationPrompt(_surface), Does.Contain("Release LMB"));
+            _player.transform.position = _support.transform.position + new Vector3(0f, -0.935f, -1.65f);
+            _view.LookAt(_support.transform.position); Physics.SyncTransforms();
+            Assert.That(_assembly.FindFocusedSurface(), Is.Null, "Ordinary support needs no AssemblySurface.");
+            Assert.That(_physical.PreviewName(food), Is.Null, "Held food is not a composition.");
             var wall = new GameObject("Snap occlusion", typeof(BoxCollider)); SceneManager.MoveGameObjectToScene(wall, _scene);
             wall.transform.position = _view.position + _view.forward * 0.4f; wall.transform.localScale = Vector3.one * 0.25f;
             Physics.SyncTransforms(); Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_carry.HasHeldObject, Is.True);
             wall.SetActive(false); _player.transform.position += Vector3.back * 5f; Physics.SyncTransforms();
             Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_carry.HasHeldObject, Is.True);
             _player.transform.position += Vector3.forward * 5f; Physics.SyncTransforms();
-            _surface.enabled = false; Assert.That(_assembly.TryPlace(), Is.False); _surface.enabled = true;
+            _physical.enabled = false; Assert.That(_assembly.TryPlace(), Is.False); _physical.enabled = true;
             Assert.That(_assembly.TryPlace(), Is.True); Assert.That(_carry.HasHeldObject, Is.False);
-            Assert.That(_surface.Dish.State.Components.Single(), Is.SameAs(food.State));
-            Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_surface.Dish.State.Components.Count, Is.EqualTo(1));
+            Assert.That(_physical.FindStack(food).Single().State, Is.SameAs(food.State));
+            Assert.That(_assembly.TryPlace(), Is.False); Assert.That(_physical.FindStack(food).Count, Is.EqualTo(1));
             yield return null;
         }
 
@@ -172,7 +174,7 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(owned.FindAction("Player/PlaceIngredient").IsPressed(), Is.True);
                 Assert.That(owned.FindAction("Player/Throw").IsPressed(), Is.False);
                 typeof(DishAssemblyInteraction).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_assembly, null);
-                Assert.That(_surface.Dish.State.Components, Is.Empty);
+                Assert.That(Components<DishItem>(), Is.Empty);
                 InputSystem.QueueStateEvent(mouse, new MouseState()); InputSystem.Update();
                 Assert.That(owned.FindAction("Player/PlaceIngredient").IsPressed(), Is.False);
             }
@@ -181,21 +183,22 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
-        public IEnumerator SteadyReleaseAssistanceUsesTheExistingTrayAndPreservesTheIngredient()
+        public IEnumerator SteadyReleaseAssistanceUsesOrdinarySupportAndPreservesTheIngredient()
         {
             FoodItem food = Components<FoodItem>().First(item => item.Definition.Id == "food.bun");
             FoodState original = food.State;
             _player.transform.position = new Vector3(food.transform.position.x, .03f, food.transform.position.z + 1.4f);
             _view.LookAt(food.transform.position); Physics.SyncTransforms();
             Assert.That(_carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
-            _player.transform.position = _surface.Dish.transform.position + new Vector3(0, -.935f, -1.65f);
-            _view.LookAt(_surface.Dish.transform.position);
-            _carry.HeldBody.position = _surface.Dish.transform.position + Vector3.up * .4f; Physics.SyncTransforms();
+            _player.transform.position = _support.transform.position + new Vector3(0, -.935f, -1.65f);
+            _view.LookAt(_support.transform.position);
+            _carry.HeldBody.position = _support.transform.position + Vector3.up * .4f; Physics.SyncTransforms();
             Assert.That(_assembly.AssistedPlacementPrompt, Does.Contain("place"));
             Assert.That(_assembly.TryAssistRelease(), Is.True); Assert.That(_carry.HasHeldObject, Is.False);
-            Assert.That(_surface.Dish.State.Components.Single(), Is.SameAs(original));
-            Assert.That(food.transform.position.x, Is.EqualTo(_surface.Dish.transform.position.x).Within(.001));
-            Assert.That(food.transform.position.z, Is.EqualTo(_surface.Dish.transform.position.z).Within(.001));
+            Assert.That(_physical.FindStack(food).Single().State, Is.SameAs(original));
+            Assert.That(food.transform.position.x, Is.EqualTo(_support.bounds.center.x).Within(.15));
+            Assert.That(food.transform.position.z, Is.EqualTo(_support.bounds.center.z).Within(.15));
+            Assert.That(food.GetComponent<BoxCollider>().bounds.min.y, Is.EqualTo(_support.bounds.max.y + .004f).Within(.005));
             yield return new WaitForFixedUpdate();
         }
 
@@ -220,7 +223,7 @@ namespace ZeroStarRestaurant.Tests
                 InputSystem.Update();
                 Assert.That(owned.FindAction("Player/FinalizeDish").IsPressed(), Is.True);
                 typeof(DishAssemblyInteraction).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(_assembly, null);
-                Assert.That(_surface.Dish.State.IsFinalized, Is.False, "Cursor/control released: F cannot confirm.");
+                Assert.That(Components<DishItem>(), Is.Empty, "Cursor/control released: F cannot confirm.");
                 InputSystem.QueueStateEvent(keyboard, new KeyboardState()); InputSystem.Update();
                 Assert.That(owned.FindAction("Player/FinalizeDish").IsPressed(), Is.False);
             }

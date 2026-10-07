@@ -130,18 +130,20 @@ namespace ZeroStarRestaurant.Tests
         }
         private IEnumerator BuildDish(int[] products, System.Action<DishItem> completed)
         {
-            AssemblySurface surface = Components<AssemblySurface>().Where(item => item.Dish != null && !item.Dish.State.IsFinalized).OrderBy(item => item.name).Last();
-            IngredientPurchaseStation station = Components<IngredientPurchaseStation>().Single(); float top = surface.Dish.GetComponent<BoxCollider>().bounds.max.y;
+            BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
+            PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
+            FoodItem last = null;
+            IngredientPurchaseStation station = Components<IngredientPurchaseStation>().Single(); float top = support.bounds.max.y;
             foreach (int product in products)
             {
                 Assert.That(station.TryPurchase(product, out FoodItem item), Is.True, station.LastMessage);
                 if (product == 1) { item.State.SetTemperature(120); item.State.Advance(45, new ThermalEnvironment(120, allowsCooking: true), 0); }
                 float half = item.GetComponent<BoxCollider>().bounds.extents.y;
-                item.GetComponent<Rigidbody>().position = new Vector3(surface.Dish.transform.position.x, top + half + 0.003f, surface.Dish.transform.position.z);
-                top += 2 * half + 0.003f; Physics.SyncTransforms();
+                item.GetComponent<Rigidbody>().position = new Vector3(support.transform.position.x, top + half + 0.003f, support.transform.position.z);
+                top += 2 * half + 0.003f; last = item; Physics.SyncTransforms();
             }
             for (int frame = 0; frame < 40; frame++) yield return new WaitForFixedUpdate();
-            surface.RefreshComposition(); Assert.That(surface.TryInteract(new InteractionContext(null, null)), Is.True); completed(surface.Dish);
+            Assert.That(physical.TryFinalize(last, out DishItem dish), Is.True); completed(dish);
         }
         private void PlaceAndPoll(DishItem dish)
         {

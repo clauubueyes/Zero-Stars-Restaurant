@@ -34,30 +34,6 @@ namespace ZeroStarRestaurant.Editor
         {
             T[] Components<T>() where T : Component => scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<T>(true)).ToArray();
             AssemblySurface[] surfaces = Components<AssemblySurface>();
-            DishItem prefab = AssetDatabase.LoadAssetAtPath<DishItem>(TrayPrefabPath);
-            if (prefab == null)
-            {
-                DishItem source = new SerializedObject(surfaces.First()).FindProperty("_dish").objectReferenceValue as DishItem;
-                if (source == null || source.GetComponentsInChildren<FoodItem>(true).Length != 0)
-                    throw new InvalidOperationException("Only a clean authored tray can become the supply prefab.");
-                GameObject copy = UnityEngine.Object.Instantiate(source.gameObject);
-                try
-                {
-                    copy.name = "EmptyDishTray"; copy.transform.SetParent(null);
-                    copy.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity); copy.SetActive(false);
-                    PrefabUtility.SaveAsPrefabAsset(copy, TrayPrefabPath);
-                }
-                finally { UnityEngine.Object.DestroyImmediate(copy); }
-                prefab = AssetDatabase.LoadAssetAtPath<DishItem>(TrayPrefabPath);
-            }
-            foreach (AssemblySurface surface in surfaces)
-            {
-                if (surface.GetComponent<DishTraySupply>() != null) continue;
-                var data = new SerializedObject(surface.gameObject.AddComponent<DishTraySupply>());
-                data.FindProperty("_surface").objectReferenceValue = surface;
-                data.FindProperty("_emptyTrayPrefab").objectReferenceValue = prefab;
-                data.ApplyModifiedPropertiesWithoutUndo();
-            }
             DishAssemblyInteraction input = Components<DishAssemblyInteraction>().Single();
             PhysicalDishAssembly physical = input.GetComponent<PhysicalDishAssembly>();
             if (physical == null)
@@ -72,10 +48,29 @@ namespace ZeroStarRestaurant.Editor
                 data.ApplyModifiedPropertiesWithoutUndo();
             }
             var inputData = new SerializedObject(input);
-            inputData.FindProperty("_physicalAssembly").objectReferenceValue = physical; inputData.ApplyModifiedPropertiesWithoutUndo();
+            inputData.FindProperty("_physicalAssembly").objectReferenceValue = physical;
+            inputData.FindProperty("_surfaces").arraySize = 0;
+            inputData.ApplyModifiedPropertiesWithoutUndo();
+            // Keep every authored pose and collider: these are fixed preparation supports,
+            // not free movable plates, draft order identities or volume-based assembly stations.
+            foreach (AssemblySurface surface in surfaces)
+            {
+                DishItem draft = surface.Dish;
+                if (draft != null)
+                {
+                    if (draft.GetComponentsInChildren<FoodItem>(true).Length != 0)
+                        throw new InvalidOperationException("Save an empty preparation scene before adapting supports.");
+                    draft.gameObject.name = "PrepSupport" + surface.name.Replace("AssemblyStation", "");
+                    UnityEngine.Object.DestroyImmediate(draft);
+                }
+                if (surface.GetComponent<DishTraySupply>() != null)
+                    UnityEngine.Object.DestroyImmediate(surface.GetComponent<DishTraySupply>());
+                UnityEngine.Object.DestroyImmediate(surface);
+            }
             var physicalInputData = new SerializedObject(Components<InteractionInput>().Single());
             physicalInputData.FindProperty("_assembly").objectReferenceValue = input;
             physicalInputData.ApplyModifiedPropertiesWithoutUndo();
+            PlateProcurementBuilder.ConfigureScene(scene);
             EditorSceneManager.MarkSceneDirty(scene);
         }
     }

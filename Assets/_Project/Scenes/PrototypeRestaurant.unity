@@ -1091,9 +1091,8 @@ GameObject:
   - component: {fileID: 509102320}
   - component: {fileID: 509102323}
   - component: {fileID: 509102322}
-  - component: {fileID: 509102321}
   m_Layer: 0
-  m_Name: DraftTray2
+  m_Name: PrepSupport2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1115,18 +1114,6 @@ Transform:
   - {fileID: 2056322913}
   m_Father: {fileID: 1744261940}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &509102321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 509102319}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3763342aa8d547a38a2266d7ee6b1d80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishItem
 --- !u!65 &509102322
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2224,9 +2211,8 @@ GameObject:
   - component: {fileID: 755003094}
   - component: {fileID: 755003097}
   - component: {fileID: 755003096}
-  - component: {fileID: 755003095}
   m_Layer: 0
-  m_Name: DraftTray3
+  m_Name: PrepSupport3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2248,18 +2234,6 @@ Transform:
   - {fileID: 1231617915}
   m_Father: {fileID: 1504888344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &755003095
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755003093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3763342aa8d547a38a2266d7ee6b1d80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishItem
 --- !u!65 &755003096
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4961,8 +4935,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1504888344}
-  - component: {fileID: 1504888345}
-  - component: {fileID: 1504888346}
   m_Layer: 0
   m_Name: AssemblyStation3
   m_TagString: Untagged
@@ -4988,28 +4960,6 @@ Transform:
   - {fileID: 98444042}
   m_Father: {fileID: 623391879}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1504888345
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1504888343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f06d7db480c4dd28b79776f672e1148, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.AssemblySurface
-  _displayName: Assembly 3
-  _dish: {fileID: 755003095}
-  _assemblyZone: {fileID: 98444043}
-  _simulation: {fileID: 1710634242}
-  _definitions:
-  - {fileID: 11400000, guid: 3ba00c66be0433a4783a5c9ab3dc4456, type: 2}
-  - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
-  _heightBand: 0.02
-  _stackAlignmentTolerance: 0.18
-  _snapGap: 0.004
 --- !u!1 &1539741789
 GameObject:
   m_ObjectHideFlags: 0
@@ -5697,9 +5647,8 @@ GameObject:
   - component: {fileID: 1704361027}
   - component: {fileID: 1704361030}
   - component: {fileID: 1704361029}
-  - component: {fileID: 1704361028}
   m_Layer: 0
-  m_Name: DraftTray1
+  m_Name: PrepSupport1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5721,18 +5670,6 @@ Transform:
   - {fileID: 950394543}
   m_Father: {fileID: 2133772343}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1704361028
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1704361026}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3763342aa8d547a38a2266d7ee6b1d80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishItem
 --- !u!65 &1704361029
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5963,8 +5900,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1744261940}
-  - component: {fileID: 1744261941}
-  - component: {fileID: 1744261942}
   m_Layer: 0
   m_Name: AssemblyStation2
   m_TagString: Untagged
@@ -5990,28 +5925,6 @@ Transform:
   - {fileID: 1566869082}
   m_Father: {fileID: 623391879}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1744261941
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1744261939}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f06d7db480c4dd28b79776f672e1148, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.AssemblySurface
-  _displayName: Assembly 2
-  _dish: {fileID: 509102321}
-  _assemblyZone: {fileID: 1566869083}
-  _simulation: {fileID: 1710634242}
-  _definitions:
-  - {fileID: 11400000, guid: 3ba00c66be0433a4783a5c9ab3dc4456, type: 2}
-  - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
-  _heightBand: 0.02
-  _stackAlignmentTolerance: 0.18
-  _snapGap: 0.004
 --- !u!1 &1771164586
 GameObject:
   m_ObjectHideFlags: 0
@@ -7727,8 +7640,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2133772343}
-  - component: {fileID: 2133772344}
-  - component: {fileID: 2133772345}
   m_Layer: 0
   m_Name: AssemblyStation1
   m_TagString: Untagged
@@ -7754,28 +7665,6 @@ Transform:
   - {fileID: 435190365}
   m_Father: {fileID: 623391879}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2133772344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2133772342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f06d7db480c4dd28b79776f672e1148, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.AssemblySurface
-  _displayName: Assembly 1
-  _dish: {fileID: 1704361028}
-  _assemblyZone: {fileID: 435190366}
-  _simulation: {fileID: 1710634242}
-  _definitions:
-  - {fileID: 11400000, guid: 3ba00c66be0433a4783a5c9ab3dc4456, type: 2}
-  - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
-  _heightBand: 0.02
-  _stackAlignmentTolerance: 0.18
-  _snapGap: 0.004
 --- !u!114 &999000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7792,10 +7681,7 @@ MonoBehaviour:
   _detector: {fileID: 923074288}
   _carry: {fileID: 923074289}
   _inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  _surfaces:
-  - {fileID: 2133772344}
-  - {fileID: 1744261941}
-  - {fileID: 1504888345}
+  _surfaces: []
   _physicalAssembly: {fileID: 999000002}
 --- !u!1 &999010001
 GameObject:
@@ -11227,6 +11113,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f0c195401e4fc874192ac7da647456e2, type: 2}
   - {fileID: 11400000, guid: 2af78e37df862444ea30a8febf04ad3e, type: 2}
   - {fileID: 11400000, guid: c4efa42a11814d841a0856e756242c87, type: 2}
+  _plateProduct: {fileID: 11400000, guid: 8321d64ad185f1f45b2564828d4397f8, type: 2}
 --- !u!4 &1231204885
 Transform:
   m_ObjectHideFlags: 0
@@ -11250,6 +11137,8 @@ Transform:
   - {fileID: 385411404}
   - {fileID: 898515740}
   - {fileID: 1763743239}
+  - {fileID: 1968268536}
+  - {fileID: 1535797326}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1251817752
@@ -13857,48 +13746,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6d15001d70c76694e9c295f3dc6ec1ac, type: 2}
   _contactTolerance: 0.025
   _alignmentTolerance: 0.18
---- !u!114 &1504888346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1504888343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
-  _surface: {fileID: 1504888345}
-  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
---- !u!114 &1744261942
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1744261939}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
-  _surface: {fileID: 1744261941}
-  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
---- !u!114 &2133772345
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2133772342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da79b508472d46a3bc090e4efeb543d3, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Dishes.DishTraySupply
-  _surface: {fileID: 2133772344}
-  _emptyTrayPrefab: {fileID: 1048385363461619745, guid: 50af34c101790bc4abb6e45ee20a3f21, type: 3}
 --- !u!1 &990346135
 GameObject:
   m_ObjectHideFlags: 0
@@ -14607,4 +14454,237 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1958014495}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1535797325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1535797326}
+  - component: {fileID: 1535797328}
+  - component: {fileID: 1535797327}
+  m_Layer: 0
+  m_Name: LabelPlate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1535797326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535797325}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
+  m_LocalPosition: {x: -3.1999998, y: 1.12, z: -2.9699998}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1231204885}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!102 &1535797327
+TextMesh:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535797325}
+  m_Text: "Plate\nBuy (\u20AC0.50) [E]"
+  m_OffsetZ: 0
+  m_CharacterSize: 0.012
+  m_LineSpacing: 1
+  m_Anchor: 4
+  m_Alignment: 1
+  m_TabSize: 4
+  m_FontSize: 48
+  m_FontStyle: 0
+  m_RichText: 1
+  m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Color:
+    serializedVersion: 2
+    rgba: 4294967295
+--- !u!23 &1535797328
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535797325}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1968268535
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1968268536}
+  - component: {fileID: 1968268540}
+  - component: {fileID: 1968268539}
+  - component: {fileID: 1968268538}
+  - component: {fileID: 1968268537}
+  m_Layer: 0
+  m_Name: BuyPlate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1968268536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968268535}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -3.1999998, y: 1.12, z: -3.1}
+  m_LocalScale: {x: 0.5, y: 0.3, z: 0.25}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1231204885}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1968268537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968268535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2c3ece4ba374527b68152d0143c7a1d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Economy.IngredientPurchaseButton
+  _displayName:
+  _station: {fileID: 1231204884}
+  _productIndex: 3
+  _label: {fileID: 1535797327}
+--- !u!23 &1968268538
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968268535}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 7b3d4a64a432e154e8fee8b612cee16e, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &1968268539
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968268535}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!33 &1968268540
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1968268535}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}

@@ -46,7 +46,7 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator RealPrototypeCarriesItsFinalDishToCounterAndPaysOnlyAfterPhysicalDrop() => DeliverThroughNativePhysics(0f);
 
         [UnityTest]
-        public IEnumerator RealPrototypeAcceptsAPartiallyPlacedDishWhoseCenterIsOutsideThePad() => DeliverThroughNativePhysics(1.04f);
+        public IEnumerator RealPrototypeAcceptsAPartiallyPlacedDishWhoseCenterIsOutsideThePad() => DeliverThroughNativePhysics(.99f);
 
         [UnityTest]
         public IEnumerator RealPrototypeDeliversFromLeftThenLooksAwayDuringExit() => DeliverThroughNativePhysics(-.6f, 0f);
@@ -54,9 +54,29 @@ namespace ZeroStarRestaurant.Tests
         [UnityTest]
         public IEnumerator RealPrototypeDeliversFromRightThenLooksSidewaysDuringExit() => DeliverThroughNativePhysics(.6f, 90f);
 
-        private IEnumerator DeliverThroughNativePhysics(float deliveryX, float releasedYaw = 180f)
+        [UnityTest]
+        public IEnumerator RealPrototypeCarriesPurchasedPlateWithDishWhilePlayerLooksAway() => DeliverThroughNativePhysics(-.6f, 0f, true);
+
+        private IEnumerator DeliverThroughNativePhysics(float deliveryX, float releasedYaw = 180f, bool withPlate = false)
         {
-            AssemblySurface surface = Components<AssemblySurface>().OrderBy(item => item.name).Last();
+            BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
+            PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
+            PlateItem plate = null;
+            Vector3 placementFocus = support.transform.position;
+            if (withPlate)
+            {
+                // Opt-in historical ingredient fixtures can occupy OUTPUT; normal gameplay has none.
+                BoxCollider clearance = Components<BoxCollider>().Single(item => item.name == "OutputClearance");
+                int displaced = 0;
+                foreach (FoodItem fixture in Components<FoodItem>().Where(item => clearance.bounds.Intersects(item.GetComponent<BoxCollider>().bounds)))
+                    fixture.GetComponent<Rigidbody>().position = new Vector3(3 + displaced++ * .6f, .96f, 4.8f);
+                Physics.SyncTransforms();
+                Assert.That(Components<ZeroStarRestaurant.Economy.IngredientPurchaseStation>().Single().TryPurchasePlate(out plate), Is.True);
+                plate.GetComponent<Rigidbody>().position = new Vector3(support.bounds.center.x, support.bounds.max.y + .0225f, support.bounds.center.z);
+                Physics.SyncTransforms();
+                for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
+                placementFocus = plate.transform.position;
+            }
             FoodItem[] buns = Components<FoodItem>().Where(food => food.Definition.Id == "food.bun").Take(2).ToArray();
             FoodItem patty = Components<FoodItem>().First(food => food.Definition.Id == "food.raw_beef_patty");
             patty.State.SetTemperature(120); patty.State.Advance(45, new ThermalEnvironment(120, allowsCooking: true), 0);
@@ -71,18 +91,18 @@ namespace ZeroStarRestaurant.Tests
                     : new Vector3(food.transform.position.x, 0.03f, food.transform.position.z - 1.5f);
                 view.LookAt(food.transform.position); Physics.SyncTransforms();
                 Assert.That(carry.TryPickUp(food.GetComponent<Pickup>()), Is.True);
-                player.transform.position = new Vector3(surface.Dish.transform.position.x, 0.03f, 1.95f);
-                view.LookAt(surface.Dish.transform.position); Physics.SyncTransforms();
+                player.transform.position = new Vector3(support.transform.position.x, 0.03f, support.transform.position.z - 1.75f);
+                view.LookAt(placementFocus); Physics.SyncTransforms();
                 Assert.That(assembly.TryPlace(), Is.True);
                 for (int frame = 0; frame < 10; frame++) yield return new WaitForFixedUpdate();
             }
             Physics.SyncTransforms();
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
-            surface.RefreshComposition(); Assert.That(surface.PreviewDefinition?.DisplayName, Is.EqualTo("Hamburger"));
-            Vector3 pickupSpot = new Vector3(surface.Dish.transform.position.x, 0.03f, 1.95f);
+            Assert.That(physical.PreviewName(buns[1]), Is.EqualTo("Hamburger"));
+            Vector3 pickupSpot = new Vector3(support.transform.position.x, 0.03f, support.transform.position.z - 1.75f);
             player.transform.position = pickupSpot; view.LookAt(buns[1].transform.position);
-            Assert.That(surface.TryInteract(new InteractionContext(player.transform, carry)), Is.True);
-            DishItem dish = surface.Dish; var id = dish.State.InstanceId; var pattyId = patty.State.InstanceId;
+            Assert.That(physical.TryFinalize(buns[1], out DishItem dish), Is.True); var id = dish.State.InstanceId; var pattyId = patty.State.InstanceId;
+            Assert.That(dish.Plate, Is.SameAs(plate));
             Assert.That(carry.TryPickUp(dish.GetComponent<Pickup>()), Is.True);
             Quaternion start = view.rotation;
             for (int frame = 0; frame < 35; frame++)
@@ -96,7 +116,7 @@ namespace ZeroStarRestaurant.Tests
             { player.transform.position = new Vector3(deliveryX, 0.03f, Mathf.Lerp(pickupSpot.z, 2.25f, (frame + 1f) / 60f)); yield return new WaitForFixedUpdate(); Assert.That(carry.HasHeldObject, Is.True); }
             for (int frame = 0; frame < 35; frame++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult, Is.Null, "A held dish is never sold.");
-            if (deliveryX > 1f)
+            if (deliveryX > .9f)
                 Assert.That(dish.GetComponent<BoxCollider>().bounds.center.x,
                     Is.GreaterThan(Components<BoxCollider>().Single(collider => collider.name == "DeliveryPad").bounds.max.x),
                     "Regression: the held aggregate's center is outside the green pad before this physical drop.");
@@ -106,14 +126,13 @@ namespace ZeroStarRestaurant.Tests
             for (int frame = 0; frame < 75; frame++) yield return new WaitForFixedUpdate();
             Assert.That(_service.LastResult?.Accepted, Is.True,
                 dish == null ? "Dish removed without result" : "Unprocessed dish at " + dish.GetComponent<BoxCollider>().bounds);
-            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1500));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(withPlate ? 1450 : 1500));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(id));
             Assert.That(_service.LastResult.Evaluation.DeliveredDish.Ingredients.Any(food => food.InstanceId == pattyId), Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(18));
             Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
-            Assert.That(surface.Dish, Is.Not.SameAs(dish), "The departed sold dish leaves a fresh preparation tray.");
-            Assert.That(surface.Dish.State.Components, Is.Empty);
-            Assert.That(surface.Dish.State.IsFinalized, Is.False);
+            Assert.That(Components<DishItem>(), Has.Length.EqualTo(1), "No free replacement order or plate.");
+            Assert.That(Components<PlateItem>().Length, Is.EqualTo(withPlate ? 1 : 0));
             Assert.That(dish.gameObject.activeInHierarchy, Is.True);
             var firstVisit = _service.Visit;
             CustomerMovement firstCustomer = _service.ActiveCustomer;
@@ -134,10 +153,11 @@ namespace ZeroStarRestaurant.Tests
                         "Each visible ingredient must follow the customer's original aggregate through physics and turns.");
                 Assert.That(carry.TryPickUp(dish.GetComponent<Pickup>()), Is.False);
                 Assert.That(_service.TryDeliver(dish), Is.False);
-                Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1500));
+                Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(withPlate ? 1450 : 1500));
             }
             yield return null;
             Assert.That(dish == null, Is.True);
+            Assert.That(plate == null, Is.True);
             Assert.That(originals.All(food => food == null), Is.True); Assert.That(firstCustomer == null, Is.True);
             Assert.That(Components<FoodSimulation>().Single().Foods.Count, Is.EqualTo(15));
             Assert.That(firstVisit.Stage, Is.EqualTo(CustomerStage.Finished));

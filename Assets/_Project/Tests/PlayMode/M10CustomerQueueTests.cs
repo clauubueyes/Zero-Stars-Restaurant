@@ -211,11 +211,12 @@ namespace ZeroStarRestaurant.Tests
 
         private IEnumerator BuildDish(bool cheese, System.Action<DishItem> completed)
         {
-            AssemblySurface surface = Components<AssemblySurface>().Where(item => item.Dish != null && !item.Dish.State.IsFinalized)
-                .OrderBy(item => item.name).Last();
+            BoxCollider support = Components<BoxCollider>().Single(item => item.name == "PrepSupport3");
+            PhysicalDishAssembly physical = Components<PhysicalDishAssembly>().Single();
+            FoodItem last = null;
             IngredientPurchaseStation station = Components<IngredientPurchaseStation>().Single();
             int[] products = cheese ? new[] { 0, 1, 2, 0 } : new[] { 0, 1, 0 };
-            float top = surface.Dish.GetComponent<BoxCollider>().bounds.max.y;
+            float top = support.bounds.max.y;
             foreach (int product in products)
             {
                 Assert.That(station.TryPurchase(product, out FoodItem food), Is.True, station.LastMessage);
@@ -225,13 +226,12 @@ namespace ZeroStarRestaurant.Tests
                     food.State.Advance(45, new ThermalEnvironment(120, allowsCooking: true), 0);
                 }
                 float half = food.GetComponent<BoxCollider>().bounds.extents.y;
-                food.GetComponent<Rigidbody>().position = new Vector3(surface.Dish.transform.position.x, top + half + 0.003f, surface.Dish.transform.position.z);
-                top += 2 * half + 0.003f; Physics.SyncTransforms();
+                food.GetComponent<Rigidbody>().position = new Vector3(support.transform.position.x, top + half + 0.003f, support.transform.position.z);
+                top += 2 * half + 0.003f; last = food; Physics.SyncTransforms();
             }
             for (int frame = 0; frame < 40; frame++) yield return new WaitForFixedUpdate();
-            surface.RefreshComposition(); Assert.That(surface.PreviewDefinition?.Id, Is.EqualTo(cheese ? "dish.cheeseburger" : "dish.hamburger"));
-            Assert.That(surface.TryInteract(new InteractionContext(Components<FirstPersonController>().Single().transform, Components<PhysicalCarry>().Single())), Is.True);
-            completed(surface.Dish);
+            Assert.That(physical.PreviewName(last), Is.EqualTo(cheese ? "Cheeseburger" : "Hamburger"));
+            Assert.That(physical.TryFinalize(last, out DishItem dish), Is.True); completed(dish);
         }
         private void PlaceAndPoll(DishItem dish)
         {

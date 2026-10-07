@@ -11,6 +11,7 @@ namespace ZeroStarRestaurant.Dishes
     {
         private readonly List<FoodItem> _ingredients = new List<FoodItem>();
         public DishState State { get; private set; }
+        public PlateItem Plate { get; private set; }
         public bool IsIntact
         {
             get
@@ -27,15 +28,20 @@ namespace ZeroStarRestaurant.Dishes
         private void Awake() => State = new DishState();
         private void OnDestroy() => State?.Dispose();
 
-        public bool FinalizeAssembly(IReadOnlyList<FoodItem> ingredients, IReadOnlyList<DishProfile> definitions)
+        public bool FinalizeAssembly(IReadOnlyList<FoodItem> ingredients, IReadOnlyList<DishProfile> definitions, PlateItem plate = null)
         {
             if (!isActiveAndEnabled || State == null || State.IsFinalized || ingredients == null ||
-                ingredients.Count != State.Components.Count || ingredients.Count == 0) return false;
+                ingredients.Count != State.Components.Count || ingredients.Count == 0 || (plate != null && !plate.CanAttach)) return false;
             Rigidbody body = GetComponent<Rigidbody>();
             BoxCollider proxy = GetComponent<BoxCollider>();
             // Validate the complete physical transaction before committing the Domain composition.
             Bounds bounds = proxy.bounds;
             float mass = 0.2f;
+            if (plate != null)
+            {
+                bounds.Encapsulate(plate.GetComponent<BoxCollider>().bounds);
+                mass += plate.GetComponent<Rigidbody>().mass;
+            }
             for (int index = 0; index < ingredients.Count; index++)
             {
                 FoodItem food = ingredients[index];
@@ -55,6 +61,7 @@ namespace ZeroStarRestaurant.Dishes
             // Original FoodItems/states remain alive and registered in FoodSimulation.
             // Only their independent physics/pickup are retired; one conservative proxy transports all visuals.
             transform.SetParent(null, true);
+            if (plate != null) { plate.AttachTo(this); Plate = plate; }
             foreach (FoodItem food in ingredients)
             {
                 food.CaptureThermalGeometry();

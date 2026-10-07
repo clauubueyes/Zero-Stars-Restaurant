@@ -135,7 +135,9 @@ namespace ZeroStarRestaurant.Tests
             var references = Components<MonoBehaviour>().ToDictionary(item => item, item => EditorJsonUtility.ToJson(item));
             Transform station = Components<Transform>().Single(item => item.name == "IngredientProcurementStation");
             Transform foodRoot = Components<Transform>().Single(item => item.name == "FoodTestZone");
+            Transform procurementArea = Components<Transform>().Single(item => item.name == "ProcurementArea");
             var unchanged = Components<Transform>().Where(item => !item.IsChildOf(station) && !item.IsChildOf(foodRoot) &&
+                !item.IsChildOf(procurementArea) &&
                 item.name != "WallWest" && item.name != "ProcurementSign")
                 .ToDictionary(item => item, item => (item.position, item.rotation, item.localScale));
             M9RestaurantLayoutBuilder.ConfigureProcurementArea(_scene);

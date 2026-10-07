@@ -53,8 +53,11 @@ namespace ZeroStarRestaurant.Tests
             foreach (string name in new[] { "Fridge", "Freezer" })
             {
                 ColdStorage storage = Components<ColdStorage>().Single(item => item.name == name);
+                // Turn through the working aisle, away from the current cabinet's north wall.
+                yield return Look(Quaternion.Euler(0, 180, 0));
                 yield return Look(Quaternion.Euler(0, 90, 0));
                 yield return Move(new Vector3(-3.6f, 0.03f, storage.transform.position.z));
+                yield return Look(Quaternion.Euler(0, 180, 0));
                 yield return Look(Quaternion.Euler(0, -90, 0));
                 yield return Move(new Vector3(-4.4f, 0.03f, storage.transform.position.z));
                 for (int frame = 0; frame < 30; frame++) yield return new WaitForFixedUpdate();
@@ -93,7 +96,8 @@ namespace ZeroStarRestaurant.Tests
         {
             Quaternion start = _view.rotation;
             for (int frame = 0; frame < 40; frame++)
-            { _view.rotation = Quaternion.Slerp(start, destination, (frame + 1f) / 40f); yield return new WaitForFixedUpdate(); Assert.That(_carry.HasHeldObject, Is.True); }
+            { _view.rotation = Quaternion.Slerp(start, destination, (frame + 1f) / 40f); yield return new WaitForFixedUpdate(); Assert.That(_carry.HasHeldObject, Is.True,
+                "Carry turn: player=" + _player.position + " view=" + _view.eulerAngles + " destination=" + destination.eulerAngles); }
         }
     }
 }

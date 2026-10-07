@@ -429,10 +429,42 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator DeliveryWithoutLookingAtCustomerCarriesOriginalsThroughPhysics() =>
             DeliverWithoutPlayerDependency(new Vector3(0, 0, 1.8f), 0f);
 
-        private IEnumerator DeliverWithoutPlayerDependency(Vector3 playerOffset, float yaw)
+        [UnityTest] public IEnumerator DishWithPlateFromFrontCarriesSameUtensilToExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(0, 0, 1.8f), 180f, true);
+        [UnityTest] public IEnumerator DishWithPlateFromLeftCarriesSameUtensilToExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(-1.8f, 0, 0), 270f, true);
+        [UnityTest] public IEnumerator DishWithPlateFromRightCarriesSameUtensilToExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(1.8f, 0, 0), 90f, true);
+        [UnityTest] public IEnumerator DishWithPlateWithoutLookingAtCustomerCarriesSameUtensilToExit() =>
+            DeliverWithoutPlayerDependency(new Vector3(0, 0, 1.8f), 0f, true);
+
+        private DishItem FreeDish(bool withPlate)
+        {
+            float baseHeight = .9f;
+            if (withPlate)
+            {
+                GameObject utensil = Create("Plate", _origin + Vector3.up * .9225f);
+                utensil.AddComponent<BoxCollider>().size = new Vector3(.6f, .045f, .6f);
+                utensil.AddComponent<PlateItem>(); baseHeight += .045f;
+            }
+            Food(_bun, _origin + Vector3.up * (baseHeight + .11f));
+            Food(_beef, _origin + Vector3.up * (baseHeight + .28f));
+            FoodItem top = Food(_bun, _origin + Vector3.up * (baseHeight + .45f));
+            var assembly = Create("Physical Assembly", _origin).AddComponent<PhysicalDishAssembly>();
+            Set(assembly, "_simulation", _simulation); Set(assembly, "_definitions", new[] { _hamburger, _cheeseburger });
+            Physics.SyncTransforms();
+            Assert.That(assembly.TryFinalize(top, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Assert.That(dish.State.DisplayName, Is.EqualTo("Hamburger")); Assert.That(dish.Plate != null, Is.EqualTo(withPlate));
+            return dish;
+        }
+
+        private IEnumerator DeliverWithoutPlayerDependency(Vector3 playerOffset, float yaw, bool withPlate = false)
         {
             Set(_service, "_advanceAutomatically", false);
-            Ready(); DishItem dish = FinalDish();
+            Ready(); DishItem dish = FreeDish(withPlate);
+            PlateItem plate = dish.Plate; Guid plateId = plate != null ? plate.InstanceId : Guid.Empty;
+            Assert.That(dish.State.InstanceId.Value, Is.Not.EqualTo(plateId), "Plate is never the order identity.");
+            Vector3 plateLocalPosition = plate != null ? dish.transform.InverseTransformPoint(plate.transform.position) : Vector3.zero;
             FoodItem[] ingredients = dish.GetComponentsInChildren<FoodItem>();
             Vector3[] localPositions = ingredients.Select(food => dish.transform.InverseTransformPoint(food.transform.position)).ToArray();
             Quaternion[] localRotations = ingredients.Select(food => Quaternion.Inverse(dish.transform.rotation) * food.transform.rotation).ToArray();
@@ -462,6 +494,13 @@ namespace ZeroStarRestaurant.Tests
                 if (visit.Stage == CustomerStage.Finished) break;
                 Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(dish.IsIntact, Is.True);
                 Assert.That(dish.transform.IsChildOf(_customer.transform), Is.True);
+                if (withPlate)
+                {
+                    Assert.That(dish.Plate, Is.SameAs(plate)); Assert.That(plate.InstanceId, Is.EqualTo(plateId));
+                    Assert.That(Vector3.Distance(plate.transform.position, dish.transform.TransformPoint(plateLocalPosition)), Is.LessThan(.002f));
+                    Assert.That(Vector3.Distance(plate.GetComponent<Rigidbody>().position, plate.transform.position), Is.LessThan(.002f));
+                    Assert.That(carry.TryPickUp(plate.GetComponent<Pickup>()), Is.False);
+                }
                 Assert.That(Quaternion.Angle(dish.transform.localRotation, Quaternion.identity), Is.LessThan(.1f));
                 Assert.That(Vector3.Distance(dish.GetComponent<Rigidbody>().position, dish.transform.position), Is.LessThan(.002f));
                 Assert.That(Vector3.Distance(dish.transform.localPosition,
@@ -480,6 +519,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(visit.Stage, Is.EqualTo(CustomerStage.Finished));
             yield return null;
             Assert.That(dish == null, Is.True); Assert.That(ingredients.All(food => food == null), Is.True);
+            Assert.That(plate == null, Is.True, "Optional utensil is cleaned with the same Dish at Exit.");
             Assert.That(_simulation.Foods, Is.Empty); Assert.That(_carrier.Dish, Is.Null);
             Assert.That(_customer.gameObject.activeSelf, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }

@@ -63,13 +63,15 @@ namespace ZeroStarRestaurant.Tests
             var support = Create(name); support.transform.position += Vector3.down * .05f;
             support.AddComponent<BoxCollider>().size = new Vector3(2, .1f, 2);
             if (name == "Tray") support.AddComponent<Rigidbody>().isKinematic = true;
+            if (name == "Plate") { support.AddComponent<Rigidbody>(); support.AddComponent<PlateItem>(); }
             Physics.SyncTransforms(); return support;
         }
 
-        [TestCase("Counter", false)] [TestCase("Table", true)] [TestCase("Tray", false)] [TestCase("Grill", true)]
+        [TestCase("Counter", false)] [TestCase("Table", true)] [TestCase("Floor", false)] [TestCase("Grill", true)]
+        [TestCase("Plate", false)] [TestCase("Plate", true)]
         public void SupportedPhysicalStackRecognizesWithoutAssemblySurfaceAndPreservesLiveState(string support, bool cheese)
         {
-            Support(support);
+            GameObject physicalSupport = Support(support);
             var foods = new List<FoodItem> { Food(_bun, .06f), Food(_beef, .18f) };
             if (cheese) foods.Add(Food(_cheese, .30f));
             foods.Add(Food(_bun, cheese ? .42f : .30f));
@@ -82,6 +84,13 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_assembly.TryFinalize(foods.Last(), out DishItem dish), Is.True); _objects.Add(dish.gameObject);
             Assert.That(dish.State.DisplayName, Is.EqualTo(cheese ? "Cheeseburger" : "Hamburger"));
             Assert.That(dish.State.Components, Is.EqualTo(originals)); Assert.That(dish.IsIntact, Is.True);
+            PlateItem plate = physicalSupport.GetComponent<PlateItem>();
+            Assert.That(dish.Plate, Is.SameAs(plate));
+            if (plate != null)
+            {
+                Assert.That(plate.Dish, Is.SameAs(dish)); Assert.That(plate.transform.parent, Is.EqualTo(dish.transform));
+                Assert.That(plate.GetComponent<Pickup>().enabled, Is.False); Assert.That(plate.GetComponent<Collider>().enabled, Is.False);
+            }
             for (int i = 0; i < foods.Count; i++) Assert.That(foods[i].State, Is.SameAs(originals[i]));
             Assert.That(originals[1].AgeSeconds, Is.EqualTo(age)); Assert.That(originals[1].TemperatureCelsius, Is.EqualTo(temperature));
             Assert.That(originals[1].FreshnessPercent, Is.EqualTo(freshness)); Assert.That(originals[1].IsContaminated, Is.True);
@@ -108,10 +117,31 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(separate.transform.parent, Is.Null);
         }
 
-        [Test]
-        public void GrillHeatsOnlyContactingOriginalIngredientsBeforeAndAfterFinalizingAndMoving()
+        [TestCase("Counter")] [TestCase("Table")] [TestCase("Floor")] [TestCase("Grill")] [TestCase("Plate")]
+        public void CustomDishFinalizesOnAnyPhysicalSupportWithoutNearbyIngredients(string support)
         {
-            Support("Grill"); FoodItem beef = Food(_beef, .06f), upper = Food(_bun, .18f);
+            Support(support); FoodItem food = Food(_cheese, .06f), nearby = Food(_bun, .06f, 1.3f);
+            Assert.That(_assembly.PreviewName(food), Is.EqualTo("Custom Dish"));
+            Assert.That(_assembly.TryFinalize(food, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Assert.That(dish.State.Components, Is.EqualTo(new[] { food.State }));
+            Assert.That(nearby.transform.parent, Is.Null);
+        }
+
+        [Test]
+        public void OverlappingWorldBoundsDoNotJoinRotatedIngredientsWithoutRealContact()
+        {
+            Support("Counter"); FoodItem lower = Food(_bun, .06f), upper = Food(_beef, .18f, .42f);
+            lower.transform.rotation = Quaternion.Euler(0, 45, 0); upper.transform.rotation = Quaternion.Euler(0, 45, 0);
+            upper.transform.position += Vector3.forward * .42f; Physics.SyncTransforms();
+            Assert.That(lower.GetComponent<Collider>().bounds.max.x, Is.GreaterThan(upper.GetComponent<Collider>().bounds.min.x));
+            Assert.That(_assembly.FindStack(lower), Is.EqualTo(new[] { lower }));
+            Assert.That(_assembly.PreviewName(upper), Is.Null, "AABB overlap alone is not physical support.");
+        }
+
+        [TestCase(false)] [TestCase(true)]
+        public void GrillHeatsOnlyContactingOriginalIngredientsBeforeAndAfterFinalizingAndMoving(bool withPlate)
+        {
+            Support(withPlate ? "Plate" : "Grill"); FoodItem beef = Food(_beef, .06f), upper = Food(_bun, .18f);
             var source = Create("Grill Heat"); var zone = source.AddComponent<BoxCollider>(); zone.isTrigger = true;
             zone.center = Vector3.up * .04f; zone.size = new Vector3(1, .08f, 1);
             var grill = source.AddComponent<GrillHeatSource>(); Set(grill, "_effectiveZone", zone);
@@ -135,44 +165,30 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void TraySupplyReplenishesSixTimesAndWaitsForAClearOutletWithoutCloningFood()
+        public void RetiredTraySupplyNeverCreatesFreeUtensils()
         {
-            Support("Counter"); var station = Create("Station"); station.SetActive(false);
-            var tray = Create("Tray"); tray.transform.SetParent(station.transform, true); tray.transform.position += Vector3.up * .035f;
-            tray.AddComponent<Rigidbody>().isKinematic = true; tray.GetComponent<Rigidbody>().useGravity = false;
-            tray.AddComponent<BoxCollider>().size = new Vector3(.7f, .045f, .7f); var first = tray.AddComponent<DishItem>();
-            var sensorObject = Create("Assembly Zone"); sensorObject.transform.SetParent(station.transform, true);
-            sensorObject.transform.position += Vector3.up * .6f;
-            var zone = sensorObject.AddComponent<BoxCollider>(); zone.isTrigger = true; zone.size = new Vector3(.85f, 1.1f, .85f);
-            var surface = station.AddComponent<AssemblySurface>(); Set(surface, "_dish", first); Set(surface, "_assemblyZone", zone);
-            Set(surface, "_simulation", _simulation); Set(surface, "_definitions", new[] { _hamburger, _cheeseburger });
-            var template = Create("Empty Template"); template.SetActive(false); template.transform.position += Vector3.back * 10;
-            template.AddComponent<Rigidbody>().isKinematic = true; template.GetComponent<Rigidbody>().useGravity = false;
-            template.AddComponent<BoxCollider>().size = new Vector3(.7f, .045f, .7f); var prefab = template.AddComponent<DishItem>();
-            var supply = station.AddComponent<DishTraySupply>(); Set(supply, "_surface", surface); Set(supply, "_emptyTrayPrefab", prefab);
-            station.SetActive(true); Physics.SyncTransforms();
-            var unique = new HashSet<Guid>();
-            for (int visit = 0; visit < 6; visit++)
-            {
-                DishItem previous = surface.Dish;
-                Assert.That(supply.TryReplenish(), Is.False, "Unused tray is not duplicated.");
-                FoodItem food = Food(_cheese, .13f); surface.RefreshComposition();
-                Assert.That(surface.TryInteract(new InteractionContext(null, null)), Is.True);
-                Assert.That(unique.Add(previous.State.InstanceId.Value), Is.True);
-                Assert.That(supply.TryReplenish(), Is.False, "Finalized dish still occupies its outlet.");
-                previous.transform.position += Vector3.right * (5 + visit); Physics.SyncTransforms();
-                var blocker = Create("Outlet Blocker"); blocker.transform.position += Vector3.up * .04f;
-                blocker.AddComponent<BoxCollider>().size = Vector3.one * .1f; Physics.SyncTransforms();
-                Assert.That(supply.TryReplenish(), Is.False); blocker.SetActive(false);
-                Assert.That(supply.TryReplenish(), Is.True); _objects.Add(surface.Dish.gameObject);
-                Assert.That(surface.Dish, Is.Not.SameAs(previous)); Assert.That(surface.Dish.State.Components, Is.Empty);
-                Assert.That(surface.Dish.State.IsFinalized, Is.False); Assert.That(surface.Dish.GetComponent<Rigidbody>().isKinematic, Is.True);
-                Assert.That(previous.State.Components.Single(), Is.SameAs(food.State));
-                Assert.That(_simulation.Foods.Count, Is.EqualTo(visit + 1), "Only the tray respawns, never ingredients.");
-                Assert.That(supply.TryReplenish(), Is.False);
-            }
-            Object.DestroyImmediate(surface.Dish.gameObject);
-            Assert.That(supply.TryReplenish(), Is.True, "A destroyed tray is also recoverable."); _objects.Add(surface.Dish.gameObject);
+            var supply = Create("Old saved supply").AddComponent<DishTraySupply>();
+            int count = _objects.Count;
+            for (int attempt = 0; attempt < 10; attempt++) Assert.That(supply.TryReplenish(), Is.False);
+            Assert.That(_objects.Count, Is.EqualTo(count));
+            Assert.That(Object.FindObjectsByType<PlateItem>(FindObjectsSortMode.None), Is.Empty);
+        }
+
+        [Test]
+        public void PlateGroupsOnlyFoodItActuallySupportsAndNeverFinalizesWhileHeld()
+        {
+            GameObject support = Support("Plate"); PlateItem plate = support.GetComponent<PlateItem>();
+            FoodItem first = Food(_bun, .06f, -.35f), second = Food(_cheese, .06f, .35f);
+            FoodItem nearby = Food(_beef, .06f, 1.3f);
+            Assert.That(_assembly.FindStack(first), Is.EquivalentTo(new[] { first, second }));
+            var actor = Create("Actor"); actor.transform.position += Vector3.up * 2 + Vector3.back * 1.5f;
+            var carry = actor.AddComponent<PhysicalCarry>();
+            Set(carry, "_actorRoot", actor.transform); Set(carry, "_viewTransform", actor.transform);
+            Physics.SyncTransforms(); Assert.That(carry.TryPickUp(plate.GetComponent<Pickup>()), Is.True);
+            Assert.That(_assembly.TryFinalize(first, out _), Is.False); carry.Drop();
+            Assert.That(_assembly.TryFinalize(first, out DishItem dish), Is.True); _objects.Add(dish.gameObject);
+            Assert.That(dish.State.DisplayName, Is.EqualTo("Custom Dish")); Assert.That(dish.Plate, Is.SameAs(plate));
+            Assert.That(dish.State.Components.Count, Is.EqualTo(2)); Assert.That(nearby.transform.parent, Is.Null);
         }
 
         [Test]
