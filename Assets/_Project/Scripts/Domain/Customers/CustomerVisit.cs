@@ -7,6 +7,7 @@ namespace ZeroStarRestaurant.Customers
     {
         public Guid InstanceId { get; }
         public OrderState Order { get; }
+        public CustomerConsequence Consequence { get; private set; }
         public CustomerStage Stage { get; private set; } = CustomerStage.Enter;
         public CustomerVisit(OrderState order) : this(order, Guid.NewGuid()) { }
         public CustomerVisit(OrderState order, Guid customerId)
@@ -24,6 +25,7 @@ namespace ZeroStarRestaurant.Customers
         public bool Resolve()
         {
             if (Stage != CustomerStage.Evaluate || !Order.IsCompleted) return false;
+            if (Order.Result.Accepted) Consequence = new CustomerConsequence(InstanceId, Order.Result);
             Stage = Order.Result.Accepted ? CustomerStage.Pay : CustomerStage.Reject; return true;
         }
         public bool ResumeWaiting()
