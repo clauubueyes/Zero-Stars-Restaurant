@@ -83,6 +83,28 @@ actual contiene cambios manuales del usuario.
 Si una tarea requiere inevitablemente sobrescribir un cambio manual, **no lo hagas
 silenciosamente**: indícalo antes.
 
+## Latest version in the user's Unity
+
+- Antes de empezar y antes de entregar, identificar la carpeta real abierta en el
+  Unity del usuario y comprobar su rama, commit y cambios locales frente a la
+  última implementación validada. No asumir que el Editor usa el worktree del agente.
+- Al terminar un milestone o fix, asegurar que el proyecto que usa el usuario
+  contiene la última versión validada y autorizada. Un worktree separado sirve para
+  desarrollo/tests, pero por sí solo no actualiza el Unity del usuario.
+- Sincronizar código y dependencias de forma revisable y aplicar componentes de
+  escena incrementalmente. Preservar siempre los cambios manuales actuales del
+  usuario; nunca sustituirlos con una escena, prefab o asset anterior.
+- Antes de sincronizar una escena abierta, comprobar cambios sin guardar y Play.
+  Si no pueden inspeccionarse o preservarse con seguridad, solicitar que el usuario
+  guarde, salga de Play y cierre/reabra el Editor según sea necesario. No cerrar sus
+  procesos ni lanzar otro Editor sobre la misma carpeta abierta.
+- Después de actualizar, comprobar importación/compilación, referencias y errores
+  del proyecto real, además de las pruebas del worktree. Informar de la carpeta y
+  versión entregadas y de cualquier recarga o verificación pendiente. No afirmar
+  que su Unity está actualizado si solo se actualizó otra carpeta.
+- «Última versión» se refiere al juego/proyecto entregado, no a actualizar Unity,
+  paquetes o pipeline. No integrar en main ni publicar sin autorización.
+
 ## Git disciplinado
 
 - Mantener `main` estable. Para trabajo nuevo crear ramas `feature/...`,
