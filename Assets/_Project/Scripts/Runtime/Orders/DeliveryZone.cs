@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
 using ZeroStarRestaurant.Dishes;
+using ZeroStarRestaurant.Food;
 using ZeroStarRestaurant.Interaction;
 
 namespace ZeroStarRestaurant.Orders
@@ -18,33 +19,41 @@ namespace ZeroStarRestaurant.Orders
         private readonly HashSet<DishItem> _processedPlacements = new HashSet<DishItem>();
         public CustomerServiceLoop Service => _service;
         public BoxCollider Support => _support;
+        public string PlacementMessage { get; private set; } = "";
         private void Awake()
         {
             if (_zone == null || !_zone.isTrigger || _support == null || _support.isTrigger || _service == null || _service.DeliveryZone != this)
             { Debug.LogError("DeliveryZone needs a trigger, solid support and customer service.", this); enabled = false; }
         }
         private void FixedUpdate() => Poll();
-        private void OnDisable() => _processedPlacements.Clear();
+        private void OnDisable() { _processedPlacements.Clear(); PlacementMessage = ""; }
         public void Poll()
         {
             if (!isActiveAndEnabled || _zone == null || !_zone.enabled || !_zone.isTrigger || !_zone.gameObject.activeInHierarchy ||
                 _support == null || !_support.enabled || !_support.gameObject.activeInHierarchy || _service == null)
-            { _processedPlacements.Clear(); return; }
+            { _processedPlacements.Clear(); PlacementMessage = "Delivery unavailable"; return; }
             Physics.SyncTransforms();
             SensorGeometry(out Vector3 center, out Vector3 half);
             var present = new HashSet<DishItem>();
+            bool unconfirmedFood = false, heldDish = false;
             foreach (Collider collider in Physics.OverlapBox(center, half,
                          _support.transform.rotation, ~0, QueryTriggerInteraction.Ignore))
             {
                 DishItem dish = collider.GetComponentInParent<DishItem>();
-                if (dish == null || !dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized || dish.State.IsSold || !dish.IsIntact) continue;
+                if (dish == null)
+                { unconfirmedFood |= collider.GetComponentInParent<FoodItem>() != null; continue; }
+                if (!dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized || dish.State.IsSold || !dish.IsIntact) continue;
                 Pickup pickup = dish.GetComponent<Pickup>();
+                heldDish |= pickup != null && pickup.IsHeld;
                 if (pickup == null || !pickup.isActiveAndEnabled || pickup.IsHeld || pickup.Body == null || pickup.Body.isKinematic) continue;
                 present.Add(dish);
             }
             // A rejected dish must leave (or be picked up) before it can be submitted to another customer.
             _processedPlacements.RemoveWhere(dish => dish == null || !present.Contains(dish));
-            if (_service.Visit == null || _service.Visit.Stage != CustomerStage.Wait) return;
+            PlacementMessage = unconfirmedFood ? "Delivery: look at the stack and press F to finalize" :
+                heldDish ? "Delivery: release the dish on the green pad" : "Delivery: place a finalized dish on the green pad";
+            if (_service.Visit == null || _service.Visit.Stage != CustomerStage.Wait)
+            { PlacementMessage += "\nWaiting for a customer ready to receive"; return; }
             var ordered = new List<DishItem>(present);
             ordered.Sort((a, b) => a.State.InstanceId.Value.CompareTo(b.State.InstanceId.Value));
             foreach (DishItem dish in ordered)
@@ -60,26 +69,33 @@ namespace ZeroStarRestaurant.Orders
                 _zone == null || !_zone.enabled || !_zone.isTrigger || !_zone.gameObject.activeInHierarchy ||
                 _support == null || !_support.enabled || !_support.gameObject.activeInHierarchy ||
                 dish == null || !dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized ||
-                dish.State.IsSold || !dish.IsIntact || _processedPlacements.Contains(dish)) return false;
+                dish.State.IsSold || !dish.IsIntact) return Decline("Delivery: finalize an intact dish first (F)");
+            if (_processedPlacements.Contains(dish)) return Decline("Delivery rejected: remove or pick up the dish before retrying");
             Pickup pickup = dish.GetComponent<Pickup>();
             BoxCollider proxy = dish.GetComponent<BoxCollider>();
             Rigidbody body = dish.GetComponent<Rigidbody>();
             if (pickup == null || !pickup.isActiveAndEnabled || pickup.IsHeld || body == null || body.isKinematic ||
-                proxy == null || !proxy.enabled || proxy.isTrigger) return false;
+                proxy == null || !proxy.enabled || proxy.isTrigger) return Decline("Delivery: release the dish first");
             Physics.SyncTransforms();
             SensorGeometry(out Vector3 center, out Vector3 half);
             bool overlapsSensor = false;
             foreach (Collider collider in Physics.OverlapBox(center, half, _support.transform.rotation, ~0, QueryTriggerInteraction.Ignore))
                 if (collider == proxy) { overlapsSensor = true; break; }
-            if (!overlapsSensor) return false;
+            if (!overlapsSensor) return Decline("Delivery: place the dish on the green pad");
             Bounds bounds = BoundsInSupportSpace(proxy);
             float bottomGap = (bounds.min.y - (_support.center.y + _support.size.y * .5f)) * Mathf.Abs(_support.transform.lossyScale.y);
-            if (!HasPlacementOverlap(bounds) || bottomGap < -_placementTolerance || bottomGap > _placementTolerance ||
-                body.linearVelocity.sqrMagnitude > _maximumPlacementSpeed * _maximumPlacementSpeed ||
-                body.angularVelocity.sqrMagnitude > 4f || !_service.TryAcceptDelivery(this, dish)) return false;
+            if (!HasPlacementOverlap(bounds)) return Decline("Delivery: move the dish further onto the green pad");
+            if (bottomGap < -_placementTolerance || bottomGap > _placementTolerance)
+                return Decline("Delivery: rest the dish on the green pad");
+            if (body.linearVelocity.sqrMagnitude > _maximumPlacementSpeed * _maximumPlacementSpeed || body.angularVelocity.sqrMagnitude > 4f)
+                return Decline("Delivery: waiting for the dish to settle");
+            if (!_service.TryAcceptDelivery(this, dish)) return Decline("Delivery: waiting for a customer ready to receive");
             _processedPlacements.Add(dish);
+            PlacementMessage = dish.State.IsSold ? "Delivery accepted" : "Delivery rejected: remove or pick up the dish before retrying";
             return true;
         }
+
+        private bool Decline(string message) { PlacementMessage = message; return false; }
 
         private bool HasPlacementOverlap(Bounds dish)
         {

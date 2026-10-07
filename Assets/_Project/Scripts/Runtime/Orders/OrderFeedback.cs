@@ -51,6 +51,7 @@ namespace ZeroStarRestaurant.Orders
                     "Customer approaching Service Position" : "Waiting for customers") :
                     "Customer #" + _service.CustomerNumber.ToString("D3") + " | " + _service.Visit.Stage +
                     "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + " | " + Money(_service.Visit.Order.Offer.SalePriceCents);
+                if (_service.DeliveryZone != null) order += "\n" + _service.DeliveryZone.PlacementMessage;
                 if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
                 if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult);
                 return order;
