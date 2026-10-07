@@ -1,7 +1,0 @@
-{
-    "name": "ZeroStarRestaurant.Domain",
-    "rootNamespace": "ZeroStarRestaurant",
-    "references": [],
-    "noEngineReferences": true,
-    "autoReferenced": true
-}

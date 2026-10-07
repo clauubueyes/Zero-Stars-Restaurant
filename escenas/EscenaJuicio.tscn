@@ -1,0 +1,157 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/EscenaJuicio.gd" id="1_escena_juicio"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_caja"]
+bg_color = Color(0.07, 0.05, 0.05, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8745, 0.7176, 0.4235, 1)
+content_margin_left = 20.0
+content_margin_top = 14.0
+content_margin_right = 20.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_normal"]
+bg_color = Color(0.02, 0.02, 0.02, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8745, 0.7176, 0.4235, 1)
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_hover"]
+bg_color = Color(1, 0.84, 0.35, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.92, 0.6, 1)
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_pressed"]
+bg_color = Color(0.6, 0.45, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8745, 0.7176, 0.4235, 1)
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+
+[node name="EscenaJuicio" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_escena_juicio")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.17, 0.08, 0.07, 1)
+
+[node name="Titulo" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 76.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.8745, 0.7176, 0.4235, 1)
+theme_override_font_sizes/font_size = 30
+text = "🏛️ TRIBUNAL DEL EXPRESO - JUICIO FINAL"
+horizontal_alignment = 1
+
+[node name="VidasLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 84.0
+offset_right = -24.0
+offset_bottom = 128.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.88, 0.88, 1)
+theme_override_font_sizes/font_size = 22
+text = "Vidas: ❤️❤️❤️"
+horizontal_alignment = 2
+
+[node name="CajaDialogo" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.04
+anchor_top = 0.66
+anchor_right = 0.96
+anchor_bottom = 1.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_caja")
+
+[node name="Testimonio" type="RichTextLabel" parent="CajaDialogo"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Lady Alba: '¡Es imposible que yo lo hiciese! A las 10 en punto me fui a dormir a mi camarote y no volví a salir en toda la noche...'"
+selection_enabled = true
+
+[node name="Acciones" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -50.0
+offset_right = 400.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 32
+
+[node name="BotonReloj" type="Button" parent="Acciones"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745, 0.7176, 0.4235, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.05, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.05, 0.05, 0.05, 1)
+theme_override_colors/font_focus_color = Color(0.8745, 0.7176, 0.4235, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/focus = SubResource("StyleBoxFlat_boton_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_pressed")
+text = "Presentar Reloj de Bolsillo"
+
+[node name="BotonCoartada" type="Button" parent="Acciones"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8745, 0.7176, 0.4235, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.05, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.05, 0.05, 0.05, 1)
+theme_override_colors/font_focus_color = Color(0.8745, 0.7176, 0.4235, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/focus = SubResource("StyleBoxFlat_boton_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_pressed")
+text = "Presentar Coartada del Revisor"

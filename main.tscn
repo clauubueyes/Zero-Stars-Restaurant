@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://y2a15yhafnjb"]
+
+[ext_resource type="PackedScene" uid="uid://cpc14tla6lf8t" path="res://player.tscn" id="1_ig7tw"]
+
+[sub_resource type="Environment" id="Environment_0xm2m"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_8w0r3"]
+size = Vector2(20, 20)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_8w0r3"]
+
+[node name="Main" type="Node3D" unique_id=331246386]
+
+[node name="Player" parent="." unique_id=537304465 instance=ExtResource("1_ig7tw")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1112978520]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=118563640]
+environment = SubResource("Environment_0xm2m")
+
+[node name="Suelo" type="StaticBody3D" parent="." unique_id=2045324583]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Suelo" unique_id=271061028]
+mesh = SubResource("PlaneMesh_8w0r3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Suelo" unique_id=468475324]
+shape = SubResource("WorldBoundaryShape3D_8w0r3")
