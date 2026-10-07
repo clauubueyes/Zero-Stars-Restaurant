@@ -133,7 +133,8 @@ Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Unity Test Framework 1.7.0** instalado. El inventario completo está en
 [la auditoría inicial](Docs/PROJECT_AUDIT.md).
 
-El interruptor eléctrico está en la pared norte de cocina `(0.2, 1.45, 5.9)`: **E**
+El interruptor eléctrico está en cocina `(3.72, 1.45, 6.98)`, en la posición
+guardada por el usuario: **E**
 con manos libres conmuta los tres aparatos. Sin corriente, la comida vuelve
 gradualmente a ambiente mediante el mismo FoodSimulation. El HUD muestra W/kWh
 totales y por aparato; ON/OFF conserva energía. Next Day conserva los históricos

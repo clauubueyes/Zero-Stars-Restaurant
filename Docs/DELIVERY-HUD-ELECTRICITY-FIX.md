@@ -275,3 +275,22 @@ pedido Cheeseburger debe recogerlo y pagar una vez sin tener que moverlo.
 Confirmar en Game que se ve el mensaje breve y que los cambios manuales de escena
 siguen conservados. Las capturas originales sin HUD no identifican el resultado
 de aquella visita; no se afirma que se haya reproducido toda posible causa visual.
+
+## Versión aprobada para main (2026-10-07)
+
+El usuario confirmó que la entrega ya funciona en su Unity de `Zero Stars
+Restaurant Fixes` y autorizó publicar esta versión en main. El Editor interactivo
+ha compilado el código corregido. Se conserva íntegra la escena que ha guardado:
+los 697 documentos YAML mantienen sus IDs, sin objetos ni componentes eliminados
+o añadidos respecto de la última escena versionada. El único cambio de valores
+es la posición del interruptor eléctrico, ahora `(3.72, 1.45, 6.98)`; el resto del
+diff es orden y formato de serialización del Editor.
+
+Se mantienen los resultados completos de la implementación: 256/256 EditMode y
+244/244 PlayMode. Una prueba M12 usaba la posición anterior fija del jugador;
+ahora sitúa al jugador respecto del interruptor real. Con la escena guardada
+pasaron además **31/31 M12ElectricityTests PlayMode** y **4/4
+M12ElectricitySceneTests EditMode**, con salida 0 en ambas. XML bajo TestResults:
+`MainIntegrationElectricityPlay.xml` y `MainIntegrationElectricityScene.xml`.
+No se repiten las suites completas. No se regenera la escena ni se modifica la
+carpeta original más antigua. Unity continúa utilizando la carpeta Fixes.
