@@ -134,21 +134,118 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [UnityTest]
-        public IEnumerator RejectedPlacementStaysAvailableAndMustBeRemovedBeforeOfferingToTheNextCustomer()
+        public IEnumerator RejectedPlacementCannotBlockTheNextMatchingCustomerOrKeepThePreviousReservation()
         {
             Ready(); var firstOrderId = _service.Visit.Order.InstanceId;
             DishItem dish = null; yield return BuildDish(true, created => dish = created);
             var dishId = dish.State.InstanceId; var foods = dish.State.Components.ToArray(); PlaceAndPoll(dish);
             Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(825));
+            var feedback = Components<OrderFeedback>().Single();
+            Assert.That(feedback.Text.IndexOf("DELIVERY REJECTED"), Is.LessThan(feedback.Text.IndexOf("QUEUE ")),
+                "The rejection reason must be visible before the scrollable queue details.");
             Assert.That(dish.State.IsSold, Is.False); Assert.That(dish.GetComponent<Pickup>().enabled, Is.True);
             _service.Advance(30); yield return null;
             Assert.That(_service.Visit.Order.InstanceId, Is.Not.EqualTo(firstOrderId)); Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
             Assert.That(_service.Visit.Order.Offer.Dish.Id, Is.EqualTo("dish.cheeseburger"));
-            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(825));
-            dish.GetComponent<Rigidbody>().position += Vector3.right * 3; Physics.SyncTransforms(); _delivery.Poll();
-            PlaceAndPoll(dish); Assert.That(_service.LastResult.Accepted, Is.True);
+            Assert.That(_queue.Head.State.InstanceId, Is.EqualTo(_service.Visit.InstanceId));
+            Assert.That(_service.ActiveCustomer.transform.position, Is.EqualTo(_queue.ServicePosition.position));
+            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.True,
+                "The previous customer's rejected placement must not block the next matching order.");
+            Assert.That(_service.LastResult.Accepted, Is.True);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475)); Assert.That(dish.State.InstanceId, Is.EqualTo(dishId));
             Assert.That(dish.State.Components, Is.EqualTo(foods));
+            Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
+            _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475));
+        }
+
+        [UnityTest]
+        public IEnumerator TwoAutomaticPaidVisitsCarryTheOriginalDishUntilExitAndFreeThePadForTheNextCustomer()
+        {
+            Ready();
+            var nextCustomerId = _queue.Customers[1].State.InstanceId;
+            Assert.That(_service.ForceNextOrder(1), Is.True);
+            for (int visitIndex = 0; visitIndex < 2; visitIndex++)
+            {
+                if (visitIndex > 0)
+                {
+                    for (int frame = 0; frame < 500 && (_service.Visit == null || _service.Visit.Stage != CustomerStage.Wait); frame++)
+                        yield return new WaitForFixedUpdate();
+                    Assert.That(_service.Visit, Is.Not.Null, "The next customer must reach Service Position.");
+                    Assert.That(_service.Visit.InstanceId, Is.EqualTo(nextCustomerId));
+                    Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
+                }
+                var visit = _service.Visit;
+                var customer = _service.ActiveCustomer;
+                var carrier = _service.ActiveDishCarrier;
+                DishItem dish = null; yield return BuildDish(visitIndex == 1, value => dish = value);
+                var dishId = dish.State.InstanceId;
+                FoodItem[] originals = dish.GetComponentsInChildren<FoodItem>();
+                Vector3[] offsets = originals.Select(food => dish.transform.InverseTransformPoint(food.transform.position)).ToArray();
+                BoxCollider pad = _delivery.Support;
+                Rigidbody body = dish.GetComponent<Rigidbody>();
+                body.rotation = Quaternion.Euler(0f, visitIndex == 0 ? 25f : -30f, 0f);
+                body.position = pad.bounds.center + new Vector3(visitIndex == 0 ? -.4f : .4f, 1f, visitIndex == 0 ? .2f : -.2f);
+                Physics.SyncTransforms();
+                body.position += Vector3.up * (pad.bounds.max.y + .08f - dish.GetComponent<BoxCollider>().bounds.min.y);
+                body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+                var data = new SerializedObject(_service); data.FindProperty("_advanceAutomatically").boolValue = true; data.ApplyModifiedPropertiesWithoutUndo();
+                for (int frame = 0; frame < 100 && !dish.State.IsSold; frame++) yield return new WaitForFixedUpdate();
+                Assert.That(dish.State.IsSold, Is.True, _delivery.PlacementMessage);
+                Assert.That(visit.Order.Result.Accepted, Is.True);
+                Assert.That(carrier.Dish, Is.SameAs(dish));
+                Assert.That(visit.Order.Result.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(dishId));
+                long expectedBalance = visitIndex == 0 ? 1350 : 1825;
+                Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(expectedBalance));
+                Assert.That(_service.Ledger.Transactions.Count(transaction => transaction.Category == LedgerCategory.Sales), Is.EqualTo(visitIndex + 1));
+                for (int frame = 0; frame < 1600 && visit.Stage != CustomerStage.Finished; frame++)
+                {
+                    yield return new WaitForFixedUpdate(); yield return null;
+                    if (visit.Stage == CustomerStage.Finished) break;
+                    Assert.That(carrier.Dish, Is.SameAs(dish), "A paid customer cannot leave without the sold dish.");
+                    Assert.That(dish.transform.IsChildOf(customer.transform), Is.True);
+                    for (int index = 0; index < originals.Length; index++)
+                        Assert.That(Vector3.Distance(originals[index].transform.position, dish.transform.TransformPoint(offsets[index])), Is.LessThan(.002f));
+                    Assert.That(dish.GetComponentsInChildren<Collider>(true).All(collider => !collider.enabled), Is.True);
+                    Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(expectedBalance));
+                }
+                Assert.That(visit.Stage, Is.EqualTo(CustomerStage.Finished), "Exit must release the FIFO reservation.");
+                yield return null;
+                Assert.That(dish == null && customer == null, Is.True);
+                Assert.That(originals.All(food => food == null), Is.True);
+                Assert.That(_simulation.Foods, Is.Empty);
+                Assert.That(_queue.Customers.All(queued => queued.State.InstanceId != visit.InstanceId), Is.True);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator AutomaticNextMatchingCustomerCollectsTheRejectedDishWithoutMovingIt()
+        {
+            Ready();
+            var rejectedVisit = _service.Visit;
+            var matchingCustomerId = _queue.Customers[1].State.InstanceId;
+            Assert.That(_service.ForceNextOrder(1), Is.True);
+            DishItem dish = null; yield return BuildDish(true, value => dish = value);
+            var originalDishId = dish.State.InstanceId;
+            var originalFoods = dish.State.Components.ToArray();
+            Rigidbody body = dish.GetComponent<Rigidbody>();
+            body.position = _delivery.Support.bounds.center + Vector3.up;
+            Physics.SyncTransforms();
+            body.position += Vector3.up * (_delivery.Support.bounds.max.y + .08f - dish.GetComponent<BoxCollider>().bounds.min.y);
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            var data = new SerializedObject(_service); data.FindProperty("_advanceAutomatically").boolValue = true; data.ApplyModifiedPropertiesWithoutUndo();
+            for (int frame = 0; frame < 1600 && !dish.State.IsSold; frame++)
+                yield return new WaitForFixedUpdate();
+            Assert.That(rejectedVisit.Stage, Is.EqualTo(CustomerStage.Finished));
+            Assert.That(rejectedVisit.Order.Result.Accepted, Is.False);
+            Assert.That(dish.State.IsSold, Is.True, "An old rejection cannot block a later matching customer.");
+            Assert.That(_service.Visit.InstanceId, Is.EqualTo(matchingCustomerId));
+            Assert.That(_service.ActiveDishCarrier.Dish, Is.SameAs(dish));
+            Assert.That(dish.State.InstanceId, Is.EqualTo(originalDishId));
+            Assert.That(dish.State.Components, Is.EqualTo(originalFoods));
+            Assert.That(_service.ResultRevision, Is.EqualTo(2));
+            Assert.That(_service.Ledger.Transactions.Count(transaction => transaction.Category == LedgerCategory.Sales), Is.EqualTo(1));
+            Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1475));
+            Assert.That(_queue.Customers.All(customer => customer.State.InstanceId != rejectedVisit.InstanceId), Is.True);
         }
 
         [UnityTest]

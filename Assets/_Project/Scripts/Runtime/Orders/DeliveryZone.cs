@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
@@ -16,7 +17,7 @@ namespace ZeroStarRestaurant.Orders
         [SerializeField, Min(0.001f)] private float _placementTolerance = 0.06f;
         [SerializeField, Min(0f)] private float _maximumPlacementSpeed = 0.5f;
         [SerializeField, Range(0.01f, 1f)] private float _minimumFootprintOverlap = 0.2f;
-        private readonly HashSet<DishItem> _processedPlacements = new HashSet<DishItem>();
+        private readonly Dictionary<DishItem, Guid> _processedPlacements = new Dictionary<DishItem, Guid>();
         public CustomerServiceLoop Service => _service;
         public BoxCollider Support => _support;
         public string PlacementMessage { get; private set; } = "";
@@ -48,8 +49,9 @@ namespace ZeroStarRestaurant.Orders
                 if (pickup == null || !pickup.isActiveAndEnabled || pickup.IsHeld || pickup.Body == null || pickup.Body.isKinematic) continue;
                 present.Add(dish);
             }
-            // A rejected dish must leave (or be picked up) before it can be submitted to another customer.
-            _processedPlacements.RemoveWhere(dish => dish == null || !present.Contains(dish));
+            // A rejection belongs to one order, never to every future customer visiting this pad.
+            foreach (DishItem tracked in new List<DishItem>(_processedPlacements.Keys))
+                if (tracked == null || !present.Contains(tracked)) _processedPlacements.Remove(tracked);
             PlacementMessage = unconfirmedFood ? "Delivery: look at the stack and press F to finalize" :
                 heldDish ? "Delivery: release the dish on the green pad" : "Delivery: place a finalized dish on the green pad";
             if (_service.Visit == null || _service.Visit.Stage != CustomerStage.Wait)
@@ -70,7 +72,9 @@ namespace ZeroStarRestaurant.Orders
                 _support == null || !_support.enabled || !_support.gameObject.activeInHierarchy ||
                 dish == null || !dish.isActiveAndEnabled || dish.State == null || !dish.State.IsFinalized ||
                 dish.State.IsSold || !dish.IsIntact) return Decline("Delivery: finalize an intact dish first (F)");
-            if (_processedPlacements.Contains(dish)) return Decline("Delivery rejected: remove or pick up the dish before retrying");
+            if (_service.Visit != null && _processedPlacements.TryGetValue(dish, out Guid processedOrder) &&
+                processedOrder == _service.Visit.Order.InstanceId)
+                return Decline("Delivery: this order already evaluated the dish");
             Pickup pickup = dish.GetComponent<Pickup>();
             BoxCollider proxy = dish.GetComponent<BoxCollider>();
             Rigidbody body = dish.GetComponent<Rigidbody>();
@@ -90,8 +94,10 @@ namespace ZeroStarRestaurant.Orders
             if (body.linearVelocity.sqrMagnitude > _maximumPlacementSpeed * _maximumPlacementSpeed || body.angularVelocity.sqrMagnitude > 4f)
                 return Decline("Delivery: waiting for the dish to settle");
             if (!_service.TryAcceptDelivery(this, dish)) return Decline("Delivery: waiting for a customer ready to receive");
-            _processedPlacements.Add(dish);
-            PlacementMessage = dish.State.IsSold ? "Delivery accepted" : "Delivery rejected: remove or pick up the dish before retrying";
+            _processedPlacements[dish] = _service.Visit.Order.InstanceId;
+            PlacementMessage = dish.State.IsSold ? "Delivery accepted" :
+                "Delivery rejected: ordered " + _service.LastResult.Evaluation.RequestedDish.DisplayName +
+                "; delivered " + _service.LastResult.Evaluation.DeliveredDish.DisplayName;
             return true;
         }
 

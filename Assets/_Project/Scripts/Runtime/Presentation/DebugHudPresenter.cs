@@ -24,7 +24,7 @@ namespace ZeroStarRestaurant.Presentation
         [SerializeField] private DishInspectionFeedback _dish;
         private readonly Vector2[] _scroll = new Vector2[8];
         private GUIStyle _style;
-        private int _purchaseRevision, _billRevision;
+        private int _purchaseRevision, _billRevision, _deliveryRevision;
         private string _message = "";
         private double _messageUntil;
 
@@ -37,7 +37,7 @@ namespace ZeroStarRestaurant.Presentation
 
         private void Awake()
         {
-            try { Validate(); _purchaseRevision = _procurement.MessageRevision; _billRevision = _costs.BillMessageRevision; }
+            try { Validate(); _purchaseRevision = _procurement.MessageRevision; _billRevision = _costs.BillMessageRevision; _deliveryRevision = _service.ResultRevision; }
             catch (ArgumentException exception) { Debug.LogError(exception.Message, this); enabled = false; }
         }
 
@@ -48,6 +48,8 @@ namespace ZeroStarRestaurant.Presentation
             { _purchaseRevision = _procurement.MessageRevision; text = _procurement.LastMessage; }
             if (_billRevision != _costs.BillMessageRevision)
             { _billRevision = _costs.BillMessageRevision; text += (text.Length == 0 ? "" : "\n") + _costs.LastBillMessage; }
+            if (_deliveryRevision != _service.ResultRevision)
+            { _deliveryRevision = _service.ResultRevision; text += (text.Length == 0 ? "" : "\n") + _service.LastDeliveryMessage; }
             if (text.Length == 0) return;
             _message = text; _messageUntil = Time.unscaledTimeAsDouble + 6;
         }

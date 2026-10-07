@@ -9,6 +9,9 @@ namespace ZeroStarRestaurant.Orders
     public sealed class OrderFeedback : MonoBehaviour
     {
         [SerializeField] private CustomerServiceLoop _service;
+        public int ResultRevision => _service != null ? _service.ResultRevision : 0;
+        public string LastDeliveryMessage => _service == null || _service.LastResult == null ? "" :
+            "Customer #" + _service.LastResultCustomerNumber.ToString("D3") + " | " + BriefResultText(_service.LastResult);
         public static string Money(long cents) => IngredientPurchaseStation.FormatCents(cents);
         public static string QueueText(CustomerQueueController queue)
         {
@@ -22,6 +25,11 @@ namespace ZeroStarRestaurant.Orders
             }
             return text.ToString();
         }
+        public static string BriefResultText(OrderResult result) => result.Accepted ?
+            "DELIVERY ACCEPTED | Paid " + Money(result.PaymentCents) + "\n" + result.Evaluation.DeliveredDish.DisplayName + " taken by customer" :
+            "DELIVERY REJECTED | No payment\nOrdered: " + result.Evaluation.RequestedDish.DisplayName +
+            " | Delivered: " + result.Evaluation.DeliveredDish.DisplayName;
+
         public static string ResultText(OrderResult result)
         {
             var evaluation = result.Evaluation; var dish = evaluation.DeliveredDish;
@@ -52,6 +60,7 @@ namespace ZeroStarRestaurant.Orders
                     "Customer #" + _service.CustomerNumber.ToString("D3") + " | " + _service.Visit.Stage +
                     "\nOrder: " + _service.Visit.Order.Offer.Dish.DisplayName + " | " + Money(_service.Visit.Order.Offer.SalePriceCents);
                 if (_service.DeliveryZone != null) order += "\n" + _service.DeliveryZone.PlacementMessage;
+                if (_service.LastResult != null) order += "\nLast delivery: " + LastDeliveryMessage;
                 if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
                 if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult);
                 return order;

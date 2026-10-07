@@ -34,6 +34,8 @@ namespace ZeroStarRestaurant.Customers
         public PaymentLedger Ledger { get; private set; }
         public CustomerVisit Visit { get; private set; }
         public OrderResult LastResult { get; private set; }
+        public int ResultRevision { get; private set; }
+        public int LastResultCustomerNumber { get; private set; }
         public int CustomerNumber { get; private set; }
         public double NextCustomerSeconds => _queue != null ? _queue.NextArrivalSeconds : Visit == null ? Math.Max(0, _remainingSeconds) : 0;
 
@@ -182,7 +184,8 @@ namespace ZeroStarRestaurant.Customers
             Visit.Receive(); Visit.BeginEvaluation();
             if (!_dishCarrier.TryReceive(dish, Visit.Order, Ledger, out OrderResult result))
             { Visit.ResumeWaiting(); return false; }
-            Visit.Resolve(); LastResult = result; _remainingSeconds = _configuration.ResultDisplaySeconds;
+            Visit.Resolve(); LastResult = result; LastResultCustomerNumber = CustomerNumber; ResultRevision++;
+            _remainingSeconds = _configuration.ResultDisplaySeconds;
             return true;
         }
 

@@ -278,7 +278,7 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void RejectionKeepsDishAndRequiresANewPlacementBeforeNextCustomer()
+        public void RejectionKeepsDishAndDoesNotBlockTheNextMatchingCustomer()
         {
             Ready(1); DishItem dish = FinalDish(); Place(dish); _delivery.Poll();
             Assert.That(_service.LastResult.Accepted, Is.False); Assert.That(dish.gameObject.activeSelf, Is.True);
@@ -288,9 +288,40 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_service.ForceNextOrder(0), Is.True);
             _service.Advance(10); _service.Advance(100); _service.Advance(3); _service.Advance(100); _service.Advance(1);
             Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
-            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.False);
-            dish.transform.position += Vector3.right * 3; Physics.SyncTransforms(); _delivery.Poll();
-            Place(dish); _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+            _delivery.Poll(); Assert.That(_service.Visit.Order.IsCompleted, Is.True);
+            Assert.That(_carrier.Dish, Is.SameAs(dish));
+            _delivery.Poll(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
+        }
+
+        [Test]
+        public void EachOrderEvaluatesTheSameRejectedDishOnceAndOnlyTheMatchingCustomerPays()
+        {
+            Ready(1); DishItem dish = FinalDish(); Place(dish);
+            var originalDishId = dish.State.InstanceId;
+            var orderIds = new HashSet<Guid>();
+            var feedback = _service.gameObject.AddComponent<OrderFeedback>(); Set(feedback, "_service", _service);
+            for (int index = 0; index < 3; index++)
+            {
+                if (index > 0)
+                {
+                    Assert.That(_service.ForceNextOrder(index == 2 ? 0 : 1), Is.True);
+                    _service.Advance(10); _service.Advance(100); _service.Advance(3); _service.Advance(100); _service.Advance(1);
+                    Assert.That(_service.Visit.Stage, Is.EqualTo(CustomerStage.Wait));
+                }
+                Assert.That(orderIds.Add(_service.Visit.Order.InstanceId), Is.True);
+                _delivery.Poll();
+                OrderResult result = _service.LastResult;
+                Assert.That(result.Accepted, Is.EqualTo(index == 2));
+                Assert.That(result.Evaluation.DeliveredDish.InstanceId, Is.EqualTo(originalDishId));
+                Assert.That(feedback.ResultRevision, Is.EqualTo(index + 1));
+                Assert.That(feedback.LastDeliveryMessage, Does.Contain(index == 2 ? "DELIVERY ACCEPTED" : "DELIVERY REJECTED"));
+                Assert.That(feedback.LastDeliveryMessage, Does.Contain(index == 2 ? "Paid" : "Ordered: Cheeseburger | Delivered: Hamburger"));
+                for (int repeat = 0; repeat < 20; repeat++) _delivery.Poll();
+                Assert.That(_service.LastResult, Is.SameAs(result));
+                Assert.That(feedback.ResultRevision, Is.EqualTo(index + 1));
+                Assert.That(_service.Ledger.Transactions.Count(transaction => transaction.Category == LedgerCategory.Sales), Is.EqualTo(index == 2 ? 1 : 0));
+            }
+            Assert.That(_carrier.Dish, Is.SameAs(dish)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(500));
         }
 
         [Test]
