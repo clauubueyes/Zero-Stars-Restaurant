@@ -7,6 +7,27 @@ namespace ZeroStarRestaurant.Tests
     public sealed class ElectricitySupplyTests
     {
         [Test]
+        public void IndividualSwitchChoicesSurviveCutsAndDoNotResetMeters()
+        {
+            var supply = new ElectricitySupplyState(true);
+            var fridge = new ElectricalApplianceState(); var grill = new ElectricalApplianceState(false);
+            var meter = new ElectricityMeter(150);
+            supply.Advance(3600, new[] { meter });
+            for (int cut = 0; cut < 3; cut++)
+            {
+                supply.SetOn(false);
+                Assert.That(fridge.HasPower(supply.IsOn), Is.False); Assert.That(fridge.IsOn, Is.True);
+                Assert.That(grill.HasPower(supply.IsOn), Is.False); Assert.That(grill.IsOn, Is.False);
+                supply.Advance(3600, new[] { meter }); supply.SetOn(true);
+                Assert.That(fridge.HasPower(supply.IsOn), Is.True); Assert.That(grill.HasPower(supply.IsOn), Is.False);
+            }
+            fridge.SetOn(false); supply.SetOn(false); supply.SetOn(true);
+            Assert.That(fridge.HasPower(supply.IsOn), Is.False);
+            Assert.That(meter.ConsumedKilowattHours, Is.EqualTo(.15).Within(1e-12));
+            Assert.That(new ElectricalApplianceState().IsOn, Is.True, "A new session uses its own initial switch setting.");
+        }
+
+        [Test]
         public void NewSessionStartsOffAndCutsAndRestorationPreserveIndividualAndTotalEnergy()
         {
             var supply = new ElectricitySupplyState();

@@ -11,11 +11,17 @@ namespace ZeroStarRestaurant.Utilities
         [SerializeField] private HeatSource _thermalSource;
         [SerializeField, Min(0), Tooltip("Nominal continuous load while the thermal appliance operates, including when empty.")]
         private float _ratedWatts = 100;
+        [SerializeField, Tooltip("Individual switch setting at session start; preserved during general supply cuts.")]
+        private bool _initiallyOn = true;
+        [SerializeField] private string _applianceName;
         public RestaurantElectricity Supply => _supply;
         public HeatSource ThermalSource => _thermalSource;
         public ElectricityMeter Meter { get; private set; }
+        public ElectricalApplianceState State { get; private set; }
+        public string DisplayName => string.IsNullOrWhiteSpace(_applianceName) ? name : _applianceName;
+        public bool IsOn => State != null && State.IsOn;
         public double RatedWatts => Meter == null ? _ratedWatts : Meter.RatedWatts;
-        public bool IsPowered => isActiveAndEnabled && _supply != null && _supply.IsOn;
+        public bool IsPowered => isActiveAndEnabled && State != null && _supply != null && State.HasPower(_supply.IsOn);
         public bool IsOperating => IsPowered && Meter != null && _thermalSource != null && _thermalSource.IsOperational;
 
         public void Validate()
@@ -28,8 +34,14 @@ namespace ZeroStarRestaurant.Utilities
 
         private void Awake()
         {
-            try { Validate(); Meter = new ElectricityMeter(_ratedWatts); }
+            try { Validate(); Meter = new ElectricityMeter(_ratedWatts); State = new ElectricalApplianceState(_initiallyOn); }
             catch (ArgumentException exception) { Debug.LogError("Invalid electrical appliance: " + exception.Message, this); enabled = false; }
+        }
+
+        public bool SetOn(bool isOn)
+        {
+            if (!isActiveAndEnabled || State == null) return false;
+            State.SetOn(isOn); return true;
         }
     }
 }

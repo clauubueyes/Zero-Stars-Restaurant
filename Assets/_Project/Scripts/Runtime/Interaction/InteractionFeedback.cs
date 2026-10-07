@@ -24,7 +24,7 @@ namespace ZeroStarRestaurant.Interaction
                     (_input.IsMouseHolding ? "Release LMB to let go" : "Hold/release LMB or [" + _input.DropBinding + "] Drop"));
             else if (_interaction.FocusedTarget != null)
                 prompt = _interaction.FocusedTarget is Pickup ? "Hold LMB to grab " + _interaction.FocusedTarget.DisplayName :
-                    "[" + _input.InteractBinding + "] " + _interaction.FocusedTarget.ActionLabel + " " + _interaction.FocusedTarget.DisplayName;
+                    "[" + _input.InteractBinding + "] " + _interaction.FocusedTarget.PromptLabel;
             if (prompt.Length > 0)
                 GUI.Box(new Rect(Screen.width / 2f - 260f, Screen.height / 2f + 32f, 520f, 42f), prompt, _style);
         }

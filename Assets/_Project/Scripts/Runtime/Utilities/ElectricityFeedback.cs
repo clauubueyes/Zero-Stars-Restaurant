@@ -16,8 +16,9 @@ namespace ZeroStarRestaurant.Utilities
             foreach (ElectricalAppliance appliance in _supply.Appliances)
             {
                 if (appliance == null || appliance.Meter == null) continue;
-                text.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1} | {2:F0} W | {3:F6} kWh\n", appliance.name,
-                    appliance.IsOperating ? "ON" : "OFF", appliance.RatedWatts, appliance.Meter.ConsumedKilowattHours);
+                text.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1} | {2} | {3:F0} W | {4:F6} kWh\n", appliance.DisplayName,
+                    appliance.IsOn ? "ON" : "OFF", appliance.IsOperating ? "Running" : "Stopped",
+                    appliance.RatedWatts, appliance.Meter.ConsumedKilowattHours);
             }
             GUI.Box(new Rect(Screen.width - 432, Screen.height - 115, 420, 103), text.ToString());
         }
