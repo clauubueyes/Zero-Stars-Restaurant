@@ -24,7 +24,8 @@ namespace ZeroStarRestaurant.Economy
         public int ProductCount => _prefabs == null ? 0 : _prefabs.Length + (_platePrefab != null ? 1 : 0);
         public string ProductName(int index) => IsPlateIndex(index) ? "Plate" : ValidIndex(index) ? _prefabs[index].Definition.DisplayName : "Unavailable";
         public int PriceCents(int index) => IsPlateIndex(index) ? _platePrice : ValidIndex(index) ? _prices[index] : 0;
-        public static string FormatCents(long cents) => "€" + (cents / 100) + "." + (cents % 100).ToString("D2", CultureInfo.InvariantCulture);
+        public static string FormatCents(long cents) => (cents < 0 ? "-€" : "€") +
+            (Math.Abs((decimal)cents) / 100m).ToString("0.00", CultureInfo.InvariantCulture);
 
         private void Awake()
         {
@@ -56,6 +57,7 @@ namespace ZeroStarRestaurant.Economy
             purchased = null;
             if (!IsAvailable(index) || !ValidIndex(index)) { LastMessage = "Procurement unavailable."; return false; }
             PaymentLedger ledger = _service.Ledger;
+            if (ledger.IsDaySettled) { LastMessage = "Day settled. Start Next Day before purchasing."; return false; }
             if (ledger.BalanceCents < _prices[index])
             { LastMessage = "Insufficient funds for " + ProductName(index) + "."; return false; }
             FoodItem prefab = _prefabs[index];
@@ -89,6 +91,7 @@ namespace ZeroStarRestaurant.Economy
             purchased = null;
             int index = _prefabs == null ? -1 : _prefabs.Length;
             if (!IsPlateIndex(index) || !IsAvailable(index)) { LastMessage = "Plate unavailable."; return false; }
+            if (_service.Ledger.IsDaySettled) { LastMessage = "Day settled. Start Next Day before purchasing."; return false; }
             if (_service.Ledger.BalanceCents < _platePrice) { LastMessage = "Insufficient funds for Plate."; return false; }
             BoxCollider box = _platePrefab.GetComponent<BoxCollider>();
             if (_platePrefab.gameObject.activeSelf || box == null)

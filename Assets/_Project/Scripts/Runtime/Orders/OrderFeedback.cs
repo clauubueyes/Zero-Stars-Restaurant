@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
+using ZeroStarRestaurant.Economy;
 
 namespace ZeroStarRestaurant.Orders
 {
@@ -10,7 +11,7 @@ namespace ZeroStarRestaurant.Orders
         [SerializeField] private CustomerServiceLoop _service;
         private GUIStyle _style;
         private Vector2 _scroll;
-        public static string Money(long cents) => "€" + (cents / 100m).ToString("0.00", CultureInfo.InvariantCulture);
+        public static string Money(long cents) => IngredientPurchaseStation.FormatCents(cents);
         public static string QueueText(CustomerQueueController queue)
         {
             var text = new StringBuilder("QUEUE " + queue.Count + "/" + queue.Capacity + (queue.IsFull ? " (FULL)" : "") + "\n");

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
+using ZeroStarRestaurant.Economy;
 
 namespace ZeroStarRestaurant.Restaurant
 {
@@ -9,6 +10,8 @@ namespace ZeroStarRestaurant.Restaurant
     public sealed class RestaurantDayController : MonoBehaviour
     {
         [SerializeField] private CustomerQueueController _queue;
+        [SerializeField] private RestaurantOperatingCosts _operatingCosts;
+        [SerializeField] private bool _requiresOperatingCosts;
         [SerializeField, Range(0, 23)] private int _startingHour = 9;
         [SerializeField, Range(0, 59)] private int _startingMinute;
         [SerializeField, Range(0, 23)] private int _openingHour = 9;
@@ -23,11 +26,14 @@ namespace ZeroStarRestaurant.Restaurant
         private bool _paused;
         public RestaurantDay State { get; private set; }
         public CustomerQueueController Queue => _queue;
+        public RestaurantOperatingCosts OperatingCosts => _operatingCosts;
         public bool CanAdmitCustomers => isActiveAndEnabled && State != null && State.CanAdmitCustomers;
 
         public void Validate()
         {
             if (_queue == null || _queue.DayController != this) throw new ArgumentException("Day and queue need explicit mutual references.");
+            if (_requiresOperatingCosts && _operatingCosts == null) throw new ArgumentException("This day requires operating costs.");
+            if (_operatingCosts != null) _operatingCosts.Validate();
             RequireClockField(_startingHour, 23); RequireClockField(_openingHour, 23); RequireClockField(_closingHour, 23);
             RequireClockField(_startingMinute, 59); RequireClockField(_openingMinute, 59); RequireClockField(_closingMinute, 59);
             RequireSpeed(); CreateState();
@@ -49,13 +55,30 @@ namespace ZeroStarRestaurant.Restaurant
             double worldSeconds = simulationSeconds * _worldSecondsPerSimulationSecond;
             if (double.IsInfinity(worldSeconds)) worldSeconds = double.MaxValue;
             State.SetPaused(_paused); State.Advance(worldSeconds, _queue.Count);
+            SettleIfClosed();
         }
-        public void RefreshOccupancy() { if (State != null) State.Advance(0, _queue.Count); }
+        public void RefreshOccupancy()
+        {
+            if (State == null) return;
+            State.Advance(0, _queue.Count); SettleIfClosed();
+        }
+        private void SettleIfClosed()
+        {
+            if (State.Stage == RestaurantDayStage.Closed && _operatingCosts != null) _operatingCosts.TrySettleClosedDay();
+        }
         [ContextMenu("Development: Start Day / Next Day")]
         private void StartDayFromInspector() => StartNextDay();
         public bool StartNextDay()
         {
-            if (!isActiveAndEnabled || State == null || !State.TryStartDay(_queue.Count)) return false;
+            if (!isActiveAndEnabled || State == null || (_requiresOperatingCosts && _operatingCosts == null)) return false;
+            bool nextDay = State.Stage == RestaurantDayStage.Closed;
+            if (nextDay && _operatingCosts != null)
+            {
+                SettleIfClosed();
+                if (!_operatingCosts.CanBeginNextDay) return false;
+            }
+            if (!State.TryStartDay(_queue.Count)) return false;
+            if (nextDay && _operatingCosts != null) _operatingCosts.BeginNextDay();
             _queue.RestartAdmissionDelay(); return true;
         }
         [ContextMenu("Development: Pause World Clock")]

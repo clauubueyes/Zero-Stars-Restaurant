@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ZeroStarRestaurant.Utilities
 {
-    [DefaultExecutionOrder(-150)]
+    [DefaultExecutionOrder(-250)]
     [DisallowMultipleComponent]
     public sealed class RestaurantElectricity : MonoBehaviour
     {
@@ -55,6 +55,16 @@ namespace ZeroStarRestaurant.Utilities
             foreach (ElectricalAppliance appliance in _appliances)
                 if (appliance.IsOperating) meters.Add(appliance.Meter);
             State.Advance(simulationSeconds, meters);
+        }
+        public void BeginDay()
+        {
+            State.BeginDay();
+            foreach (ElectricalAppliance appliance in _appliances) appliance.Meter.BeginDay();
+        }
+        public void CompleteDay()
+        {
+            State.CompleteDay();
+            foreach (ElectricalAppliance appliance in _appliances) appliance.Meter.CompleteDay();
         }
         [ContextMenu("Development: Power ON")]
         public void PowerOn() => SetPower(true);
