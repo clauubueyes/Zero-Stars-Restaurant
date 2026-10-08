@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using ZeroStarRestaurant.Dishes;
+using ZeroStarRestaurant.Hygiene;
 
 namespace ZeroStarRestaurant.Interaction
 {
@@ -10,6 +11,7 @@ namespace ZeroStarRestaurant.Interaction
         [SerializeField] private InputActionAsset _inputActions;
         [SerializeField] private PlayerInteraction _interaction;
         [SerializeField] private DishAssemblyInteraction _assembly;
+        [SerializeField] private CleaningInteraction _cleaning;
         private InputActionAsset _ownedActions;
         private InputAction _interact;
         private InputAction _drop;
@@ -62,6 +64,7 @@ namespace ZeroStarRestaurant.Interaction
             _ownedActions?.Disable();
             _physicalHold?.Disable();
             _mouseHolding = false; _hadControl = false;
+            _cleaning?.Stop();
             if (_interaction != null)
                 _interaction.Drop();
         }
@@ -73,20 +76,25 @@ namespace ZeroStarRestaurant.Interaction
                 Destroy(_ownedActions);
         }
 
-        private void Update()
+        private void Update() => ProcessInput(_interaction.HasControl, Time.deltaTime);
+
+        // Explicit control/time lets the same input path run without an OS cursor in tests.
+        private void ProcessInput(bool hasControl, double elapsedSeconds)
         {
-            if (!_interaction.HasControl)
+            if (!hasControl)
             {
+                _cleaning?.Stop();
                 if (_mouseHolding) _interaction.Drop();
                 _mouseHolding = false; _hadControl = false; return;
             }
             bool canGrab = _hadControl;
             _hadControl = true;
-            if (UpdateMouseHold(canGrab && !_drop.WasPressedThisFrame() && !_interact.WasPressedThisFrame())) return;
+            if (UpdateMouseHold(canGrab && !_drop.WasPressedThisFrame() && !_interact.WasPressedThisFrame())) { _cleaning?.Stop(); return; }
             // One intent per frame. A simultaneous drop/throw cannot also grab a new object.
             // Legacy Throw remains callable for development; release is the primary mouse path.
-            if (_drop.WasPressedThisFrame()) { _interaction.Drop(); _mouseHolding = false; }
-            else if (_interact.WasPressedThisFrame()) _interaction.TryInteract();
+            if (_drop.WasPressedThisFrame()) { _cleaning?.Stop(); _interaction.Drop(); _mouseHolding = false; }
+            else if (_cleaning != null && _cleaning.HasHeldTool) _cleaning.Advance(elapsedSeconds, _interact.IsPressed(), true);
+            else { _cleaning?.Stop(); if (_interact.WasPressedThisFrame()) _interaction.TryInteract(); }
         }
 
         private bool UpdateMouseHold(bool canGrab)

@@ -56,6 +56,7 @@ namespace ZeroStarRestaurant.Food
                     continue;
                 ThermalEnvironment environment = ambient;
                 bool hasSource = false;
+                HeatSource selectedSource = null;
                 foreach (HeatSource source in _heatSources)
                 {
                     if (source == null || !source.isActiveAndEnabled ||
@@ -66,10 +67,12 @@ namespace ZeroStarRestaurant.Food
                     if (!hasSource || candidate.ResponseMultiplier > environment.ResponseMultiplier)
                     {
                         environment = candidate;
-                        hasSource = true;
+                        hasSource = true; selectedSource = source;
                     }
                 }
+                double previousDose = food.State.Cooking?.EquivalentSeconds ?? 0;
                 food.State.Advance(elapsedSeconds, environment, preservation: preservation);
+                selectedSource?.RecordCookingUse(food.State.InstanceId, (food.State.Cooking?.EquivalentSeconds ?? 0) - previousDose);
             }
         }
     }

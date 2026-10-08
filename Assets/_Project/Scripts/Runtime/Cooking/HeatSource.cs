@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using ZeroStarRestaurant.Hygiene;
 using ZeroStarRestaurant.Food;
 using ZeroStarRestaurant.Utilities;
 
@@ -10,6 +12,10 @@ namespace ZeroStarRestaurant.Cooking
         [SerializeField, Tooltip("Explicit electrical dependency. Unassigned keeps historical standalone thermal fixtures usable.")]
         private ElectricalAppliance _electricity;
         [SerializeField] private bool _requiresElectricity;
+        [SerializeField] private CleanableSurface _cleanableSurface;
+        public CleanableSurface CleanableSurface => _cleanableSurface;
+        // Observe evidence emitted by the only food driver; never advance food here.
+        public void RecordCookingUse(Guid foodUnitId, double equivalentSeconds) => _cleanableSurface?.RecordCookingUse(foodUnitId, equivalentSeconds);
         public ElectricalAppliance Electricity => _electricity;
         public bool RequiresElectricity => _requiresElectricity;
         public virtual bool IsOperational => isActiveAndEnabled &&
