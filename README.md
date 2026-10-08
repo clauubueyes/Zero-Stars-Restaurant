@@ -1,14 +1,15 @@
 # Zero Star Restaurant
 
-Estado actual: **M16: Reputation & Delayed Consequences**, desde M15 validado
-`3799710`, en `feature/reputation-delayed-consequences`. M14 conserva completitud
-y pago; M15 conserva causas y reacción; M16 añade reputación de sesión e historial.
-Satisfied/Unhappy/Complaint cambian reputación al terminar la visita. Un Health
-Incident registra riesgo al cobrar y se resuelve después de Exit y un retraso de
-GameTime, sin retirar dinero. Pendientes e historial sobreviven a Next Day.
-Ver [M16](Docs/M16.md) para configuración, pruebas y resolución de desarrollo;
-[M15](Docs/M15.md) para calidad y [M14](Docs/M14.md) para completitud/pago.
-F sigue siendo opcional.
+Estado actual: **M17: Hygiene & Cleaning**, desde M16 validado `1609a29`, en
+`feature/hygiene-cleaning`. Proyecto entregado:
+**`C:/Users/Usuario/Zero Stars Restaurant M15`**.
+Grill, Prep/Assembly y dos zonas de suelo mantienen suciedad independiente de
+sesión. Cocinar/contactar ensucia; CleaningTool sostenida y E mantenida limpian
+gradualmente la superficie apuntada. Manchas nuevas y prompt contextual muestran
+el estado sin sustituir materiales ni redistribuir el restaurante. Next Day
+conserva suciedad. Ver [M17](Docs/M17.md) para valores y prueba manual.
+M14 conserva completitud/pago, [M15](Docs/M15.md) calidad/reacción y
+[M16](Docs/M16.md) reputación/riesgos diferidos; M17 no modifica esas reglas.
 
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
 en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.

@@ -61,7 +61,16 @@ M15 no implementa reputación ni enfermedad diferida; M16 está autorizado apart
 M15 en reputación e historial entre visitas y días, con resolución sanitaria
 posterior a Exit por GameTime y RNG inyectable. Mantiene pagos M14 y datos M15.
 Validación completa en la carpeta entregada M14: **333/333 EditMode y 290/290
-PlayMode**, sin fallos/omisiones. Ver [M16](M16.md) y ADR 0022. No M17.
+PlayMode**, sin fallos/omisiones. Ver [M16](M16.md) y ADR 0022.
+
+**M17: Hygiene & Cleaning**, desde M16 `1609a29`, añade suciedad continua e
+independiente por superficie, grasa por cocción real y residuos por contacto.
+CleaningTool y E mantenida limpian físicamente el objetivo próximo. Manchas
+nuevas y prompt del HUD conservan materiales/distribución actuales; Next Day
+conserva estado. M14–M16 y contaminación alimentaria no cambian. Proyecto
+entregado M15, rama `feature/hygiene-cleaning`; ver [M17](M17.md) y ADR 0023.
+Validación completa: **357/357 EditMode y 309/309 PlayMode**, 43 casos nuevos,
+sin fallos/omisiones. Aceptación manual de visual y controles pendiente.
 
 ## Experiencia objetivo
 
@@ -135,6 +144,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M14 · `feature/order-satisfaction-partial-payment` | Completitud por unidades y pago parcial configurable. | Expected/Received/Missing/Extra con multiplicidades y receta reconocida, separados de calidad y seguridad. Precio como máximo, pesos positivos por slot, céntimos deterministas, extras sin aumento y rechazo solo irrelevante. Dish completo/incompleto, alimento suelto y mezcla se evalúan por PASS; aceptación transporta todos los originales a Exit sin clonarlos. Ledger guarda importe real una vez y Summary lo conserva. Tests perfectos/ausencias/Patty/Bun/extras/otra receta/rechazo/topes/duplicados/seguridad/transporte y regresiones M1–M13; ver M14.md y ADR 0020. |
 | M15 · `feature/food-quality-consequences` | Calidad independiente, reacción por visita y estadísticas de sesión. | Snapshot real con causas simultáneas por unidad: frescura/deterioro, contaminación y todas las etapas de cocción; temperatura como evidencia. Good/Satisfied, leve/Unhappy, Burnt/Complaint y peligro/Health Incident. Reacción e incidente una vez por visita/pedido; served, satisfied, unhappy, complaints, health incidents e historial conservados hasta después de Exit y Next Day. Dish completo/incompleto, individual y extras; pago M14 independiente, originales transportados y feedback visible. Tests de reglas, duplicados, acumulación, días, flujo físico y regresiones M1–M14. Ver M15.md y ADR 0021. Sin reputación, enfermedad diferida, inspecciones, devolución ni M16. |
 | M16 · `feature/reputation-delayed-consequences` | Reputación de sesión e historial; consecuencias sanitarias diferidas independientes del pago. | Desde `3799710`: rango configurable 0–100, neutral 50; Satisfied/Unhappy/Complaint al terminar visita. Riesgo sanitario desde evidencia M15; tras Exit y 7200s efectivos de GameTime, RNG inyectable confirma o descarta; una resolución por visita/pedido. Causas Raw/Undercooked meat, Spoiled/Rotten, Contaminated; múltiples riesgos, rango limitado, historial original, Next Day conserva pendientes sin simular noche. Debug para adelantar/forzar y feedback en panel existente sin solapamientos. Tests de reglas, probabilidades, días, identidad única y regresiones completas M1–M15; M14 paga intacto, M15 conserva reacción/estadísticas. Ver M16.md y ADR 0022. Sin estrellas, inspecciones, multas, enfermedades concretas, reputación sobre clientes/precios ni M17. |
+| M17 · `feature/hygiene-cleaning` | Suciedad local continua y limpieza física de sesión. | Desde `1609a29`: Grill/Prep/Assembly/suelo, estados independientes 0–1, categorías configurables y metadata FoodResidue/Grease/GeneralDirt. Cocción real añade grasa, contactos añaden pequeñas cantidades por entrada, API de eventos local. CleaningTool usa Pickup y E mantenida con tiempo/alcance/raycast sólido sobre un solo objetivo; visual progresivo con manchas nuevas sin sustituir materiales, prompt en HUD existente. Next Day conserva estado; herramientas Inspector de desarrollo. Tests Domain, uso real, contacto, alcance/objetivo, visual/estado, días y regresiones M1–M16. Ver M17.md y ADR 0023. Sin contaminación por superficies, higiene global, cambios M14–M16, inspecciones, consumibles, plagas, save/load ni M18. |
 
 ## Recorrido de aceptación del slice
 

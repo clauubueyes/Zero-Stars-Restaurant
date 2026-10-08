@@ -43,7 +43,12 @@
   `C:/Users/Usuario/Zero Stars Restaurant M14`, rama `feature/food-quality-consequences`.
   M16 añade reputación e incidentes diferidos desde M15 `3799710` en
   `feature/reputation-delayed-consequences`; ver Docs/M16.md y ADR 0022.
-  M17 y los sistemas posteriores no están implementados.
+  M16 está validado en `1609a29`. M17 añade suciedad por superficie y limpieza
+  física en `feature/hygiene-cleaning`, proyecto entregado
+  `C:/Users/Usuario/Zero Stars Restaurant M15`; ver Docs/M17.md y ADR 0023.
+  M17 validado automáticamente: 357/357 EditMode y 309/309 PlayMode;
+  aceptación manual de visual/controles pendiente.
+  M18 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -292,8 +297,20 @@ silenciosamente**: indícalo antes.
   resolución una vez. Herramientas de desarrollo adelantan/confirmar/descartar solo
   riesgos de clientes que ya salieron. Feedback en HUD central con scroll existente.
   Persistencia de sesión entre días, sin guardado en disco. No estrellas, reputación
-  sobre clientes/precios, inspecciones, multas, enfermedades concretas ni M17.
+  sobre clientes/precios, inspecciones, multas, enfermedades concretas ni higiene.
   Ver Docs/M16.md y ADR 0022.
+- M17: CleanableSurface posee DirtState independiente de sesión (0–1); umbrales
+  en HygieneSettings, tipos/origen/Changed consultables. FoodSimulation notifica
+  exclusivamente la dosis real de cocción ganada a la fuente seleccionada, sin
+  otro driver de comida. SurfaceFoodContact registra entrada por unidad, no dirt
+  por frame de apoyo. CleaningTool reutiliza Pickup/PhysicalCarry; E mantenida
+  limpia solo la superficie apuntada y próxima con tiempo explícito. DirtSurfaceView
+  modifica únicamente manchas nuevas sin colliders, nunca materiales originales.
+  Prompt en InteractionFeedback/HUD único. Next Day no limpia ni recrea estado.
+  Higiene no cambia FoodState, completitud/pago M14, calidad/reacción M15,
+  reputación/probabilidad M16. Instalador incremental/idempotente; no reconstruir
+  la escena actual ni restaurar valores manuales de higiene. Sin save/load,
+  inspecciones, contaminación por contacto ni M18. Ver Docs/M17.md y ADR 0023.
 - DeliveryZone es la única puerta espacial: todas las APIs de servicio deben pasar
   por apoyo/overlap del pad verde actual, sin posición/orientación/input del jugador.
   El carrier recibe el mismo Dish con o sin Plate, bloquea todo Pickup/colisión y
