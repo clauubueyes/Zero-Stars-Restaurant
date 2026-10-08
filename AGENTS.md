@@ -43,6 +43,12 @@
   `C:/Users/Usuario/Zero Stars Restaurant M14`, rama `feature/food-quality-consequences`.
   M16 añade reputación e incidentes diferidos desde M15 `3799710` en
   `feature/reputation-delayed-consequences`; ver Docs/M16.md y ADR 0022.
+  Integración M14–M16 en main autorizada el 2026-10-08. Carpeta actual de entrega:
+  `C:/Users/Usuario/Zero Stars Restaurant M15`, con M16; el sufijo es histórico.
+  Los dos commits Godot del remoto fueron un error confirmado por el usuario;
+  se conserva su historial pero main vuelve al proyecto Unity de Zero Star Restaurant.
+  Ver Docs/MAIN-M16-INTEGRATION.md. La carpeta original sin sufijo conserva
+  trabajo manual y no se sustituye.
   M17 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.

@@ -1,5 +1,9 @@
 # Zero Star Restaurant
 
+Proyecto para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
+rama **`main`**, con **M16**. El nombre de carpeta se conserva, pero ya contiene
+la última entrega. Ver [integración y publicación](Docs/MAIN-M16-INTEGRATION.md).
+
 Estado actual: **M16: Reputation & Delayed Consequences**, desde M15 validado
 `3799710`, en `feature/reputation-delayed-consequences`. M14 conserva completitud
 y pago; M15 conserva causas y reacción; M16 añade reputación de sesión e historial.
