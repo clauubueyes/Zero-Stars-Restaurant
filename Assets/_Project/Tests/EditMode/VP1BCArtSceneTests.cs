@@ -24,7 +24,7 @@ namespace ZeroStarRestaurant.Tests
                     Assert.That(shell.GetComponentsInChildren<Rigidbody>(true), Is.Empty);
                     Assert.That(shell.GetComponentsInChildren<Light>(true), Is.Empty);
                     foreach (var behaviour in shell.GetComponentsInChildren<MonoBehaviour>(true))
-                        Assert.That(behaviour, Is.TypeOf<FoodStageVisual>());
+                        Assert.That(behaviour is FoodStageVisual || behaviour is BurgerIngredientVisual, Is.True);
                 }
                 foreach (var path in new[] { "Food/Bun", "Food/RawBeefPatty", "Food/Cheese", "Plate" })
                 {

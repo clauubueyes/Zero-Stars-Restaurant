@@ -183,6 +183,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2924810899334409239}
+  - component: {fileID: 9064298819832133719}
   m_Layer: 0
   m_Name: Visual_VP1BC
   m_TagString: Untagged
@@ -296,3 +297,20 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &9064298819832133719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6181673277005289266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2226d54e27e243be8765e83c56a0b407, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Presentation.BurgerIngredientVisual
+  _food: {fileID: 1433173812696114967}
+  _bun: {fileID: 0}
+  _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
+  _crumb: {fileID: 0}
+  _sesame: {fileID: 0}

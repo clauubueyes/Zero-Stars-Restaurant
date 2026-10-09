@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Editor;
+using ZeroStarRestaurant.Hygiene;
 using ZeroStarRestaurant.Player;
 using ZeroStarRestaurant.Presentation;
 
@@ -73,8 +74,19 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void GreyboxUsesBuiltInCubesAndOnlyFluorescentTubesUseBuiltInCylinders()
         {
+            var overlays = Components<DirtSurfaceView>().SelectMany(view =>
+            {
+                var stains = new SerializedObject(view).FindProperty("_stains");
+                return Enumerable.Range(0, stains.arraySize).Select(i => (Transform)stains.GetArrayElementAtIndex(i).objectReferenceValue).ToArray();
+            }).ToHashSet();
             foreach (MeshFilter mesh in Components<MeshFilter>())
             {
+                if (overlays.Contains(mesh.transform))
+                {
+                    Assert.That(AssetDatabase.GetAssetPath(mesh.sharedMesh), Does.StartWith("Assets/_Project/Art/VisualPolish/"));
+                    Assert.That(mesh.GetComponent<Collider>(), Is.Null);
+                    continue;
+                }
                 if (mesh.GetComponentsInParent<Transform>(true).Any(t => t.name == "Visual_VP1BC"))
                 {
                     Assert.That(AssetDatabase.GetAssetPath(mesh.sharedMesh), Does.StartWith("Assets/_Project/Art/Restaurant/Meshes/"));
