@@ -59,11 +59,28 @@ namespace ZeroStarRestaurant.Editor
             var supply = All<RestaurantElectricity>().Single();
             void Power(bool on) { supply.SetPower(on); foreach (var fixture in All<PoweredLightFixture>()) fixture.Refresh(); }
             Directory.CreateDirectory("Build/VP1BC/Captures");
-            void View(string name, Vector3 position, Vector3 target, bool compare = true)
+            void View(string name, Vector3 position, Vector3 target, GameObject[] comparisonUnits = null)
             {
                 camera.transform.position = position; camera.transform.LookAt(target);
                 art.ArtOn(); Capture(camera, name + "-Art");
-                if (compare) { art.ArtOff(); Capture(camera, name + "-VP1A-Before"); art.ArtOn(); }
+                // Purchased prefabs are outside the scene comparison registry. Restore their original
+                // renderers only for this staged reference frame; the same live FoodState stays intact.
+                var unitsForReference = comparisonUnits ?? Array.Empty<GameObject>();
+                var shells = unitsForReference.Select(u => u.transform.Find("Visual_VP1BC").gameObject).ToArray();
+                var renderers = unitsForReference.Select(u => u.GetComponent<Renderer>()).ToArray();
+                var active = shells.Select(s => s.activeSelf).ToArray();
+                var enabled = renderers.Select(r => r.enabled).ToArray();
+                art.ArtOff();
+                try
+                {
+                    for (int i = 0; i < shells.Length; i++) { shells[i].SetActive(false); renderers[i].enabled = true; }
+                    Capture(camera, name + "-VP1A-Before");
+                }
+                finally
+                {
+                    for (int i = 0; i < shells.Length; i++) { shells[i].SetActive(active[i]); renderers[i].enabled = enabled[i]; }
+                    art.ArtOn();
+                }
             }
             Power(true);
             View("01-Kitchen-Grill-Prep", new Vector3(-4.1f, 1.65f, 3.3f), new Vector3(-.8f, 1.25f, 6.7f));
@@ -99,17 +116,18 @@ namespace ZeroStarRestaurant.Editor
                 Place(food, new Vector3(prep.center.x - .45f + i * .45f, prep.max.y, prep.center.z - .12f));
                 food.GetComponentInChildren<FoodStageVisual>().Refresh();
             }
-            View("07-Raw-Cooked-Burnt-Patty", new Vector3(prep.center.x, 1.65f, prep.center.z - 1.1f), new Vector3(prep.center.x, prep.max.y + .05f, prep.center.z), false);
+            View("07-Raw-Cooked-Burnt-Patty", new Vector3(prep.center.x, 1.65f, prep.center.z - 1.1f), new Vector3(prep.center.x, prep.max.y + .05f, prep.center.z), units.Select(f => f.gameObject).ToArray());
             if (!station.TryPurchase(0, out var bun)) throw new InvalidOperationException("Bun purchase failed.");
             Place(bun, new Vector3(prep.center.x - .3f, prep.max.y, prep.center.z + .40f));
             if (!station.TryPurchase(2, out var cheese)) throw new InvalidOperationException("Cheese purchase failed.");
             Place(cheese, new Vector3(prep.center.x + .3f, prep.max.y, prep.center.z + .40f));
             if (!station.TryPurchasePlate(out var plate)) throw new InvalidOperationException("Plate purchase failed.");
             var pb = plate.GetComponent<Rigidbody>(); pb.isKinematic = true; plate.transform.position = new Vector3(prep.center.x + .8f, prep.max.y + .025f, prep.center.z + .20f); pb.position = plate.transform.position;
-            View("09-Food-First-Pass", new Vector3(prep.center.x, 1.65f, prep.center.z - 1.2f), new Vector3(prep.center.x, prep.max.y + .05f, prep.center.z + .15f), false);
+            var foodAndPlate = units.Select(f => f.gameObject).Concat(new[] { bun.gameObject, cheese.gameObject, plate.gameObject }).ToArray();
+            View("09-Food-First-Pass", new Vector3(prep.center.x, 1.65f, prep.center.z - 1.2f), new Vector3(prep.center.x, prep.max.y + .05f, prep.center.z + .15f), foodAndPlate);
             var dirty = All<CleanableSurface>().Single(s => s.DisplayName == "Grill"); dirty.DevelopmentMakeFilthy();
             foreach (var view in All<DirtSurfaceView>()) view.Refresh();
-            View("10-M17-Dynamic-Dirt", new Vector3(-2.3f, 1.65f, 5.2f), new Vector3(-2, .99f, 6.5f), false);
+            View("10-M17-Dynamic-Dirt", new Vector3(-2.3f, 1.65f, 5.2f), new Vector3(-2, .99f, 6.5f), foodAndPlate);
             File.WriteAllText("Build/VP1BC/Captures/Receipt.txt", "Actual PlayerCamera in Play, 1600x900, existing FOV. Runtime-only staged positions; no scene/asset save.\nGPU: " + SystemInfo.graphicsDeviceName + " / " + SystemInfo.graphicsDeviceType + "\nThree purchased original units cooked by FoodSimulation + original Grill: " +
                 string.Join(", ", units.Select(f => f.State.InstanceId + "=" + f.State.Cooking.Stage)) + "\n");
             Debug.Log("VP1BC gameplay camera captures complete: " + SystemInfo.graphicsDeviceName);
