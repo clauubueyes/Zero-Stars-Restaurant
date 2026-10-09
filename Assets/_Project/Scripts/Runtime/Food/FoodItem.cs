@@ -16,6 +16,27 @@ namespace ZeroStarRestaurant.Food
         public FoodState State { get; private set; }
         private Bounds? _retiredThermalBounds;
 
+        // Use this ingredient's original geometry, never the entire Dish interaction proxy.
+        internal bool TryGetContactBounds(out Bounds bounds)
+        {
+            bounds = default;
+            if (_retiredThermalBounds.HasValue)
+            {
+                Vector3[] points = Corners(_retiredThermalBounds.Value);
+                bounds = new Bounds(transform.TransformPoint(points[0]), Vector3.zero);
+                foreach (Vector3 point in points) bounds.Encapsulate(transform.TransformPoint(point));
+                return true;
+            }
+            bool found = false;
+            foreach (Collider collider in GetComponentsInChildren<Collider>())
+            {
+                if (!collider.enabled || collider.isTrigger || !collider.gameObject.activeInHierarchy) continue;
+                if (!found) bounds = collider.bounds; else bounds.Encapsulate(collider.bounds);
+                found = true;
+            }
+            return found;
+        }
+
         // Retired colliders no longer participate in Physics queries. Keep only their geometry,
         // in the ingredient's own coordinates, so temperature follows the original moving unit.
         internal void CaptureThermalGeometry()

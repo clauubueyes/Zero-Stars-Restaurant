@@ -149,6 +149,17 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
+        public void WeakerContactKeepsDominantEvidenceAndExposesTheLatestReceivedOrigin()
+        {
+            var surface = new ContaminationState(); var first = Food(false, true); var second = Food(false, true);
+            Contact(first, surface); var strongest = surface.Traces[ContaminationKind.ExistingFood];
+            surface.Receive(new ContaminationTrace(ContaminationKind.ExistingFood, second.InstanceId,
+                "Later weaker donor", .1, second.InstanceId, second.Profile.Id, second.Profile.Category));
+            Assert.That(surface.Traces[ContaminationKind.ExistingFood], Is.SameAs(strongest));
+            Assert.That(surface.Intensity, Is.EqualTo(.5)); Assert.That(surface.LastReceived.OriginId, Is.EqualTo(second.InstanceId));
+        }
+
+        [Test]
         public void NormalM14M15M16PipelinePaysFullAndKeepsImmutableCrossContaminationEvidence()
         {
             var surface = new ContaminationState(); var patty = Food(true); var bun = Food();

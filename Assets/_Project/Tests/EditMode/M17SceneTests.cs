@@ -64,8 +64,9 @@ namespace ZeroStarRestaurant.Tests
                 Assert.That(All().OfType<DirtSurfaceView>().Count(), Is.EqualTo(7));
                 var stains = All().OfType<Renderer>().Where(renderer => renderer.name.StartsWith("Residue ")).ToArray();
                 Assert.That(stains.Length, Is.EqualTo(42)); Assert.That(stains.All(stain => stain.GetComponent<Collider>() == null), Is.True);
-                Assert.That(All().OfType<SurfaceFoodContact>().Count(), Is.EqualTo(6));
-                Assert.That(surfaces.Single(surface => surface.DisplayName == "Grill").GetComponent<SurfaceFoodContact>(), Is.Null);
+                Assert.That(All().OfType<SurfaceFoodContact>().Count(), Is.EqualTo(7));
+                var grillContact = surfaces.Single(surface => surface.DisplayName == "Grill").GetComponent<SurfaceFoodContact>();
+                Assert.That(new SerializedObject(grillContact).FindProperty("_dirtPerContact").floatValue, Is.Zero);
             }
             finally { EditorSceneManager.ClosePreviewScene(scene); }
         }

@@ -61,12 +61,13 @@ namespace ZeroStarRestaurant.Hygiene
         {
             if (trace == null) throw new ArgumentNullException(nameof(trace));
             if (trace.Intensity == 0) return false;
+            LastReceived = trace;
             if (_traces.TryGetValue(trace.Kind, out var previous))
             {
                 if (previous.Intensity > trace.Intensity) return false;
                 if (previous.Intensity == trace.Intensity && previous.OriginId.CompareTo(trace.OriginId) <= 0) return false;
             }
-            _traces[trace.Kind] = trace; LastReceived = trace;
+            _traces[trace.Kind] = trace;
             Intensity = Math.Max(Intensity, trace.Intensity); Revision++; return true;
         }
 
