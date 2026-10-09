@@ -503,3 +503,24 @@ campos concretos y documentos nuevos, conservando transforms, física y gameplay
 existentes; no recalcula un pass instalado. Referencias a assemblies URP/Core
 existentes, sin paquetes nuevos ni dependencia Unity en Domain.
 Ver [VP1A](VP1A.md) y [ADR 0025](Decisions/0025-lighting-atmosphere-and-existing-power.md).
+
+## Presentación VP1B/C
+
+La geometría funcional conserva sus transforms, colliders, triggers, referencias
+y componentes. Cada reemplazo vive en un hijo `Visual_VP1BC`; se oculta únicamente
+el renderer anterior. Los meshes visuales nunca determinan temperatura, montaje,
+contacto sanitario, limpieza o interacción. Los prefabs conservan sus GUID,
+fileIDs originales y geometría física; las compras crean las mismas unidades.
+
+`FoodStageVisual` lee `FoodItem.State.Cooking.Stage` para cambiar entre tres
+materiales compartidos; no inicializa ni avanza FoodState. Sobrevive al montaje
+y transporte porque sigue siendo hijo de la unidad original. `RestaurantArtPass`
+solo controla renderers, sus propias raíces visuales y un Volume de exposición
+para la comparación con VP1A. No consulta ni escribe Domain.
+
+El instalador serializa añadidos y combina únicamente nuevos documentos,
+referencias hijas/raíces y el enabled de renderers sustituidos. Todos los demás
+bloques originales quedan conservados; una repetición no reconstruye el pass.
+Los materiales/texturas/meshes son propios, compartidos y modestos. Sin nuevos
+assemblies, paquetes, shaders personalizados o sistemas de gameplay.
+Ver [VP1B/C](VP1BC.md) y [ADR 0026](Decisions/0026-restaurant-art-shells-and-functional-geometry.md).

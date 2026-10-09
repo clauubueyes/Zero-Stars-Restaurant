@@ -1,11 +1,12 @@
 # Zero Star Restaurant
 
 Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
-rama **`visual/lighting-atmosphere-pass-1`**. [VP1A: Lighting & Atmosphere](Docs/VP1A.md)
-añade luminarias frías, techo visual, ambiente y postprocesado moderado sobre M18
-validado `0cdaab3`, conservando transforms y gameplay. Play sigue empezando sin
-corriente: **E** en el interruptor general enciende también las luces. En el
-Inspector de `AtmospherePass`, **Atmosphere Enabled** compara ON/OFF durante Play.
+rama **`visual/realistic-restaurant-art-pass-1`**. [VP1B/C](Docs/VP1BC.md)
+añade materiales PBR propios, revestimientos y equipment modular sobre VP1A
+`db39056`, conservando distribución y gameplay M1–M18. Play empieza sin corriente:
+**E** en el interruptor general enciende las luminarias VP1A. En el Inspector de
+`RestaurantArtPass`, **Art Enabled** compara el arte con VP1A durante Play;
+`AtmospherePass` conserva su comparación independiente de iluminación.
 No ejecutar Rebuild; escena ya instalada. Sin merge a main ni publicación.
 
 Estado actual: **M18: Cross-Contamination & Food Safety**, desde M17 validado `9ee1360`, en
@@ -180,8 +181,9 @@ pérdida y saldo negativo](Docs/M13.md#prueba-manual-de-un-día-completo).
 ## Filosofía del prototipo
 
 Primitivas, materiales simples y placeholders. Primero demostrar el ciclo jugable;
-después mejorar la presentación. Sin modelos personalizados, Blender, nuevas
-texturas, animaciones, shaders complejos, arte definitivo ni assets externos
+después mejorar la presentación. VP1B/C autoriza expresamente geometría modular,
+formas de alimento provisionales y texturas procedurales propias para ese pass.
+Sin Blender, animaciones, shaders complejos, arte definitivo ni assets externos
 innecesarios. Las reglas y el estado deben poder sobrevivir a un cambio de modelo,
 material, prefab o interfaz.
 

@@ -1,11 +1,12 @@
 # Vertical slice y roadmap
 
-**Visual pass actual: [VP1A: Lighting & Atmosphere](VP1A.md)** sobre M18 validado
-`0cdaab3`, rama `visual/lighting-atmosphere-pass-1`. Iluminación eléctrica conectada
-a M12, ambiente/URP moderados y comparación de desarrollo, sin cambios de gameplay
-ni transforms existentes. No es un milestone nuevo. VP1B/VP1C y M19 quedan pendientes;
-aceptación visual humana y perfilado pendientes. Ver ADR 0025 e inventario/validación
-en VP1A.md.
+**Visual pass actual: [VP1B/C: materiales, arquitectura y equipment](VP1BC.md)**
+sobre VP1A `db39056`, rama `visual/realistic-restaurant-art-pass-1`. Revestimientos,
+acero, suelo/azulejos, mostrador, PASS y primeros visuales Food mediante hijos
+sin física; mismo layout y gameplay M1–M18. Conserva las luces conectadas a M12.
+No es un milestone nuevo. M19 queda pendiente; aceptación visual humana y perfilado
+pendientes. Ver ADR 0026 e inventario/validación en VP1BC.md. VP1A permanece como
+base y comparación independiente de iluminación.
 
 El [ajuste de Plate y montaje libre](PLATES-FREE-ASSEMBLY.md) añade un utensilio
 comprable opcional, elimina la reposición gratuita y confirma por soporte físico

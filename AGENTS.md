@@ -59,7 +59,11 @@
   las luminarias leen el suministro M12; no cambian reglas, materiales anteriores
   ni transforms existentes. Preservar también los nuevos ajustes manuales del pass.
   El instalador incremental conserva luminarias ya instaladas; no usar Rebuild.
-  M19, VP1B/VP1C y los sistemas posteriores no están implementados.
+  VP1B/C añade visual shells y materiales PBR propios sobre VP1A `db39056`, en
+  `visual/realistic-restaurant-art-pass-1`, por autorización expresa del usuario.
+  Ver Docs/VP1BC.md y ADR 0026. Preservar también estos hijos visuales/materiales
+  y los nuevos ajustes manuales. No regenerar un pass instalado ni ejecutar Rebuild.
+  M19 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -152,6 +156,8 @@ silenciosamente**: indícalo antes.
 - Usar primitivas Unity, materiales simples y placeholders. En esta etapa no
   crear modelos 3D personalizados, usar Blender, añadir texturas, animaciones,
   shaders complejos, arte definitivo ni assets externos innecesarios.
+  Excepción autorizada VP1B/C: geometría modular, meshes modestos de Food/Plate,
+  materiales URP/Lit y texturas procedurales locales, sin nuevas dependencias.
 - No añadir ni actualizar dependencias sin una razón clara y documentada. No
   retirar paquetes de la plantilla de forma incidental.
 - Contenido propio bajo `Assets/_Project`. Preservar por ahora la escena, input,
