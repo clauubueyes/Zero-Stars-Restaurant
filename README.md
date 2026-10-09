@@ -1,5 +1,9 @@
 # Zero Star Restaurant
 
+Proyecto para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
+rama **`main`**, con **M18**. El nombre de carpeta se conserva. Ver
+[integración en main](Docs/MAIN-M18-INTEGRATION.md).
+
 Estado actual: **M18: Cross-Contamination & Food Safety**, desde M17 validado `9ee1360`, en
 `feature/cross-contamination-food-safety`. Proyecto entregado:
 **`C:/Users/Usuario/Zero Stars Restaurant M15`**.

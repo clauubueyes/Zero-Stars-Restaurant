@@ -54,6 +54,12 @@
   M18 validado automáticamente en `8641de3`: 384/384 EditMode y 323/323 PlayMode;
   aceptación visual/de controles humana pendiente. Cooking no sanitiza y Dirt
   sigue independiente; Next Day conserva ambos estados.
+  Integración M14–M16 en main autorizada el 2026-10-08; ver
+  Docs/MAIN-M16-INTEGRATION.md. Los commits Godot accidentales permanecen
+  en el historial, fuera del árbol Unity restaurado. La integración M17–M18
+  en main está autorizada el 2026-10-09; carpeta de entrega M15 en main con
+  M18. Ver Docs/MAIN-M18-INTEGRATION.md. El proyecto original sin sufijo
+  conserva su trabajo manual y no se sustituye.
   M19 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
