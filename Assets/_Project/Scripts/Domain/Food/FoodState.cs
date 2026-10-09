@@ -1,5 +1,6 @@
 using System;
 using ZeroStarRestaurant.Cooking;
+using ZeroStarRestaurant.Hygiene;
 
 namespace ZeroStarRestaurant.Food
 {
@@ -14,7 +15,8 @@ namespace ZeroStarRestaurant.Food
         public double AgeSeconds { get; private set; }
         public double DeteriorationSeconds { get; private set; }
         public double TemperatureCelsius { get; private set; }
-        public bool IsContaminated { get; private set; }
+        public ContaminationState Contamination { get; } = new ContaminationState();
+        public bool IsContaminated => Contamination.IsContaminated;
         public CookingState Cooking { get; }
         public double FreshnessPercent => Math.Max(0.0, Math.Min(100.0,
             100.0 - DeteriorationSeconds / Profile.FreshnessLifetimeSeconds * 100.0));
@@ -46,7 +48,7 @@ namespace ZeroStarRestaurant.Food
             AgeSeconds = ageSeconds;
             DeteriorationSeconds = (100.0 - freshnessPercent) / 100.0 * profile.FreshnessLifetimeSeconds;
             TemperatureCelsius = temperatureCelsius;
-            IsContaminated = isContaminated;
+            if (isContaminated) Contaminate();
         }
 
         // Time and the deterioration rate are supplied by the caller, never read from a game clock.
@@ -88,7 +90,9 @@ namespace ZeroStarRestaurant.Food
             TemperatureCelsius = temperatureCelsius;
         }
 
-        public void Contaminate() => IsContaminated = true;
+        public void Contaminate() => Contamination.Receive(new ContaminationTrace(
+            ContaminationKind.ExistingFood, InstanceId, "Existing food contamination", 1,
+            InstanceId, Profile.Id, Profile.Category));
 
         internal bool TryClaimAssembly(Guid owner)
         {

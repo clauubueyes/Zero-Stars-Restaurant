@@ -1,6 +1,8 @@
 using System;
 using ZeroStarRestaurant.Cooking;
 using ZeroStarRestaurant.Food;
+using ZeroStarRestaurant.Hygiene;
+using System.Collections.Generic;
 
 namespace ZeroStarRestaurant.Orders
 {
@@ -12,6 +14,7 @@ namespace ZeroStarRestaurant.Orders
         public double FreshnessPercent { get; }
         public FoodCondition Condition { get; }
         public bool IsContaminated { get; }
+        public IReadOnlyList<ContaminationTrace> Contamination { get; }
         public double TemperatureCelsius { get; }
         public double AgeSeconds { get; }
         public CookingStage? CookingStage { get; }
@@ -21,6 +24,7 @@ namespace ZeroStarRestaurant.Orders
             InstanceId = food.InstanceId; Profile = food.Profile;
             FreshnessPercent = food.FreshnessPercent; Condition = food.Condition;
             IsContaminated = food.IsContaminated; TemperatureCelsius = food.TemperatureCelsius;
+            Contamination = Array.AsReadOnly(food.Contamination.Snapshot());
             AgeSeconds = food.AgeSeconds; CookingStage = food.Cooking?.Stage;
             CookingDoseSeconds = food.Cooking?.EquivalentSeconds;
         }
