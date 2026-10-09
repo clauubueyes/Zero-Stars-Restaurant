@@ -1,15 +1,21 @@
 # Zero Star Restaurant
 
-Estado actual: **M17: Hygiene & Cleaning**, desde M16 validado `1609a29`, en
-`feature/hygiene-cleaning`. Proyecto entregado:
+Estado actual: **M18: Cross-Contamination & Food Safety**, desde M17 validado `9ee1360`, en
+`feature/cross-contamination-food-safety`. Proyecto entregado:
 **`C:/Users/Usuario/Zero Stars Restaurant M15`**.
 Grill, Prep/Assembly y dos zonas de suelo mantienen suciedad independiente de
 sesión. Cocinar/contactar ensucia; CleaningTool sostenida y E mantenida limpian
 gradualmente la superficie apuntada. Manchas nuevas y prompt contextual muestran
 el estado sin sustituir materiales ni redistribuir el restaurante. Next Day
 conserva suciedad. Ver [M17](Docs/M17.md) para valores y prueba manual.
+M18 añade contaminación sanitaria independiente: Raw/Undercooked Meat → Surface
+→ FoodState, por entrada física y con origen/carga conservados. CleaningTool solo
+limpia Dirt; sanitización provisional y debug están en Inspector, sin otro HUD.
+Next Day conserva ambos estados. Food → Food queda pendiente por los colliders
+retirados al confirmar Dish. Ver [M18](Docs/M18.md) para reglas, límites,
+archivos, validación y prueba Raw Patty → Prep → Bun → Hamburger → Customer.
 M14 conserva completitud/pago, [M15](Docs/M15.md) calidad/reacción y
-[M16](Docs/M16.md) reputación/riesgos diferidos; M17 no modifica esas reglas.
+[M16](Docs/M16.md) reputación/riesgos diferidos mediante sus datos normales.
 
 Prototipo de simulador sandbox de restaurante 3D en primera persona, desarrollado
 en Unity. La visión final comienza con **0 €**, un local casi vacío y **sin electricidad**.

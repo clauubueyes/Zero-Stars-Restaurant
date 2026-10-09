@@ -48,7 +48,13 @@
   `C:/Users/Usuario/Zero Stars Restaurant M15`; ver Docs/M17.md y ADR 0023.
   M17 validado automáticamente: 357/357 EditMode y 309/309 PlayMode;
   aceptación manual de visual/controles pendiente.
-  M18 y los sistemas posteriores no están implementados.
+  M18 añade contaminación sanitaria por contacto Food ↔ Surface desde M17 `9ee1360`
+  en `feature/cross-contamination-food-safety`, en la misma carpeta M15; ver
+  Docs/M18.md y ADR 0024. Food → Food queda pendiente por física del agregado.
+  M18 validado automáticamente en `8641de3`: 384/384 EditMode y 323/323 PlayMode;
+  aceptación visual/de controles humana pendiente. Cooking no sanitiza y Dirt
+  sigue independiente; Next Day conserva ambos estados.
+  M19 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -324,6 +330,19 @@ silenciosamente**: indícalo antes.
   las instrucciones de comprobación alineados con lo realmente implementado.
 
 ## Verificación y entrega
+
+- M18: ContaminationState y DirtState son independientes. FoodSafetyPolicy emite
+  riesgo Raw/Undercooked Meat y contaminación existente por entrada física M17;
+  máximo por categoría, procedencia dominante y último donante, sin RNG ni suma
+  por frame. La superficie previa se captura antes de transferir entradas simultáneas.
+  FoodItem conserva geometría individual al retirar colliders: no atribuir el proxy
+  Dish completo a cada ingrediente. IsContaminated es la API normal M15; snapshots
+  guardan trazas inmutables y M16 conserva sus responsabilidades. CleaningTool solo
+  limpia Dirt, sanitización Inspector es explícita/configurable, cooking no elimina
+  contaminación y Next Day conserva ambos estados. Un contacto continuo exige
+  salida/reentrada para transferir cambios nuevos. Sin Food → Food, otro driver,
+  HUD nuevo, patógenos concretos, kill temperatures, save/load ni M19. Instalador
+  incremental preserva escena actual y solo añade referencias/componentes faltantes.
 
 - Validar cada milestone con sus criterios de `Docs/ROADMAP.md`.
 - Probar reglas con casos de éxito y rechazo en EditMode cuando existan. Usar
