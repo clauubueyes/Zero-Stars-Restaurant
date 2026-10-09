@@ -75,6 +75,12 @@ namespace ZeroStarRestaurant.Tests
         {
             foreach (MeshFilter mesh in Components<MeshFilter>())
             {
+                if (mesh.GetComponentsInParent<Transform>(true).Any(t => t.name == "Visual_VP1BC"))
+                {
+                    Assert.That(AssetDatabase.GetAssetPath(mesh.sharedMesh), Does.StartWith("Assets/_Project/Art/Restaurant/Meshes/"));
+                    Assert.That(mesh.GetComponent<MeshRenderer>().sharedMaterial.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
+                    continue;
+                }
                 Assert.That(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh.sharedMesh, out string guid, out long fileId), Is.True);
                 Assert.That(guid, Is.EqualTo("0000000000000000e000000000000000"), mesh.name);
                 bool fluorescentTube = mesh.name == "Tube" && mesh.GetComponentInParent<PoweredLightFixture>() != null;
