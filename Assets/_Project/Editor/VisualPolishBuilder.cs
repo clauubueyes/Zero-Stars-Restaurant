@@ -27,6 +27,7 @@ namespace ZeroStarRestaurant.Editor
             data.FindProperty("_crumb").objectReferenceValue = shell.Find("CutCrumb");
             data.FindProperty("_sesame").objectReferenceValue = shell.Find("Sesame")?.GetComponent<Renderer>();
             data.ApplyModifiedPropertiesWithoutUndo();
+            FoodVisualPlacementBuilder.ConfigurePresentation(component);
         }
         public static void ConfigureScene(Scene scene)
         {

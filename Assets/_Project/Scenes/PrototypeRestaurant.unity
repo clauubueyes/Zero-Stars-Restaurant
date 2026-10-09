@@ -3655,6 +3655,7 @@ GameObject:
   - component: {fileID: 910843085}
   - component: {fileID: 910843084}
   - component: {fileID: 910843083}
+  - component: {fileID: 910843086}
   m_Layer: 0
   m_Name: FoodTestBench
   m_TagString: Untagged
@@ -56109,6 +56110,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95
 --- !u!114 &134423361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56126,6 +56130,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95
 --- !u!114 &247888898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56143,6 +56150,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 1690595015}
   _sesame: {fileID: 1552299790}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &299683314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56160,6 +56170,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
 --- !u!114 &341232655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56177,6 +56190,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
 --- !u!114 &761963676
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56194,6 +56210,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 823251251}
   _sesame: {fileID: 1899571300}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1020607659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56211,6 +56230,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
 --- !u!114 &1079802471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56228,6 +56250,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 794924250}
   _sesame: {fileID: 719511745}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1155731935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56245,6 +56270,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
 --- !u!114 &1373086604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56262,6 +56290,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 1198566125}
   _sesame: {fileID: 2049591824}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1481121716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56279,6 +56310,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 168504541}
   _sesame: {fileID: 463052568}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1485889372
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56296,6 +56330,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 1984005279}
   _sesame: {fileID: 1586745210}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1630701503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56313,6 +56350,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95
 --- !u!114 &1658930595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56330,6 +56370,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 187988539}
   _sesame: {fileID: 1726418879}
+  _heightScale: 0.45
+  _supportingHeightScale: 0.2
+  _diameterScale: 0.95
 --- !u!114 &1662178871
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56347,6 +56390,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
 --- !u!114 &1748582082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56364,6 +56410,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95
 --- !u!114 &1754015828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56381,6 +56430,9 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95
 --- !u!114 &2046317375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56398,3 +56450,20 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.28
+  _supportingHeightScale: 0.28
+  _diameterScale: 0.95
+--- !u!114 &910843086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910843081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91ee71d090014325b12e2e17e995ba4c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Presentation.FoodVisualSupportSurface
+  _overlays:
+  - {fileID: 2091614421}

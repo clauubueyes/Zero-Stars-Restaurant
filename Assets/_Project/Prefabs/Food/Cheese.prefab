@@ -314,3 +314,6 @@ MonoBehaviour:
   _bottomBun: {fileID: 4300000, guid: ed82fcb8605f77d4487cda75d04ed1de, type: 2}
   _crumb: {fileID: 0}
   _sesame: {fileID: 0}
+  _heightScale: 0.07
+  _supportingHeightScale: 0.07
+  _diameterScale: 0.95

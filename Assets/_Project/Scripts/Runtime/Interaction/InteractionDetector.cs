@@ -1,4 +1,6 @@
 using UnityEngine;
+using ZeroStarRestaurant.Food;
+using ZeroStarRestaurant.Presentation;
 
 namespace ZeroStarRestaurant.Interaction
 {
@@ -19,6 +21,17 @@ namespace ZeroStarRestaurant.Interaction
         public Interactable Detect(Ray ray, Rigidbody ignoredBody = null)
         {
             if (!TryDetectHit(ray, out RaycastHit closest, ignoredBody)) return null;
+            var food = closest.collider.GetComponentInParent<FoodItem>();
+            var visual = food == null ? null : food.transform.Find("Visual_VP1BC")?.GetComponent<BurgerIngredientVisual>();
+            if (visual != null && visual.PolishEnabled)
+            {
+                float visibleRange = _range;
+                // Original solid geometry still occludes selection. Food proxies alone can contain empty visual volume.
+                foreach (var hit in Physics.RaycastAll(ray, _range, _collisionMask, QueryTriggerInteraction.Ignore))
+                    if ((_actorRoot == null || !hit.transform.IsChildOf(_actorRoot)) && (ignoredBody == null || hit.rigidbody != ignoredBody) &&
+                        hit.collider.GetComponentInParent<FoodItem>() == null) visibleRange = Mathf.Min(visibleRange, hit.distance);
+                if (visual.TryFindVisibleFood(ray, visibleRange, ignoredBody, out var visibleFood)) return visibleFood.GetComponent<Pickup>();
+            }
             // A retired child interactable must not hide the active aggregate owning the collider.
             for (Transform owner = closest.collider.transform; owner != null; owner = owner.parent)
             {
