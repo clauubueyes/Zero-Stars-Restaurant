@@ -1,0 +1,32 @@
+Food visual placement regressions. Base b023fe8.
+M = modificado; A = creado. Rutas relativas al proyecto M15.
+Excluye Build, Logs, TestResults y ajustes incidentales del usuario.
+
+M  AGENTS.md
+A  Assets/_Project/Editor/FoodVisualPlacementBuilder.cs
+A  Assets/_Project/Editor/FoodVisualPlacementBuilder.cs.meta
+A  Assets/_Project/Editor/FoodVisualPlacementValidation.cs
+A  Assets/_Project/Editor/FoodVisualPlacementValidation.cs.meta
+M  Assets/_Project/Editor/VisualPolishBuilder.cs
+M  Assets/_Project/Prefabs/Food/Bun.prefab
+M  Assets/_Project/Prefabs/Food/Cheese.prefab
+M  Assets/_Project/Prefabs/Food/RawBeefPatty.prefab
+M  Assets/_Project/Scenes/PrototypeRestaurant.unity
+M  Assets/_Project/Scripts/Runtime/Interaction/InteractionDetector.cs
+M  Assets/_Project/Scripts/Runtime/Presentation/BurgerIngredientVisual.cs
+A  Assets/_Project/Scripts/Runtime/Presentation/FoodVisualSupportSurface.cs
+A  Assets/_Project/Scripts/Runtime/Presentation/FoodVisualSupportSurface.cs.meta
+A  Assets/_Project/Tests/EditMode/FoodVisualPlacementSceneTests.cs
+A  Assets/_Project/Tests/EditMode/FoodVisualPlacementSceneTests.cs.meta
+A  Assets/_Project/Tests/PlayMode/FoodVisualPlacementRegressionTests.cs
+A  Assets/_Project/Tests/PlayMode/FoodVisualPlacementRegressionTests.cs.meta
+M  Docs/ARCHITECTURE.md
+M  Docs/Decisions/0027-burger-shell-compression-and-organic-dirt-overlays.md
+A  Docs/Decisions/0028-visual-support-independent-of-functional-proxies.md
+A  Docs/FOOD-VISUAL-PLACEMENT-FILES.txt
+A  Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md
+M  Docs/ROADMAP.md
+M  Docs/VISUAL-POLISH-BURGER-DIRT.md
+M  README.md
+A  Tools/audit_food_visual_placement.py
+A  Tools/create_food_visual_placement_gallery.py

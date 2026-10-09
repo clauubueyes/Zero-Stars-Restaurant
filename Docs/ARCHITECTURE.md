@@ -537,3 +537,15 @@ disminuyen con el mismo Clean. El aspecto de Grill/Prep/Floor se selecciona dura
 instalación mediante la fuente térmica y el DirtKind de contacto existentes.
 No crea tipos de suciedad o estado nuevo. Ver [polish](VISUAL-POLISH-BURGER-DIRT.md)
 y [ADR 0027](Decisions/0027-burger-shell-compression-and-organic-dirt-overlays.md).
+
+El bugfix de apoyo visual desde `b023fe8` sustituye la compactación por receta
+por relaciones de apoyo entre originales, antes y después de F. Los datos de
+grosor/diámetro viven en el componente/prefab, y los bounds de meshes visibles
+determinan el apoyo del shell. `FoodVisualSupportSurface` referencia overlays
+de un apoyo físico existente, como COLLECT HERE. No redefine su collider ni la
+geometría sanitaria/térmica. Ver [informe](FOOD-VISUAL-PLACEMENT-REGRESSIONS.md)
+y [ADR 0028](Decisions/0028-visual-support-independent-of-functional-proxies.md).
+
+`InteractionDetector.Detect` selecciona la Food visible dentro de esa columna
+conectada, manteniendo oclusión por sólidos, rango y exclusión de la unidad
+sostenida. `TryDetectHit` conserva el hit del collider para placement.

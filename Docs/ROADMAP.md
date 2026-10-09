@@ -11,6 +11,8 @@ base y comparación independiente de iluminación.
 El [polish visual de Hamburger y Dirt](VISUAL-POLISH-BURGER-DIRT.md), desde VP1B/C
 validado `e4fb2fd`, conserva todos los sistemas y transforms guardados. Rama
 `fix/visual-burger-dirt-polish`; no es un milestone ni añade gameplay.
+Su [bugfix de apoyo visual](FOOD-VISUAL-PLACEMENT-REGRESSIONS.md), desde `b023fe8`,
+corrige huecos antes de F y Cheese oculto en Procurement conservando gameplay.
 
 El [ajuste de Plate y montaje libre](PLATES-FREE-ASSEMBLY.md) añade un utensilio
 comprable opcional, elimina la reposición gratuita y confirma por soporte físico

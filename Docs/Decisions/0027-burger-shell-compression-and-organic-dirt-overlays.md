@@ -1,5 +1,9 @@
 # ADR 0027: proporciones del shell de Hamburger y overlays de Dirt
 
+La restricción de apoyo/compactación antes de F queda sustituida por
+[ADR 0028](0028-visual-support-independent-of-functional-proxies.md) desde `b023fe8`.
+Proporciones y Dirt de este pass permanecen; esta decisión documenta la implementación histórica.
+
 Base: VP1B/C validado `e4fb2fd`. Rama `fix/visual-burger-dirt-polish`.
 Proyecto entregado: `C:/Users/Usuario/Zero Stars Restaurant M15`.
 

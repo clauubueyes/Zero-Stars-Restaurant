@@ -1,10 +1,11 @@
 # Zero Star Restaurant
 
 Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
-rama **`fix/visual-burger-dirt-polish`**. [Polish de Hamburger y Dirt](Docs/VISUAL-POLISH-BURGER-DIRT.md)
-compacta solo los visuales del plato confirmado y sustituye las manchas cuadradas
-por overlays orgánicos reutilizando los renderers M17. Conserva física, estados,
-layout, materiales principales y luces. Base: [VP1B/C](Docs/VP1BC.md), `e4fb2fd`.
+rama **`fix/food-visual-placement-regressions`**. [Corrección de apoyo visual](Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md)
+desde `b023fe8`: las capas se apoyan ya antes de F y Cheese permanece visible en
+COLLECT HERE, conservando proxies/contactos originales. El [polish de Hamburger
+y Dirt](Docs/VISUAL-POLISH-BURGER-DIRT.md) mantiene proporciones compactas y overlays
+orgánicos M17. Física, estados, layout, materiales principales y luces intactos.
 
 VP1B/C añade materiales PBR propios, revestimientos y equipment modular sobre VP1A
 `db39056`, conservando distribución y gameplay M1–M18. Play empieza sin corriente:
@@ -105,7 +106,8 @@ La escena de plantilla
    Grill. **Soltar clic con la mano tranquila apuntando a la pila** coloca y centra
    el ingrediente automáticamente; G permite soltar libremente y un gesto rápido
    conserva el lanzamiento natural. Mirar la pila muestra `Recognized: Hamburger`/`Cheeseburger`/`Custom Dish`;
-   **F** confirma con manos libres. El plato final se recoge manteniendo clic.
+   **F** confirma con manos libres y conserva la presentación apoyada que ya se ve
+   durante el montaje. El plato final se recoge manteniendo clic.
    Los antiguos apoyos de `AssemblyStation1/2/3` son geometría fija: no regalan
    ni reponen platos. Plate se compra y es opcional; con o sin él se monta y sirve
    el mismo Dish. Al finalizar sobre Plate, el agregado incorpora ese objeto.

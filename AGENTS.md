@@ -67,6 +67,10 @@
   añade BurgerIngredientVisual al shell y overlays orgánicos en DirtSurfaceView.
   Ver Docs/VISUAL-POLISH-BURGER-DIRT.md y ADR 0027. Conserva también estos visuales
   y sus ajustes manuales: nunca reducir colliders/poses de Food para imitar su apariencia.
+  El bugfix desde `b023fe8`, rama `fix/food-visual-placement-regressions`, desacopla
+  apoyo visual de las cajas funcionales antes/después de F y sobre COLLECT HERE.
+  Ver Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md y ADR 0028. Conservar metadata y
+  tuning visual; no introducir decisiones por receta/ID en el placement runtime.
   M19 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.

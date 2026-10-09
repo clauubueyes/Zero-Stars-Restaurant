@@ -1,5 +1,9 @@
 # Visual polish: Hamburger y Dirt
 
+Informe histórico del pass. La restricción de compactación solo después de F y
+el apoyo en COLLECT HERE se corrigen en el [bugfix desde b023fe8](FOOD-VISUAL-PLACEMENT-REGRESSIONS.md),
+sin alterar las proporciones aprobadas ni Dirt. Consultar ese informe para la versión actual.
+
 Base: VP1B/C validado `e4fb2fd`. Rama `fix/visual-burger-dirt-polish`.
 Implementación `f0bb39a`; pruebas, auditoría y harness de capturas `c4dae0e`.
 Entrega real en **`C:/Users/Usuario/Zero Stars Restaurant M15`**; no había Editor
