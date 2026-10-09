@@ -63,6 +63,10 @@
   `visual/realistic-restaurant-art-pass-1`, por autorización expresa del usuario.
   Ver Docs/VP1BC.md y ADR 0026. Preservar también estos hijos visuales/materiales
   y los nuevos ajustes manuales. No regenerar un pass instalado ni ejecutar Rebuild.
+  El polish visual desde VP1B/C `e4fb2fd`, rama `fix/visual-burger-dirt-polish`,
+  añade BurgerIngredientVisual al shell y overlays orgánicos en DirtSurfaceView.
+  Ver Docs/VISUAL-POLISH-BURGER-DIRT.md y ADR 0027. Conserva también estos visuales
+  y sus ajustes manuales: nunca reducir colliders/poses de Food para imitar su apariencia.
   M19 y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.

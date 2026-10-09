@@ -1,8 +1,12 @@
 # Zero Star Restaurant
 
 Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
-rama **`visual/realistic-restaurant-art-pass-1`**. [VP1B/C](Docs/VP1BC.md)
-añade materiales PBR propios, revestimientos y equipment modular sobre VP1A
+rama **`fix/visual-burger-dirt-polish`**. [Polish de Hamburger y Dirt](Docs/VISUAL-POLISH-BURGER-DIRT.md)
+compacta solo los visuales del plato confirmado y sustituye las manchas cuadradas
+por overlays orgánicos reutilizando los renderers M17. Conserva física, estados,
+layout, materiales principales y luces. Base: [VP1B/C](Docs/VP1BC.md), `e4fb2fd`.
+
+VP1B/C añade materiales PBR propios, revestimientos y equipment modular sobre VP1A
 `db39056`, conservando distribución y gameplay M1–M18. Play empieza sin corriente:
 **E** en el interruptor general enciende las luminarias VP1A. En el Inspector de
 `RestaurantArtPass`, **Art Enabled** compara el arte con VP1A durante Play;

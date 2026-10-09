@@ -524,3 +524,16 @@ bloques originales quedan conservados; una repetición no reconstruye el pass.
 Los materiales/texturas/meshes son propios, compartidos y modestos. Sin nuevos
 assemblies, paquetes, shaders personalizados o sistemas de gameplay.
 Ver [VP1B/C](VP1BC.md) y [ADR 0026](Decisions/0026-restaurant-art-shells-and-functional-geometry.md).
+
+El polish de Hamburger/Dirt mantiene esa separación. `BurgerIngredientVisual`
+modifica solo su shell: al reconocer un Dish confirmado coloca los visuales
+compactamente sobre la base original y distingue bottom/top bun. Las poses de
+Food, su geometría térmica/sanitaria retirada y el proxy Dish permanecen iguales.
+La lectura de cocción sigue en FoodStageVisual. No añade un driver o reconocimiento.
+
+`DirtSurfaceView` reutiliza los seis renderers M17 por superficie con meshes
+combinados y un atlas transparente. Lee Amount/AmountsByKind; escala y opacidad
+disminuyen con el mismo Clean. El aspecto de Grill/Prep/Floor se selecciona durante
+instalación mediante la fuente térmica y el DirtKind de contacto existentes.
+No crea tipos de suciedad o estado nuevo. Ver [polish](VISUAL-POLISH-BURGER-DIRT.md)
+y [ADR 0027](Decisions/0027-burger-shell-compression-and-organic-dirt-overlays.md).

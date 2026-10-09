@@ -8,6 +8,10 @@ No es un milestone nuevo. M19 queda pendiente; aceptación visual humana y perfi
 pendientes. Ver ADR 0026 e inventario/validación en VP1BC.md. VP1A permanece como
 base y comparación independiente de iluminación.
 
+El [polish visual de Hamburger y Dirt](VISUAL-POLISH-BURGER-DIRT.md), desde VP1B/C
+validado `e4fb2fd`, conserva todos los sistemas y transforms guardados. Rama
+`fix/visual-burger-dirt-polish`; no es un milestone ni añade gameplay.
+
 El [ajuste de Plate y montaje libre](PLATES-FREE-ASSEMBLY.md) añade un utensilio
 comprable opcional, elimina la reposición gratuita y confirma por soporte físico
 sin AssemblySurface. No cambia la distribución ni avanza a M12.
