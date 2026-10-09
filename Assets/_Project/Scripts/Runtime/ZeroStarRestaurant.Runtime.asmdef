@@ -1,6 +1,6 @@
 {
     "name": "ZeroStarRestaurant.Runtime",
     "rootNamespace": "ZeroStarRestaurant",
-    "references": ["Unity.InputSystem", "ZeroStarRestaurant.Domain"],
+    "references": ["Unity.InputSystem", "ZeroStarRestaurant.Domain", "Unity.RenderPipelines.Core.Runtime", "Unity.RenderPipelines.Universal.Runtime"],
     "autoReferenced": true
 }

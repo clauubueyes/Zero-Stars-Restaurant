@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using ZeroStarRestaurant.Editor;
 using ZeroStarRestaurant.Player;
+using ZeroStarRestaurant.Presentation;
 
 namespace ZeroStarRestaurant.Tests
 {
@@ -70,13 +71,14 @@ namespace ZeroStarRestaurant.Tests
         }
 
         [Test]
-        public void GreyboxUsesOnlyBuiltInCubeMeshesAndSimpleUrpMaterials()
+        public void GreyboxUsesBuiltInCubesAndOnlyFluorescentTubesUseBuiltInCylinders()
         {
             foreach (MeshFilter mesh in Components<MeshFilter>())
             {
                 Assert.That(AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mesh.sharedMesh, out string guid, out long fileId), Is.True);
                 Assert.That(guid, Is.EqualTo("0000000000000000e000000000000000"), mesh.name);
-                Assert.That(fileId, Is.EqualTo(10202), mesh.name);
+                bool fluorescentTube = mesh.name == "Tube" && mesh.GetComponentInParent<PoweredLightFixture>() != null;
+                Assert.That(fileId, Is.EqualTo(fluorescentTube ? 10206 : 10202), mesh.name);
                 Material material = mesh.GetComponent<MeshRenderer>().sharedMaterial;
                 Assert.That(material, Is.Not.Null, mesh.name);
                 Assert.That(material.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
