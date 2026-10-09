@@ -54,7 +54,12 @@
   M18 validado automáticamente en `8641de3`: 384/384 EditMode y 323/323 PlayMode;
   aceptación visual/de controles humana pendiente. Cooking no sanitiza y Dirt
   sigue independiente; Next Day conserva ambos estados.
-  M19 y los sistemas posteriores no están implementados.
+  VP1A añade iluminación y ambiente sobre M18 validado `0cdaab3`, en
+  `visual/lighting-atmosphere-pass-1`; ver Docs/VP1A.md y ADR 0025. Es presentación:
+  las luminarias leen el suministro M12; no cambian reglas, materiales anteriores
+  ni transforms existentes. Preservar también los nuevos ajustes manuales del pass.
+  El instalador incremental conserva luminarias ya instaladas; no usar Rebuild.
+  M19, VP1B/VP1C y los sistemas posteriores no están implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 

@@ -489,3 +489,17 @@ transporte. CustomerDishCarrier comprueba disponibilidad antes de OrderDelivery,
 conserva esos objetos y sus cuerpos respecto al cliente y los retira solo en Exit.
 No se crea un Dish para evaluar comida suelta ni se añade driver alimentario.
 Ver ADR 0020 y Docs/M14.md.
+
+
+## Presentación VP1A
+
+RestaurantAtmosphere y PoweredLightFixture viven en Runtime/Presentation. Un
+preset ScriptableObject conserva ambiente de tarde/noche y un VolumeProfile URP
+configura efectos moderados. Las luminarias consultan el mismo suministro M12,
+sin medidor térmico ficticio ni reloj o reglas nuevas. La comparación de desarrollo
+restaura iluminación/cámara anteriores y oculta solo la raíz visual nueva.
+RenderSettings se aplica únicamente a la escena activa. La instalación combina
+campos concretos y documentos nuevos, conservando transforms, física y gameplay
+existentes; no recalcula un pass instalado. Referencias a assemblies URP/Core
+existentes, sin paquetes nuevos ni dependencia Unity en Domain.
+Ver [VP1A](VP1A.md) y [ADR 0025](Decisions/0025-lighting-atmosphere-and-existing-power.md).

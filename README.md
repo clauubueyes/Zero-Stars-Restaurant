@@ -1,5 +1,13 @@
 # Zero Star Restaurant
 
+Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
+rama **`visual/lighting-atmosphere-pass-1`**. [VP1A: Lighting & Atmosphere](Docs/VP1A.md)
+añade luminarias frías, techo visual, ambiente y postprocesado moderado sobre M18
+validado `0cdaab3`, conservando transforms y gameplay. Play sigue empezando sin
+corriente: **E** en el interruptor general enciende también las luces. En el
+Inspector de `AtmospherePass`, **Atmosphere Enabled** compara ON/OFF durante Play.
+No ejecutar Rebuild; escena ya instalada. Sin merge a main ni publicación.
+
 Estado actual: **M18: Cross-Contamination & Food Safety**, desde M17 validado `9ee1360`, en
 `feature/cross-contamination-food-safety`. Proyecto entregado:
 **`C:/Users/Usuario/Zero Stars Restaurant M15`**.

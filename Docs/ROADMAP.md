@@ -1,5 +1,12 @@
 # Vertical slice y roadmap
 
+**Visual pass actual: [VP1A: Lighting & Atmosphere](VP1A.md)** sobre M18 validado
+`0cdaab3`, rama `visual/lighting-atmosphere-pass-1`. Iluminación eléctrica conectada
+a M12, ambiente/URP moderados y comparación de desarrollo, sin cambios de gameplay
+ni transforms existentes. No es un milestone nuevo. VP1B/VP1C y M19 quedan pendientes;
+aceptación visual humana y perfilado pendientes. Ver ADR 0025 e inventario/validación
+en VP1A.md.
+
 El [ajuste de Plate y montaje libre](PLATES-FREE-ASSEMBLY.md) añade un utensilio
 comprable opcional, elimina la reposición gratuita y confirma por soporte físico
 sin AssemblySurface. No cambia la distribución ni avanza a M12.
