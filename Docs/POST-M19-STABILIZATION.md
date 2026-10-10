@@ -1,6 +1,10 @@
 # Estabilización posterior a M19
 
 Base `f6fb68c`; rama `fix/post-m19-visual-stats-regressions`.
+La entrega descrita aquí fue en M15. La carpeta oficial posterior es
+**C:/Users/Usuario/Zero Stars Restaurant**, en main; ver
+[OFFICIAL-MAIN-PROJECT.md](OFFICIAL-MAIN-PROJECT.md).
+
 Proyecto entregado: **C:/Users/Usuario/Zero Stars Restaurant M15**. Unity estaba
 cerrado al iniciar; se trabaja y valida en esta misma carpeta. La carpeta original
 Zero Stars Restaurant y sus cambios manuales permanecen intactos. Sin M20,

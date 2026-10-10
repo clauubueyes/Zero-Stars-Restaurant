@@ -83,6 +83,9 @@
   Integración de M19, visual passes y estabilización `ec90c9d` en main
   autorizada el 2026-10-10. Ver Docs/MAIN-M19-INTEGRATION.md. Entrega en M15
   en main: 398/398 EditMode y 350/350 PlayMode; mismo código y escena validados.
+  Posteriormente, el usuario establece `C:/Users/Usuario/Zero Stars Restaurant`
+  como carpeta oficial en main; M15 y otros worktrees quedan para desarrollo/tests.
+  Ver Docs/OFFICIAL-MAIN-PROJECT.md. No volver a entregar únicamente en M15.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -132,6 +135,12 @@ silenciosamente**: indícalo antes.
 
 ## Latest version in the user's Unity
 
+- La carpeta oficial es `C:/Users/Usuario/Zero Stars Restaurant`, en `main`.
+  El usuario la establece expresamente el 2026-10-10. Las demás carpetas son
+  worktrees de desarrollo/pruebas. Antes de entregar, comprobar esta carpeta
+  oficial, su commit, cambios locales y versión del Editor realmente abierto.
+  Promover a main solo una versión validada y autorizada; no desarrollar features
+  directamente sobre el proyecto oficial ni actualizarlo desde una escena antigua.
 - Antes de empezar y antes de entregar, identificar la carpeta real abierta en el
   Unity del usuario y comprobar su rama, commit y cambios locales frente a la
   última implementación validada. No asumir que el Editor usa el worktree del agente.

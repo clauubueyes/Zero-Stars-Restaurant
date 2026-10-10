@@ -1,5 +1,9 @@
 # Integración de M19 y estabilización en main
 
+Entrega histórica en M15. La carpeta oficial posterior es
+**C:/Users/Usuario/Zero Stars Restaurant**, en main; ver
+[cambio de carpeta y validación](OFFICIAL-MAIN-PROJECT.md).
+
 Autorizada por el usuario el 2026-10-10: «Primero quiero que me subas todo a Main».
 
 Se integra la entrega `ec90c9d` con el main local/remoto `0cceab8`. Incluye M19,
