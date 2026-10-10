@@ -26,6 +26,7 @@ namespace ZeroStarRestaurant.Presentation
         private readonly Vector2[] _scroll = new Vector2[8];
         private GUIStyle _style;
         private int _purchaseRevision, _billRevision, _deliveryRevision, _reputationRevision;
+        private int _summaryDay;
         private string _message = "";
         private double _messageUntil;
 
@@ -72,11 +73,14 @@ namespace ZeroStarRestaurant.Presentation
         private void Panel(Rect rect, string text, int index)
         {
             if (string.IsNullOrEmpty(text)) return;
-            // Area clipping + scroll view constrain arbitrarily long ingredient/receipt lists.
-            GUILayout.BeginArea(rect, GUI.skin.box);
-            _scroll[index] = GUILayout.BeginScrollView(_scroll[index]);
-            GUILayout.Label(text, _style);
-            GUILayout.EndScrollView(); GUILayout.EndArea();
+            // A fixed content width prevents long receipts from widening the horizontal scroll view.
+            GUI.Box(rect, GUIContent.none);
+            var viewport = new Rect(rect.x + 8, rect.y + 6, rect.width - 16, rect.height - 12);
+            float width = viewport.width - 20; // Reserve the vertical scrollbar before wrapping.
+            float height = Mathf.Max(viewport.height, _style.CalcHeight(new GUIContent(text), width));
+            _scroll[index] = GUI.BeginScrollView(viewport, _scroll[index], new Rect(0, 0, width, height));
+            GUI.Label(new Rect(0, 0, width, height), text, _style);
+            GUI.EndScrollView();
         }
 
         private void OnGUI()
@@ -93,7 +97,12 @@ namespace ZeroStarRestaurant.Presentation
                 Panel(layout.Electricity, _electricity.Text, 2);
                 Panel(layout.Service, _service.Text, 3);
                 string summary = _summary.Text;
-                if (!string.IsNullOrEmpty(summary)) Panel(layout.Summary, summary, 4);
+                if (!string.IsNullOrEmpty(summary))
+                {
+                    if (_summaryDay != _day.Day.Calendar.CurrentDay)
+                    { _summaryDay = _day.Day.Calendar.CurrentDay; _scroll[4] = Vector2.zero; }
+                    Panel(layout.Summary, summary, 4);
+                }
                 else if (_interaction.HasControl)
                 {
                     GUI.Label(layout.Crosshair, "+");

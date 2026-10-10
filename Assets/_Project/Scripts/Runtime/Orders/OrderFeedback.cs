@@ -92,8 +92,10 @@ namespace ZeroStarRestaurant.Orders
             return text.ToString();
         }
         public static string StatisticsText(CustomerServiceStatistics statistics) =>
-            "Customers served: " + statistics.CustomersServed + " | Satisfied: " + statistics.Satisfied +
-            " | Unhappy: " + statistics.Unhappy + "\nComplaints: " + statistics.Complaints + " | Health incidents: " + statistics.HealthIncidents;
+            OutcomeText(statistics.CustomersServed, statistics.Satisfied, statistics.Unhappy, statistics.Complaints, statistics.HealthIncidents);
+        public static string OutcomeText(long served, long satisfied, long unhappy, long complaints, long healthIncidents) =>
+            "Customers served: " + served + "\nOutcomes:\n  Satisfied: " + satisfied +
+            "\n  Unhappy: " + unhappy + "\n  Complaints: " + complaints + "\n  Health incidents: " + healthIncidents;
         public string Text
         {
             get
@@ -106,9 +108,9 @@ namespace ZeroStarRestaurant.Orders
                 if (_service.DeliveryZone != null) order += "\n" + _service.DeliveryZone.PlacementMessage;
                 if (_service.LastResult != null) order += "\nLast delivery: " + LastDeliveryMessage;
                 if (Reputation != null) order = Reputation.Text + "\n\n" + order;
-                order += "\nToday: " + _service.Statistics.DailyCustomersServed + " served | " + _service.Statistics.DailySatisfied +
-                    " satisfied | " + _service.Statistics.DailyUnhappy + " unhappy | " + _service.Statistics.DailyComplaints + " complaints";
-                order += "\nSession totals: " + StatisticsText(_service.Statistics);
+                order += "\n\nToday:\n" + OutcomeText(_service.Statistics.DailyCustomersServed, _service.Statistics.DailySatisfied,
+                    _service.Statistics.DailyUnhappy, _service.Statistics.DailyComplaints, _service.Statistics.DailyHealthIncidents);
+                order += "\n\nSession totals:\n" + StatisticsText(_service.Statistics);
                 if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
                 if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult) + "\n" + ConsequenceText(_service.LastConsequence, true);
                 return order;

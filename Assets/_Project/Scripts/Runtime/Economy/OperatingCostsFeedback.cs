@@ -33,9 +33,11 @@ namespace ZeroStarRestaurant.Economy
             text.AppendLine(SummaryText(accounting));
             text.AppendLine("Net cash movement: " + IngredientPurchaseStation.FormatCents(accounting.NetCents));
             text.AppendLine("Customers served: " + summary.CustomersServed);
-            text.AppendLine("Satisfied: " + summary.Satisfied + " | Unhappy: " + summary.Unhappy);
-            text.AppendLine("Complaints: " + summary.Complaints);
-            text.AppendLine("Health incidents (food hazards): " + summary.HealthIncidents);
+            text.AppendLine("Outcomes:");
+            text.AppendLine("  Satisfied: " + summary.Satisfied);
+            text.AppendLine("  Unhappy: " + summary.Unhappy);
+            text.AppendLine("  Complaints: " + summary.Complaints);
+            text.AppendLine("  Health incidents (food hazards): " + summary.HealthIncidents);
             text.AppendLine("Confirmed health incidents today: " + (summary.ConfirmedHealthIncidents?.ToString() ?? "Unavailable"));
             text.AppendLine("Dismissed health risks today: " + (summary.DismissedHealthRisks?.ToString() ?? "Unavailable"));
             text.AppendLine("Pending health risks: " + (summary.PendingHealthRisks?.ToString() ?? "Unavailable"));

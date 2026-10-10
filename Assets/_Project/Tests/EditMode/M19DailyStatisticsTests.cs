@@ -25,6 +25,27 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(visit.Resolve(), Is.True); return visit.Consequence;
         }
         [Test]
+        public void TwelveHazardousMealsAreTwelveExclusiveHealthOutcomesWithStableEndOfDayText()
+        {
+            var ledger = new PaymentLedger(); var stats = new CustomerServiceStatistics();
+            var reputation = new RestaurantReputationState(new ReputationPolicy(), () => 0);
+            var clock = new GameTime();
+            for (int i = 0; i < 12; i++)
+            {
+                var c = Serve(ledger, 90, true); Assert.That(stats.TryRecord(c), Is.True);
+                Assert.That(c.Quality.Causes.Count, Is.GreaterThan(1), "Multiple causes still yield one reaction.");
+                reputation.TryRegisterService(c, clock); reputation.TryCompleteVisit(c, clock);
+            }
+            ledger.TrySettleDay(new OperatingCostPolicy(0, Array.Empty<DailyFixedCost>()), 0, out var accounting);
+            var snapshot = new EndOfDaySummary(accounting, stats, reputation, 0);
+            string text = OperatingCostsFeedback.EndOfDayText(snapshot);
+            Assert.That(text.Replace("\r\n", "\n"), Does.Contain("Customers served: 12\nOutcomes:\n  Satisfied: 0\n  Unhappy: 0\n  Complaints: 0\n  Health incidents (food hazards): 12"));
+            Assert.That(snapshot.Satisfied + snapshot.Unhappy + snapshot.Complaints + snapshot.HealthIncidents, Is.EqualTo(snapshot.CustomersServed));
+            reputation.ResolveDepartedNow(clock, false); stats.TryBeginNextDay(2);
+            Assert.That(OperatingCostsFeedback.EndOfDayText(snapshot), Is.EqualTo(text));
+            Assert.That(stats.DailyHealthIncidents, Is.Zero); Assert.That(stats.HealthIncidents, Is.EqualTo(12));
+        }
+        [Test]
         public void DailyCountersResetWhileAllLifetimeEvidenceAndDeduplicationSurviveFourDays()
         {
             var statistics = new CustomerServiceStatistics(); var ledger = new PaymentLedger(1000);
