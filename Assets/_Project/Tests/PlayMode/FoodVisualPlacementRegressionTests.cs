@@ -37,6 +37,7 @@ namespace ZeroStarRestaurant.Tests
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity", new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Assert.That(_scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<ZeroStarRestaurant.Restaurant.RestaurantDayController>(true)).Single().OpenRestaurant(), Is.True);
             _station = All<IngredientPurchaseStation>().Single(); _carry = All<PhysicalCarry>().Single(); _assembly = All<PhysicalDishAssembly>().Single();
             _simulation = All<FoodSimulation>().Single(); _simulation.enabled = false;
             _actor = All<FirstPersonController>().Single().transform; _actor.GetComponent<FirstPersonController>().enabled = false; _camera = All<Camera>().Single();

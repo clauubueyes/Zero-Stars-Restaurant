@@ -96,7 +96,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(state.PendingCount, Is.EqualTo(1));
             double elapsed = _day.State.Clock.ElapsedWorldSeconds;
             Reputation.enabled = false; Reputation.enabled = true; Assert.That(Reputation.State, Is.SameAs(state));
-            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2));
+            Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2));
             Assert.That(_day.State.Clock.ElapsedWorldSeconds, Is.EqualTo(elapsed)); Assert.That(state.ResolutionCount, Is.Zero);
             _day.Advance(120); Assert.That(state.ResolutionCount, Is.EqualTo(1)); Assert.That(risk.Resolution.DayNumber, Is.EqualTo(2));
             Assert.That(_service.Statistics.HealthIncidents, Is.EqualTo(1));

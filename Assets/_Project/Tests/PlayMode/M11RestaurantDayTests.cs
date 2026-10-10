@@ -39,6 +39,7 @@ namespace ZeroStarRestaurant.Tests
         public IEnumerator SetUp()
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode(M1Path, new LoadSceneParameters(LoadSceneMode.Additive)); yield return null;
+            Assert.That(_scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<ZeroStarRestaurant.Restaurant.RestaurantDayController>(true)).Single().OpenRestaurant(), Is.True);
             Components<FirstPersonController>().Single().enabled = false;
             _day = Components<RestaurantDayController>().Single(); Manual(_day);
             _service = Components<CustomerServiceLoop>().Single(); _service.enabled = false; Manual(_service); _service.enabled = true;
@@ -67,7 +68,7 @@ namespace ZeroStarRestaurant.Tests
             _service.Advance(30); Assert.That(Queue.Count, Is.EqualTo(4), "Pausing world time does not pause customers.");
             Assert.That(Queue.Head.State.WaitingSeconds, Is.GreaterThan(0));
             _service.enabled = false; _day.ResumeClock(); Set(_day, "_worldSecondsPerSimulationSecond", 60); CloseClock();
-            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_day.StartNextDay(), Is.True);
+            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True);
             Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2)); Assert.That(item.State, Is.SameAs(state)); Assert.That(state.InstanceId, Is.EqualTo(id));
             Assert.That(state.AgeSeconds, Is.EqualTo(10)); Assert.That(state.TemperatureCelsius, Is.EqualTo(temperature));
             Assert.That(state.DeteriorationSeconds, Is.EqualTo(deterioration)); Assert.That(state.IsContaminated, Is.True);
@@ -91,8 +92,9 @@ namespace ZeroStarRestaurant.Tests
                 custom.transform.position += Vector3.right * 3; Physics.SyncTransforms(); Components<DeliveryZone>().Single().Poll();
             }
             Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_service.Visit, Is.Null);
+            Assert.That(_day.EndCurrentDay(), Is.True);
             Assert.That(custom.State.IsSold, Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(675));
-            Assert.That(_day.StartNextDay(), Is.True); _service.Advance(0.55);
+            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True); _service.Advance(0.55);
             Assert.That(Queue.Count, Is.EqualTo(1)); Assert.That(Queue.Head.State.Number, Is.EqualTo(5));
             Assert.That(ids, Has.No.Member(Queue.Head.State.InstanceId)); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2));
             Assert.That(custom.State.IsFinalized, Is.True); yield return null;
@@ -115,7 +117,7 @@ namespace ZeroStarRestaurant.Tests
             _service.Advance(30); Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed));
             Assert.That(firstVisit.Stage, Is.EqualTo(CustomerStage.Finished)); Assert.That(Queue.Count, Is.Zero); yield return null;
             Assert.That(hamburger == null, Is.True); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve }));
-            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_service.LastResult, Is.SameAs(receipt));
+            Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True); Assert.That(_service.LastResult, Is.SameAs(receipt));
             Assert.That(_service.Statistics, Is.SameAs(statistics)); Assert.That(_service.LastConsequence, Is.SameAs(firstConsequence));
             Assert.That(statistics.History.Single(), Is.SameAs(firstConsequence));
             Assert.That(reserve.State, Is.SameAs(reserveState)); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1025));
@@ -124,6 +126,7 @@ namespace ZeroStarRestaurant.Tests
             DishItem cheese = null; yield return BuildDish(new[] { 0, 1, 2, 0 }, dish => cheese = dish); PlaceAndPoll(cheese);
             Assert.That(_service.LastResult.Accepted, Is.True); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1500));
             _service.Advance(30); Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed));
+            Assert.That(_day.EndCurrentDay(), Is.True);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1200), "Both days settle rent once.");
             Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2)); Assert.That(_food.Foods, Is.EqualTo(new[] { reserve })); yield return null;
             Assert.That(statistics.CustomersServed, Is.EqualTo(2)); Assert.That(statistics.Satisfied, Is.EqualTo(2));
@@ -136,7 +139,7 @@ namespace ZeroStarRestaurant.Tests
             double time = _day.State.Clock.SecondsOfDay; _day.Advance(10000); _service.Advance(100);
             Assert.That(_day.State.Clock.SecondsOfDay, Is.EqualTo(time)); Assert.That(Queue.Count, Is.Zero);
             _day.enabled = false; Assert.That(Queue.TryAdmit(), Is.False); _service.Advance(100); Assert.That(Queue.Count, Is.Zero);
-            _day.enabled = true; Assert.That(_day.StartNextDay(), Is.True); _service.Advance(0.55); Assert.That(Queue.Count, Is.EqualTo(1)); yield return null;
+            _day.enabled = true; Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True); _service.Advance(0.55); Assert.That(Queue.Count, Is.EqualTo(1)); yield return null;
         }
         private IEnumerator BuildDish(int[] products, System.Action<DishItem> completed)
         {

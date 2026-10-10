@@ -20,7 +20,7 @@ namespace ZeroStarRestaurant.Tests
             grill.AddDirt(.8, DirtKind.Grease, "Development cooking"); prep.AddDirt(.6, DirtKind.FoodResidue, "Development contact");
             var states = surfaces.Select(surface => surface.State).ToArray();
             var amounts = states.Select(state => state.Amount).ToArray();
-            grill.enabled = false; grill.enabled = true; CloseClock(); Assert.That(_day.StartNextDay(), Is.True);
+            grill.enabled = false; grill.enabled = true; CloseClock(); Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True);
             Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(2));
             yield return null;
             Assert.That(surfaces.Select(surface => surface.State), Is.EqualTo(states));

@@ -24,7 +24,8 @@ namespace ZeroStarRestaurant.Tests
         [UnitySetUp] public IEnumerator SetUp()
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity", new LoadSceneParameters(LoadSceneMode.Additive));
-            yield return null; All<FoodSimulation>().Single().enabled = false; All<FirstPersonController>().Single().enabled = false;
+            yield return null;
+            Assert.That(_scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<ZeroStarRestaurant.Restaurant.RestaurantDayController>(true)).Single().OpenRestaurant(), Is.True); All<FoodSimulation>().Single().enabled = false; All<FirstPersonController>().Single().enabled = false;
         }
         [UnityTearDown] public IEnumerator TearDown() { if (_scene.IsValid()) yield return SceneManager.UnloadSceneAsync(_scene); }
         [TestCase(false)] [TestCase(true)]

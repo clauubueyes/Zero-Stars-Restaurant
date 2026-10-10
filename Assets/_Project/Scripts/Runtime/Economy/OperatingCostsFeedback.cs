@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using UnityEngine;
+using ZeroStarRestaurant.Restaurant;
 
 namespace ZeroStarRestaurant.Economy
 {
@@ -25,8 +26,26 @@ namespace ZeroStarRestaurant.Economy
             text.Append("Electricity cost accrued today: " + IngredientPurchaseStation.FormatCents(summary.ElectricityAccruedCents));
             return text.ToString();
         }
-        public string Text => _costs == null || _costs.Summary == null ? "" : SummaryText(_costs.Summary) +
-            "\nElectricity bill pending: " + IngredientPurchaseStation.FormatCents(_costs.PendingElectricityCents) +
-            "\nNext Day: RestaurantDayController in Inspector.";
+        public static string EndOfDayText(EndOfDaySummary summary, DailySummary accounting = null)
+        {
+            accounting = accounting ?? summary.Accounting;
+            var text = new StringBuilder("DAY " + summary.DayNumber + " COMPLETE\n");
+            text.AppendLine(SummaryText(accounting));
+            text.AppendLine("Net cash movement: " + IngredientPurchaseStation.FormatCents(accounting.NetCents));
+            text.AppendLine("Customers served: " + summary.CustomersServed);
+            text.AppendLine("Satisfied: " + summary.Satisfied + " | Unhappy: " + summary.Unhappy);
+            text.AppendLine("Complaints: " + summary.Complaints);
+            text.AppendLine("Health incidents (food hazards): " + summary.HealthIncidents);
+            text.AppendLine("Confirmed health incidents today: " + (summary.ConfirmedHealthIncidents?.ToString() ?? "Unavailable"));
+            text.AppendLine("Dismissed health risks today: " + (summary.DismissedHealthRisks?.ToString() ?? "Unavailable"));
+            text.AppendLine("Pending health risks: " + (summary.PendingHealthRisks?.ToString() ?? "Unavailable"));
+            text.AppendLine("Reputation: " + (summary.Reputation?.ToString() ?? "Unavailable"));
+            text.Append("Closing balance: " + IngredientPurchaseStation.FormatCents(accounting.ClosingBalanceCents));
+            return text.ToString();
+        }
+        public string Text => _costs == null || _costs.Day.State?.Stage != RestaurantDayStage.EndOfDay || _costs.Day.Summary == null ? "" :
+            EndOfDayText(_costs.Day.Summary, _costs.Summary) +
+            "\nPending electricity bill: " + IngredientPurchaseStation.FormatCents(_costs.PendingElectricityCents) +
+            "\n[Enter] Start Next Day";
     }
 }

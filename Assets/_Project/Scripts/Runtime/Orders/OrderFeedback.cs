@@ -106,7 +106,9 @@ namespace ZeroStarRestaurant.Orders
                 if (_service.DeliveryZone != null) order += "\n" + _service.DeliveryZone.PlacementMessage;
                 if (_service.LastResult != null) order += "\nLast delivery: " + LastDeliveryMessage;
                 if (Reputation != null) order = Reputation.Text + "\n\n" + order;
-                order += "\n" + StatisticsText(_service.Statistics);
+                order += "\nToday: " + _service.Statistics.DailyCustomersServed + " served | " + _service.Statistics.DailySatisfied +
+                    " satisfied | " + _service.Statistics.DailyUnhappy + " unhappy | " + _service.Statistics.DailyComplaints + " complaints";
+                order += "\nSession totals: " + StatisticsText(_service.Statistics);
                 if (_service.Queue != null) order += "\n\n" + QueueText(_service.Queue);
                 if (_service.LastResult != null) order += "\n" + ResultText(_service.LastResult) + "\n" + ConsequenceText(_service.LastConsequence, true);
                 return order;

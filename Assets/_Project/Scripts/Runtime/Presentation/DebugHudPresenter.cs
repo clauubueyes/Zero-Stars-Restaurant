@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using ZeroStarRestaurant.Dishes;
 using ZeroStarRestaurant.Economy;
 using ZeroStarRestaurant.Food;
@@ -39,6 +40,18 @@ namespace ZeroStarRestaurant.Presentation
         {
             try { Validate(); _purchaseRevision = _procurement.MessageRevision; _billRevision = _costs.BillMessageRevision; _deliveryRevision = _service.ResultRevision; }
             catch (ArgumentException exception) { Debug.LogError(exception.Message, this); enabled = false; }
+        }
+
+        private void Update()
+        {
+            // Provisional gameplay action, independent of the developer Inspector commands.
+            if (Keyboard.current == null || !Keyboard.current.enterKey.wasPressedThisFrame || _day.Day == null) return;
+            switch (_day.Day.State?.Stage)
+            {
+                case RestaurantDayStage.Preparation: _day.Day.OpenRestaurant(); break;
+                case RestaurantDayStage.Closed: _day.Day.EndCurrentDay(); break;
+                case RestaurantDayStage.EndOfDay: _day.Day.StartNextDay(); break;
+            }
         }
 
         private void ObserveMessages()

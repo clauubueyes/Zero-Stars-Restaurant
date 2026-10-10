@@ -39,6 +39,7 @@ namespace ZeroStarRestaurant.Tests
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity", new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Assert.That(_scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<ZeroStarRestaurant.Restaurant.RestaurantDayController>(true)).Single().OpenRestaurant(), Is.True);
             Components<FirstPersonController>().Single().enabled = false;
             _day = Components<RestaurantDayController>().Single(); Automatic(_day, false);
             _service = Components<CustomerServiceLoop>().Single(); Automatic(_service, false); _service.enabled = false; _service.enabled = true;
@@ -49,10 +50,15 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_costs.Summary, Is.Null); Assert.That(_supply.State.DailyConsumedKilowattHours, Is.Zero);
         }
         [UnityTearDown] public IEnumerator TearDown() { if (_scene.IsValid()) yield return SceneManager.UnloadSceneAsync(_scene); }
-        private void Close() => _day.Advance((_day.State.ClosingMinute * 60 - _day.State.Clock.SecondsOfDay) / 60.0);
+        private void Close()
+        {
+            if (_day.State.Stage == RestaurantDayStage.Preparation) Assert.That(_day.OpenRestaurant(), Is.True);
+            _day.Advance((_day.State.ClosingMinute * 60 - _day.State.Clock.SecondsOfDay) / 60.0);
+            if (_day.State.Stage == RestaurantDayStage.Closed) _day.EndCurrentDay();
+        }
 
         [Test]
-        public void RealKwhSettleExactlyOnceAndClosedProcurementDoesNotCreateObjects()
+        public void RealKwhSettleExactlyOnceAndEndOfDayProcurementDoesNotCreateObjects()
         {
             _supply.PowerOn(); _supply.Advance(3600);
             Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(1000));
@@ -114,12 +120,12 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(_costs.Summary.ElectricityPaidCents, Is.EqualTo(141)); Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(71));
             Assert.That(_costs.Summary.OperatingNetCents, Is.EqualTo(-300)); Assert.That(_costs.Summary.NetCents, Is.EqualTo(-441));
             Assert.That(_costs.Summary.ClosingBalanceCents, Is.EqualTo(184)); Assert.That(before.ClosingBalanceCents, Is.EqualTo(325));
-            Assert.That(Components<OperatingCostsFeedback>().Single().Text, Does.Contain("Electricity bill pending: €0.00"));
+            Assert.That(Components<OperatingCostsFeedback>().Single().Text, Does.Contain("Pending electricity bill: €0.00"));
             _costs.SettleElectricityBill(); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(184));
             Assert.That(_service.Ledger.ElectricityBills, Has.Count.EqualTo(1));
             Assert.That(_costs.TrySettleClosedDay(), Is.True); Assert.That(_costs.Summary.FixedCostsCents, Is.EqualTo(300));
             Assert.That(_day.State, Is.SameAs(dayState)); Assert.That(_day.State.Clock.DayNumber, Is.EqualTo(number));
-            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed));
+            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.EndOfDay));
             Assert.That(Components<Transform>(), Is.EquivalentTo(objects)); Assert.That(reserve.State, Is.SameAs(state));
             Assert.That(state.IsContaminated, Is.True); Assert.That(state.AgeSeconds, Is.EqualTo(age));
             Assert.That(plate.transform.position, Is.EqualTo(new Vector3(-2, 2, 2)));
@@ -164,11 +170,11 @@ namespace ZeroStarRestaurant.Tests
             _supply.PowerOn(); _supply.Advance(60); _supply.Appliances[2].SetOn(false); _supply.Advance(60);
             Deliver(burger); var receipt = _service.LastResult;
             Assert.That(receipt.Accepted, Is.True); Assert.That(_costs.Summary, Is.Null);
-            _service.Advance(30); DailySummary first = _costs.Summary; yield return null;
+            _service.Advance(30); Assert.That(_day.EndCurrentDay(), Is.True); DailySummary first = _costs.Summary; yield return null;
             Assert.That(burger == null, Is.True); Assert.That(first.SalesCents, Is.EqualTo(500));
             Assert.That(first.PurchasesCents, Is.EqualTo(225)); Assert.That(first.ElectricityAccruedCents, Is.EqualTo(2));
             Assert.That(first.NetCents, Is.EqualTo(-25)); Assert.That(first.ClosingBalanceCents, Is.EqualTo(975));
-            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.StartNextDay(), Is.False);
+            Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.StartNextDay(), Is.False); Assert.That(_day.OpenRestaurant(), Is.True);
             Assert.That(_service.Ledger, Is.SameAs(ledger)); Assert.That(_service.LastResult, Is.SameAs(receipt));
             Assert.That(_supply.IsOn, Is.True); Assert.That(_supply.Appliances[2].IsOn, Is.False);
             Assert.That(_supply.State.DailyConsumedKilowattHours, Is.Zero);
@@ -182,7 +188,7 @@ namespace ZeroStarRestaurant.Tests
             _service.Advance(.55); Close(); _service.Advance(30);
             DishItem cheese = null; yield return BuildDish(new[] { 0, 1, 2, 0 }, item => cheese = item); Deliver(cheese);
             _supply.Appliances[0].SetOn(false); _supply.Advance(120);
-            _service.Advance(30); DailySummary second = _costs.Summary;
+            _service.Advance(30); Assert.That(_day.EndCurrentDay(), Is.True); DailySummary second = _costs.Summary;
             Assert.That(second.DayNumber, Is.EqualTo(2)); Assert.That(second.OpeningBalanceCents, Is.EqualTo(975));
             Assert.That(second.SalesCents, Is.EqualTo(650)); Assert.That(second.PurchasesCents, Is.EqualTo(175));
             Assert.That(second.ElectricityAccruedCents, Is.Zero); Assert.That(second.NetCents, Is.EqualTo(175));
@@ -212,7 +218,7 @@ namespace ZeroStarRestaurant.Tests
         public void NextDayCannotBypassDisabledOrMissingRequiredAccounting()
         {
             _costs.enabled = false; Close(); Assert.That(_costs.Summary, Is.Null); Assert.That(_day.StartNextDay(), Is.False);
-            _costs.enabled = true; _day.RefreshOccupancy(); Assert.That(_costs.Summary, Is.Not.Null);
+            _costs.enabled = true; Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_costs.Summary, Is.Not.Null);
             long balance = _service.Ledger.BalanceCents;
             var data = new SerializedObject(_day); data.FindProperty("_operatingCosts").objectReferenceValue = null; data.ApplyModifiedPropertiesWithoutUndo();
             Assert.That(_day.StartNextDay(), Is.False); Assert.That(_service.Ledger.BalanceCents, Is.EqualTo(balance));
@@ -224,7 +230,8 @@ namespace ZeroStarRestaurant.Tests
         {
             _day.State.Advance(28800 - .0001, 0); _supply.PowerOn(); Automatic(_supply, true); Automatic(_day, true);
             yield return null;
-            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_costs.Summary, Is.Not.Null);
+            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.Closed)); Assert.That(_day.EndCurrentDay(), Is.True);
+            Assert.That(_day.State.Stage, Is.EqualTo(RestaurantDayStage.EndOfDay)); Assert.That(_costs.Summary, Is.Not.Null);
             Assert.That(_costs.Summary.ConsumedKilowattHours, Is.GreaterThan(0));
             Assert.That(_costs.Summary.ConsumedKilowattHours, Is.EqualTo(_supply.State.DailyConsumedKilowattHours));
             Assert.That(_costs.Summary.ElectricityAccruedCents, Is.EqualTo(

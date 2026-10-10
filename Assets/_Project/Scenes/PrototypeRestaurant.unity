@@ -8367,7 +8367,7 @@ MonoBehaviour:
   _reputation: {fileID: 160000001}
   m_EditorClassIdentifier: ZeroStarRestaurant.Runtime::ZeroStarRestaurant.Restaurant.RestaurantDayController
   _queue: {fileID: 1163158815}
-  _startingHour: 9
+  _startingHour: 8
   _startingMinute: 0
   _openingHour: 9
   _openingMinute: 0

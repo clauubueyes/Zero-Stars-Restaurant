@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using ZeroStarRestaurant.Customers;
 using ZeroStarRestaurant.Economy;
@@ -14,7 +15,7 @@ namespace ZeroStarRestaurant.Restaurant
         public RestaurantReputation Reputation => _reputation;
         [SerializeField] private RestaurantOperatingCosts _operatingCosts;
         [SerializeField] private bool _requiresOperatingCosts;
-        [SerializeField, Range(0, 23)] private int _startingHour = 9;
+        [SerializeField, Range(0, 23)] private int _startingHour = 8;
         [SerializeField, Range(0, 59)] private int _startingMinute;
         [SerializeField, Range(0, 23)] private int _openingHour = 9;
         [SerializeField, Range(0, 59)] private int _openingMinute;
@@ -27,6 +28,16 @@ namespace ZeroStarRestaurant.Restaurant
         [SerializeField, Tooltip("Pauses only the world clock; customers and food keep their existing simulation time.")]
         private bool _paused;
         public RestaurantDay State { get; private set; }
+        public RestaurantCalendar Calendar => State?.Calendar;
+        public EndOfDaySummary Summary { get; private set; }
+        private readonly List<EndOfDaySummary> _summaries = new List<EndOfDaySummary>();
+        public IReadOnlyList<EndOfDaySummary> Summaries => _summaries.AsReadOnly();
+        // Runtime boundaries publish after the corresponding accounting/reset hooks.
+        public event Action<int> DayStarted;
+        public event Action<int> RestaurantOpened;
+        public event Action<int> RestaurantClosing;
+        public event Action<int> RestaurantClosed;
+        public event Action<int> DayEnded;
         public CustomerQueueController Queue => _queue;
         public RestaurantOperatingCosts OperatingCosts => _operatingCosts;
         public bool CanAdmitCustomers => isActiveAndEnabled && State != null && State.CanAdmitCustomers;
@@ -44,9 +55,13 @@ namespace ZeroStarRestaurant.Restaurant
             _openingHour * 60 + _openingMinute, _closingHour * 60 + _closingMinute);
         private void Awake()
         {
-            try { Validate(); State = CreateState(); State.SetPaused(_paused); if (_startAutomatically) StartNextDay(); }
+            try { Validate(); State = CreateState(); State.SetPaused(_paused);
+                State.RestaurantOpened += number => RestaurantOpened?.Invoke(number);
+                State.RestaurantClosing += number => RestaurantClosing?.Invoke(number);
+                State.RestaurantClosed += number => RestaurantClosed?.Invoke(number); }
             catch (ArgumentException exception) { Debug.LogError("Invalid restaurant day configuration: " + exception.Message, this); enabled = false; }
         }
+        private void Start() { if (_startAutomatically) StartNextDay(); }
         private void Update() { if (_advanceAutomatically) Advance(UnityEngine.Time.deltaTime); }
         public void Advance(double simulationSeconds)
         {
@@ -58,31 +73,67 @@ namespace ZeroStarRestaurant.Restaurant
             if (double.IsInfinity(worldSeconds)) worldSeconds = double.MaxValue;
             State.SetPaused(_paused); State.Advance(worldSeconds, _queue.Count);
             _reputation?.ResolveDue();
-            SettleIfClosed();
         }
         public void RefreshOccupancy()
         {
             if (State == null) return;
-            State.Advance(0, _queue.Count); SettleIfClosed();
+            State.Advance(0, _queue.Count);
         }
-        private void SettleIfClosed()
+        [ContextMenu("Development: Open Restaurant")]
+        public void OpenFromInspector() => ReportDevelopmentResult(OpenRestaurant(), "Open Restaurant");
+        public bool OpenRestaurant()
         {
-            if (State.Stage == RestaurantDayStage.Closed && _operatingCosts != null) _operatingCosts.TrySettleClosedDay();
+            if (!isActiveAndEnabled || State == null || State.Stage != RestaurantDayStage.Preparation || _queue.Count != 0) return false;
+            _queue.RestartAdmissionDelay();
+            return State.TryOpenRestaurant();
         }
-        [ContextMenu("Development: Start Day / Next Day")]
-        private void StartDayFromInspector() => StartNextDay();
+        [ContextMenu("Development: Force Close (finish existing customers)")]
+        public void ForceCloseFromInspector() => ReportDevelopmentResult(ForceClose(), "Force Close");
+        public bool ForceClose() => isActiveAndEnabled && State != null && State.TryForceClose(_queue.Count);
+
+        [ContextMenu("Development: End Current Day")]
+        public void EndDayFromInspector() => ReportDevelopmentResult(EndCurrentDay(), "End Current Day");
+        public bool EndCurrentDay()
+        {
+            if (!isActiveAndEnabled || State == null || State.Stage != RestaurantDayStage.Closed || _queue.Count != 0 ||
+                (_requiresOperatingCosts && _operatingCosts == null)) return false;
+            if (_operatingCosts != null)
+            {
+                // No charge or reset is permitted while a visit is still entering/being served/leaving.
+                if (_operatingCosts.Service.Statistics.DayNumber != Calendar.CurrentDay || !_operatingCosts.TrySettleClosedDay()) return false;
+                Summary = new EndOfDaySummary(_operatingCosts.Summary, _operatingCosts.Service.Statistics,
+                    _reputation?.State, _operatingCosts.PendingElectricityCents);
+                _summaries.Add(Summary);
+            }
+            if (!State.TryEndDay(_queue.Count)) return false;
+            DayEnded?.Invoke(Calendar.CurrentDay);
+            return true;
+        }
+        [ContextMenu("Development: Start Next Day")]
+        public void StartDayFromInspector() => ReportDevelopmentResult(StartNextDay(), "Start Next Day");
         public bool StartNextDay()
         {
-            if (!isActiveAndEnabled || State == null || (_requiresOperatingCosts && _operatingCosts == null)) return false;
-            bool nextDay = State.Stage == RestaurantDayStage.Closed;
+            if (!isActiveAndEnabled || State == null || (_requiresOperatingCosts && _operatingCosts == null) || _queue.Count != 0) return false;
+            bool nextDay = State.Stage == RestaurantDayStage.EndOfDay;
+            if (nextDay && _operatingCosts != null && (!_operatingCosts.CanBeginNextDay ||
+                _operatingCosts.Service.Statistics.DayNumber != Calendar.CurrentDay)) return false;
+            if (!State.TryStartDay(_queue.Count)) return false;
             if (nextDay && _operatingCosts != null)
             {
-                SettleIfClosed();
-                if (!_operatingCosts.CanBeginNextDay) return false;
+                _operatingCosts.BeginNextDay();
+                if (!_operatingCosts.Service.Statistics.TryBeginNextDay(Calendar.CurrentDay))
+                    throw new InvalidOperationException("Service statistics must follow the calendar exactly once.");
             }
-            if (!State.TryStartDay(_queue.Count)) return false;
-            if (nextDay && _operatingCosts != null) _operatingCosts.BeginNextDay();
-            _queue.RestartAdmissionDelay(); _reputation?.ResolveDue(); return true;
+            Summary = null;
+            _queue.RestartAdmissionDelay();
+            // Changing the calendar does not advance or resolve M16 deadlines.
+            DayStarted?.Invoke(Calendar.CurrentDay);
+            return true;
+        }
+        private void ReportDevelopmentResult(bool applied, string action)
+        {
+            Debug.Log(action + (applied ? " applied." : " unavailable; finish the current phase and all visits first. Required accounting must be enabled.") +
+                " Day " + Calendar?.CurrentDay + " | " + State?.Stage + " | Customers: " + _queue.Count, this);
         }
         [ContextMenu("Development: Pause World Clock")]
         public void PauseClock() { _paused = true; State?.SetPaused(true); }

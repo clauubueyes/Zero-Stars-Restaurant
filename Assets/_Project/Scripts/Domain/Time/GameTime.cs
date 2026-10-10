@@ -6,16 +6,17 @@ namespace ZeroStarRestaurant.Restaurant
     {
         // A service day never rolls over implicitly while customers are still inside.
         public const double LastSecondOfDay = 86399;
-        public int DayNumber { get; private set; } = 1;
+        public RestaurantCalendar Calendar { get; } = new RestaurantCalendar();
+        public int DayNumber => Calendar.CurrentDay;
         public double SecondsOfDay { get; private set; }
         // Actual world-clock progress only; StartDay does not simulate an overnight gap.
         public double ElapsedWorldSeconds { get; private set; }
         public int Hour => (int)(SecondsOfDay / 3600);
         public int Minute => (int)(SecondsOfDay / 60) % 60;
 
-        internal void StartDay(int dayNumber, int startingMinute)
+        internal void SetTimeOfDay(int startingMinute)
         {
-            DayNumber = dayNumber; SecondsOfDay = startingMinute * 60.0;
+            SecondsOfDay = startingMinute * 60.0;
         }
         public void Advance(double worldSeconds)
         {

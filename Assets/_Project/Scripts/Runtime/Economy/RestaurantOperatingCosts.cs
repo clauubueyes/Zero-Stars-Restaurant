@@ -50,13 +50,14 @@ namespace ZeroStarRestaurant.Economy
         public bool TrySettleClosedDay()
         {
             if (!isActiveAndEnabled || _policy == null || _day.State == null ||
-                _day.State.Stage != RestaurantDayStage.Closed || _day.Queue.Count != 0 ||
+                (_day.State.Stage != RestaurantDayStage.Closed && _day.State.Stage != RestaurantDayStage.EndOfDay) || _day.Queue.Count != 0 ||
                 _service.Ledger.DayNumber != _day.State.Clock.DayNumber) return false;
-            _service.Ledger.TrySettleDay(_policy, _electricity.State.DailyConsumedKilowattHours, out _);
+            if (!_service.Ledger.TrySettleDay(_policy, _electricity.State.DailyConsumedKilowattHours, out _)) return false;
             _electricity.CompleteDay();
             return true;
         }
-        public bool CanBeginNextDay => isActiveAndEnabled && Summary != null && _service.Ledger.DayNumber < int.MaxValue;
+        public bool CanBeginNextDay => isActiveAndEnabled && Summary != null &&
+            _service.Ledger.DayNumber == _day.State.Clock.DayNumber && _service.Ledger.DayNumber < int.MaxValue;
         public void BeginNextDay()
         {
             if (!_service.Ledger.TryBeginNextDay(_day.State.Clock.DayNumber))

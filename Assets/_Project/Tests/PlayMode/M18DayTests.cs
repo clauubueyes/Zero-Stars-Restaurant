@@ -81,7 +81,7 @@ namespace ZeroStarRestaurant.Tests
             first.DevelopmentMakeFilthy(); first.DevelopmentContaminateSurface();
             var sanitaryState = first.Contamination; var trace = sanitaryState.Snapshot().Single();
             first.DevelopmentCleanSurface(); first.enabled = false; first.enabled = true;
-            CloseClock(); Assert.That(_day.StartNextDay(), Is.True); yield return null;
+            CloseClock(); Assert.That(_day.EndCurrentDay(), Is.True); Assert.That(_day.StartNextDay(), Is.True); Assert.That(_day.OpenRestaurant(), Is.True); yield return null;
             Assert.That(first.Contamination, Is.SameAs(sanitaryState)); Assert.That(first.Contamination.Snapshot().Single(), Is.SameAs(trace));
             Assert.That(first.State.Amount, Is.Zero); Assert.That(second.Contamination.IsContaminated, Is.False);
             first.DevelopmentMakeFilthy(); first.DevelopmentSanitizeSurface();

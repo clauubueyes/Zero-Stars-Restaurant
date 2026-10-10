@@ -34,6 +34,7 @@ namespace ZeroStarRestaurant.Tests
         {
             _scene = EditorSceneManager.LoadSceneInPlayMode("Assets/_Project/Scenes/PrototypeRestaurant.unity", new LoadSceneParameters(LoadSceneMode.Additive));
             yield return null;
+            Assert.That(_scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<ZeroStarRestaurant.Restaurant.RestaurantDayController>(true)).Single().OpenRestaurant(), Is.True);
             _supply = Components<RestaurantElectricity>().Single(); Set(_supply, "_advanceAutomatically", false);
             _simulation = Components<FoodSimulation>().Single(); _simulation.enabled = false;
             Components<FirstPersonController>().Single().enabled = false;
@@ -198,7 +199,7 @@ namespace ZeroStarRestaurant.Tests
             grill.enabled = false; grill.enabled = true;
             Assert.That(grill.IsOn, Is.False); Assert.That(grill.Meter, Is.SameAs(meter));
             RestaurantDayController day = Components<RestaurantDayController>().Single();
-            day.State.Advance(28800, 0); Assert.That(day.StartNextDay(), Is.True);
+            day.State.Advance(28800, 0); Assert.That(day.EndCurrentDay(), Is.True); Assert.That(day.StartNextDay(), Is.True);
             Assert.That(grill.IsOn, Is.False); Assert.That(_supply.Appliances.Skip(1).All(item => item.IsOn), Is.True);
             _supply.PowerOff(); _supply.PowerOn(); _supply.Advance(3600);
             Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(.7).Within(1e-12));
@@ -219,7 +220,7 @@ namespace ZeroStarRestaurant.Tests
             Assert.That(ledger.BalanceCents, Is.EqualTo(balance), "Consumption alone never charges money.");
             RestaurantDayController day = Components<RestaurantDayController>().Single();
             day.Advance(60); day.PauseClock(); day.Advance(100); day.ResumeClock();
-            day.State.Advance(28800, 0); Assert.That(day.StartNextDay(), Is.True);
+            day.State.Advance(28800, 0); Assert.That(day.EndCurrentDay(), Is.True); Assert.That(day.StartNextDay(), Is.True);
             Assert.That(_supply.IsOn, Is.True); Assert.That(_supply.State.ConsumedKilowattHours, Is.EqualTo(2.35).Within(1e-12));
             _supply.enabled = false; _supply.Advance(3600); Assert.That(_supply.CurrentWatts, Is.Zero);
             _supply.enabled = true; Assert.That(_supply.IsOn, Is.True);

@@ -95,11 +95,11 @@ namespace ZeroStarRestaurant.Tests
         [Test]
         public void PendingRisksSurviveDayChangeWithoutCountingAnOvernightGapOrPausedTime()
         {
-            var day = new RestaurantDay(540, 540, 541); day.TryStartDay(0); var state = State(); var c = Serve(0);
+            var day = new RestaurantDay(540, 540, 541); day.TryStartDay(0); day.TryOpenRestaurant(); var state = State(); var c = Serve(0);
             day.Advance(30, 0); state.TryRegisterService(c, day.Clock); state.TryCompleteVisit(c, day.Clock);
             day.Advance(30, 0); Assert.That(day.Stage, Is.EqualTo(RestaurantDayStage.Closed));
             Assert.That(state.ResolveDue(day.Clock), Is.Zero); day.Advance(100000, 0);
-            Assert.That(day.Clock.ElapsedWorldSeconds, Is.EqualTo(60)); Assert.That(day.TryStartDay(0), Is.True);
+            Assert.That(day.Clock.ElapsedWorldSeconds, Is.EqualTo(60)); Assert.That(day.TryEndDay(0), Is.True); Assert.That(day.TryStartDay(0), Is.True); Assert.That(day.TryOpenRestaurant(), Is.True);
             Assert.That(state.ResolveDue(day.Clock), Is.Zero); Assert.That(day.Clock.ElapsedWorldSeconds, Is.EqualTo(60));
             day.SetPaused(true); day.Advance(10000, 0); Assert.That(state.ResolveDue(day.Clock), Is.Zero);
             day.SetPaused(false); day.Advance(30, 0); Assert.That(state.ResolveDue(day.Clock), Is.EqualTo(1));
