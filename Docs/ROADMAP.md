@@ -162,6 +162,10 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M18 · `feature/cross-contamination-food-safety` | Contaminación sanitaria independiente por contacto físico Food ↔ Surface. | Desde M17 `9ee1360`: Raw/Undercooked Meat y contaminación existente emiten cargas configurables; superficies Prep/Grill/Assembly/regiones de suelo conservan estado y origen. Una transferencia por entrada, snapshots previos y máximo por categoría sin amplificación ni RNG. FoodState conserva trazas al retirar/cocinar; Dirt y cleaning separados, sanitización explícita de desarrollo, Inspector sin HUD nuevo, Next Day conserva estados. Cadena real Patty → Prep → Bun → Hamburger Cooked → PASS cobra €5 M14, Health Incident M15 y riesgo diferido M16 sin dependencias directas. Tests Domain/escena/física y regresiones M1–M17. Food → Food pendiente por colliders retirados de Dish. Ver M18.md y ADR 0024; sin kill temperatures, productos, inspecciones, save/load ni M19. |
 | M19 · `feature/multi-day-restaurant-loop` | Calendario de sesión y loop explícito de múltiples días. | Desde `e93510e`: Preparation → Open manual → Closing sin admisiones → Closed físico → End Day/resumen/settlement único → Start Next Day → Preparation. Day 1–4 con +1 y eventos reutilizables. Diarios separados de históricos; mismo dinero/objetos/Food/Dish/Storage/Dirt/contaminación/reputación/incidentes/deuda. Tiempo monotónico M16 sin noche ni avance alimentario implícito; devengo eléctrico != pago. Enter en HUD existente, Inspector con mismo flujo, tests Domain/integración y regresiones M1–M18/visual passes. Ver M19.md y ADR 0029; sin disco, nuevos costes, M20 o arte. |
 
+Corrección posterior a M19 desde `f6fb68c`: [artefactos de arquitectura y
+estadísticas/HUD](POST-M19-STABILIZATION.md). Solo presentación y regresión,
+sin M20 ni cambios de reglas; cuatro outcomes exclusivos y cierre inmutable.
+
 ## Recorrido de aceptación del slice
 
 La secuencia histórica M6 siguiente se amplía y sustituye en entregas/pagos por

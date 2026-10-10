@@ -1,11 +1,14 @@
 # Zero Star Restaurant
 
 Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
-rama **`fix/food-visual-placement-regressions`**. [Corrección de apoyo visual](Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md)
-desde `b023fe8`: las capas se apoyan ya antes de F y Cheese permanece visible en
-COLLECT HERE, conservando proxies/contactos originales. El [polish de Hamburger
-y Dirt](Docs/VISUAL-POLISH-BURGER-DIRT.md) mantiene proporciones compactas y overlays
-orgánicos M17. Física, estados, layout, materiales principales y luces intactos.
+rama **`fix/post-m19-visual-stats-regressions`**, desde M19 `f6fb68c`.
+[Estabilización posterior a M19](Docs/POST-M19-STABILIZATION.md): suelos sin
+solapamiento, capas de pared separadas, linteles/apoyos/encimera sin superficies
+redundantes y HUD con cuatro outcomes exclusivos. Escena instalada de forma
+incremental, conservando transforms, colliders y reglas M1–M19.
+Las etiquetas físicas respetan la profundidad sin alterar fuentes compartidas.
+[Corrección de apoyo visual](Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md) y
+[polish de Hamburger/Dirt](Docs/VISUAL-POLISH-BURGER-DIRT.md) se conservan.
 
 VP1B/C añade materiales PBR propios, revestimientos y equipment modular sobre VP1A
 `db39056`, conservando distribución y gameplay M1–M18. Play empieza sin corriente:
@@ -14,8 +17,8 @@ VP1B/C añade materiales PBR propios, revestimientos y equipment modular sobre V
 `AtmospherePass` conserva su comparación independiente de iluminación.
 No ejecutar Rebuild; escena ya instalada. Sin merge a main ni publicación.
 
-Estado actual: **M18: Cross-Contamination & Food Safety**, desde M17 validado `9ee1360`, en
-`feature/cross-contamination-food-safety`. Proyecto entregado:
+Estado actual: **M19: Multi-Day Restaurant Loop**, seguido de estabilización visual
+y de presentación de estadísticas. M18 mantiene Cross-Contamination & Food Safety. Proyecto entregado:
 **`C:/Users/Usuario/Zero Stars Restaurant M15`**.
 Grill, Prep/Assembly y dos zonas de suelo mantienen suciedad independiente de
 sesión. Cocinar/contactar ensucia; CleaningTool sostenida y E mantenida limpian

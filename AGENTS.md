@@ -389,3 +389,19 @@ silenciosamente**: indícalo antes.
 - Al terminar, indicar qué cambió, exactamente qué archivos se crearon o
   modificaron, rama/commits, validación realizada, límites y pasos para
   comprobarlo desde Unity. No ocultar comprobaciones pendientes.
+
+## Estabilización posterior a M19
+
+- Rama `fix/post-m19-visual-stats-regressions`, base `f6fb68c`; entrega en M15.
+  Ver `Docs/POST-M19-STABILIZATION.md` y ADR 0030. PostM19VisualFixBuilder aplica
+  una migración incremental de campos exclusivamente visuales bajo Visual_VP1BC.
+  Suelo particionado con UV continuas, remates separados, linteles y apoyos sin
+  superficies redundantes y cuerpo del mostrador bajo su encimera. Repetir conserva
+  ajustes manuales posteriores; no regenerar/reconstruir ni mover física/layout.
+  RestaurantArtPass aplica profundidad a etiquetas físicas con copias por fuente
+  durante Play; conserva atlas dinámico y restaura/libera materiales propios.
+- Outcomes M15 exclusivos: Satisfied + Unhappy + Complaints + HealthIncidents
+  equivale a served, conservando todas las causas. Registrar en Pay una vez;
+  Exit no suma de nuevo. Confirmed/dismissed M16 no reescriben outcomes.
+  EndOfDaySummary existente es inmutable; reset diario solo en StartNextDay.
+  Mostrar las cuatro categorías juntas y limitar ancho del contenido del HUD.
