@@ -549,3 +549,14 @@ y [ADR 0028](Decisions/0028-visual-support-independent-of-functional-proxies.md)
 `InteractionDetector.Detect` selecciona la Food visible dentro de esa columna
 conectada, manteniendo oclusión por sólidos, rango y exclusión de la unidad
 sostenida. `TryDetectHit` conserva el hit del collider para placement.
+
+
+## Loop de múltiples días M19
+
+RestaurantDay amplía la misma máquina M11 con Preparation/EndOfDay. Calendario del
+mismo GameTime, sin reglas concretas de eventos. Closed conserva compras/interacción;
+EndCurrentDay coordina settlement M13 y EndOfDaySummary; StartNextDay reinicia diarios
+antes de DayStarted. Eventos RestaurantOpened/Closing/Closed y DayEnded sin bus general.
+M15 añade Daily* conservando history; M16 conserva plazos monotónicos sin noche.
+GameTime/FoodSimulation siguen independientes. Enter en HUD actual, desarrollo Inspector.
+Ver [M19](M19.md) y [ADR 0029](Decisions/0029-multi-day-restaurant-loop.md).

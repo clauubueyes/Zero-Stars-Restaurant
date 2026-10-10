@@ -4,7 +4,7 @@
 sobre VP1A `db39056`, rama `visual/realistic-restaurant-art-pass-1`. Revestimientos,
 acero, suelo/azulejos, mostrador, PASS y primeros visuales Food mediante hijos
 sin física; mismo layout y gameplay M1–M18. Conserva las luces conectadas a M12.
-No es un milestone nuevo. M19 queda pendiente; aceptación visual humana y perfilado
+No es un milestone nuevo. M19 añade el loop diario conservando el pass; aceptación visual humana y perfilado
 pendientes. Ver ADR 0026 e inventario/validación en VP1BC.md. VP1A permanece como
 base y comparación independiente de iluminación.
 
@@ -160,6 +160,7 @@ dividirlo manteniendo un resultado comprobable en cada paso.
 | M16 · `feature/reputation-delayed-consequences` | Reputación de sesión e historial; consecuencias sanitarias diferidas independientes del pago. | Desde `3799710`: rango configurable 0–100, neutral 50; Satisfied/Unhappy/Complaint al terminar visita. Riesgo sanitario desde evidencia M15; tras Exit y 7200s efectivos de GameTime, RNG inyectable confirma o descarta; una resolución por visita/pedido. Causas Raw/Undercooked meat, Spoiled/Rotten, Contaminated; múltiples riesgos, rango limitado, historial original, Next Day conserva pendientes sin simular noche. Debug para adelantar/forzar y feedback en panel existente sin solapamientos. Tests de reglas, probabilidades, días, identidad única y regresiones completas M1–M15; M14 paga intacto, M15 conserva reacción/estadísticas. Ver M16.md y ADR 0022. Sin estrellas, inspecciones, multas, enfermedades concretas, reputación sobre clientes/precios ni M17. |
 | M17 · `feature/hygiene-cleaning` | Suciedad local continua y limpieza física de sesión. | Desde `1609a29`: Grill/Prep/Assembly/suelo, estados independientes 0–1, categorías configurables y metadata FoodResidue/Grease/GeneralDirt. Cocción real añade grasa, contactos añaden pequeñas cantidades por entrada, API de eventos local. CleaningTool usa Pickup y E mantenida con tiempo/alcance/raycast sólido sobre un solo objetivo; visual progresivo con manchas nuevas sin sustituir materiales, prompt en HUD existente. Next Day conserva estado; herramientas Inspector de desarrollo. Tests Domain, uso real, contacto, alcance/objetivo, visual/estado, días y regresiones M1–M16. Ver M17.md y ADR 0023. Sin contaminación por superficies, higiene global, cambios M14–M16, inspecciones, consumibles, plagas, save/load ni M18. |
 | M18 · `feature/cross-contamination-food-safety` | Contaminación sanitaria independiente por contacto físico Food ↔ Surface. | Desde M17 `9ee1360`: Raw/Undercooked Meat y contaminación existente emiten cargas configurables; superficies Prep/Grill/Assembly/regiones de suelo conservan estado y origen. Una transferencia por entrada, snapshots previos y máximo por categoría sin amplificación ni RNG. FoodState conserva trazas al retirar/cocinar; Dirt y cleaning separados, sanitización explícita de desarrollo, Inspector sin HUD nuevo, Next Day conserva estados. Cadena real Patty → Prep → Bun → Hamburger Cooked → PASS cobra €5 M14, Health Incident M15 y riesgo diferido M16 sin dependencias directas. Tests Domain/escena/física y regresiones M1–M17. Food → Food pendiente por colliders retirados de Dish. Ver M18.md y ADR 0024; sin kill temperatures, productos, inspecciones, save/load ni M19. |
+| M19 · `feature/multi-day-restaurant-loop` | Calendario de sesión y loop explícito de múltiples días. | Desde `e93510e`: Preparation → Open manual → Closing sin admisiones → Closed físico → End Day/resumen/settlement único → Start Next Day → Preparation. Day 1–4 con +1 y eventos reutilizables. Diarios separados de históricos; mismo dinero/objetos/Food/Dish/Storage/Dirt/contaminación/reputación/incidentes/deuda. Tiempo monotónico M16 sin noche ni avance alimentario implícito; devengo eléctrico != pago. Enter en HUD existente, Inspector con mismo flujo, tests Domain/integración y regresiones M1–M18/visual passes. Ver M19.md y ADR 0029; sin disco, nuevos costes, M20 o arte. |
 
 ## Recorrido de aceptación del slice
 
@@ -170,10 +171,11 @@ incompleto, solo Patty, extras, rechazo irrelevante y reintento ante otro pedido
 M10 añade la comprobación de cola: cuatro reservas únicas, atención exclusiva
 de la cabeza, avance al completar Exit y entrada del siguiente sin atravesar
 cocina. Ver la secuencia de dos ventas, rechazo y paciencia cero en [M10](M10.md).
-M11 añade horario y dos jornadas consecutivas en [M11](M11.md): cerrar admisiones,
+M19 sustituye apertura/fin automáticos por [el loop explícito de múltiples días](M19.md).
+M11 añadió históricamente horario y dos jornadas consecutivas en [M11](M11.md): cerrar admisiones,
 terminar clientes y empezar otro día conservando saldo y estados alimentarios.
 M13 añade [liquidación y resultado real](M13.md#prueba-manual-de-un-día-completo):
-al terminar el último cliente, alquiler se cobra una vez y electricidad queda pendiente; se consulta
+M19 traslada el alquiler al End Day explícito después del último cliente; electricidad queda pendiente; se consulta
 Summary y se inicia el siguiente día conservando todo salvo acumuladores diarios.
 
 1. Abrir `PrototypeRestaurant`; iniciar Play y comprobar 10 € de desarrollo

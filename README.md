@@ -61,8 +61,9 @@ empieza **sin corriente**; encender en la pared norte antes de cocinar/enfriar.
 Cada aparato tiene ON/OFF individual con **E** al apuntar a su cuerpo; su selección
 se conserva durante cortes/restauración. Inicialmente los tres están ON.
 M13 añade [costes y resultado diario](Docs/M13.md): el mismo ledger registra
-compras/ventas y liquida alquiler una vez al terminar el
-último cliente. El resumen permanece hasta Next Day y el saldo puede ser negativo.
+compras/ventas. M19 liquida el alquiler una vez en End Day, después del
+último cliente, permitiendo organizar y comprar en Closed.
+El resumen permanece hasta Next Day y el saldo puede ser negativo.
 La escena usa **10 € de desarrollo** configurables;
 la primera provisión con 0 € sigue siendo una deuda de diseño.
 La escena de plantilla
@@ -153,14 +154,18 @@ La zona pública queda al sur del mostrador; los clientes entran por la puerta
 oeste y salen por la puerta este. Los cuatro QueuePoints forman la cola M10:
 el primero es Service Position. El jugador empieza en cocina.
 
-M11 inicia Day 1 a las 09:00, abre a las 09:00 y cierra a las 17:00; velocidad
-de mundo 60 (ocho minutos de horario). El HUD muestra día/hora/fase. Solo Open
-admite clientes nuevos; los que ya están dentro terminan después del cierre.
-En `CustomerServiceZone`, usar el menú contextual de RestaurantDayController
-**Development: Start Day / Next Day** cuando quede Closed. El mismo componente
-permite pausa/resume del reloj para desarrollo. Hora del mundo y FoodSimulation
-tienen velocidades independientes; Next Day no avanza una noche ni resetea comida
-o saldo. Ver [M11](Docs/M11.md) para configuración y prueba de dos días consecutivos.
+[M19](Docs/M19.md) inicia **DAY 1 — 08:00 PREPARATION**, sin clientes.
+**Enter: Open Restaurant** abre a las 09:00; cierre 17:00, velocidad de mundo 60.
+Closing conserva las visitas hasta Exit. Closed permite organizar, limpiar, almacenar
+y comprar. **Enter: End Day** liquida costes fijos una vez y muestra el resumen.
+**Enter: Start Next Day** entra en Day 2 Preparation; repetir permite Day 3/4.
+
+Conserva dinero, Food/Dish/Plate, almacenamiento, suciedad, contaminación, reputación,
+incidentes pendientes, objetos y estados eléctricos. Solo reinician diarios, hora y
+delay. El calendario no suma noche a GameTime ni FoodSimulation; riesgos M16 siguen
+al avanzar normalmente el mundo después de abrir. Force Close, End Current Day y
+Start Next Day quedan en Inspector con el mismo flujo. Ver [recorrido y límites](Docs/M19.md)
+y [ADR 0029](Docs/Decisions/0029-multi-day-restaurant-loop.md).
 
 Configuración comprobada: **URP 17.5.0**, calidad PC activa y color Linear;
 **Input System 1.19.0** como sistema de entrada activo;
@@ -175,12 +180,12 @@ totales y por aparato; ON/OFF conserva energía. Next Day conserva los históric
 y reinicia solo los diarios. Ver [M12](Docs/M12.md) y [M13](Docs/M13.md).
 
 M13 configura 3 € de alquiler/día y 30 céntimos/kWh en
-`Assets/_Project/ScriptableObjects/Economy/OperatingCosts.asset`. Cuando Closing
-queda vacío, Closed cobra alquiler una sola vez y muestra Sales/Purchases/Fixed costs,
+`Assets/_Project/ScriptableObjects/Economy/OperatingCosts.asset`. M19 cobra alquiler una sola
+vez en End Day, después de Closing/Closed, y muestra Sales/Purchases/Fixed costs,
 Operating net y Balance. La electricidad se devenga y permanece pendiente entre días;
 **Development: Settle Electricity Bill** en RestaurantOperatingCosts paga el período
 una vez. [Corrección de entrega, HUD y facturación](Docs/DELIVERY-HUD-ELECTRICITY-FIX.md).
-Usar **Development: Start Day / Next Day** del controlador después
+Usar **Enter** o **Development: Start Next Day** del controlador después
 del resumen: conserva saldo, objetos y estados. [Guía de prueba de beneficio,
 pérdida y saldo negativo](Docs/M13.md#prueba-manual-de-un-día-completo).
 

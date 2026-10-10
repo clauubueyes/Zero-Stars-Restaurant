@@ -71,7 +71,10 @@
   apoyo visual de las cajas funcionales antes/después de F y sobre COLLECT HERE.
   Ver Docs/FOOD-VISUAL-PLACEMENT-REGRESSIONS.md y ADR 0028. Conservar metadata y
   tuning visual; no introducir decisiones por receta/ID en el placement runtime.
-  M19 y los sistemas posteriores no están implementados.
+  M19 implementa calendario y loop diario explícito desde `e93510e`, rama
+  `feature/multi-day-restaurant-loop`, mismo proyecto M15; ver Docs/M19.md y ADR 0029.
+  M19 validado automáticamente en `c4fd102`: 395/395 EditMode y 348/348 PlayMode;
+  aceptación manual de controles/visual pendiente. M20 y posteriores no implementados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
@@ -260,7 +263,8 @@ silenciosamente**: indícalo antes.
   conserva su único Update/driver y tiempo de simulación M3–M10: nunca avanzar
   FoodState desde la jornada ni aplicar velocidad del mundo a alimentos.
   Solo Open admite; Closing conserva clientes/pedidos hasta Exit, y ocupación
-  cero termina el día. Next Day cambia número/hora y delay de admisión, sin
+  cero permite Closed. M19 exige End Day explícito y nueva Preparation antes de abrir.
+  Next Day cambia número/hora y delay de admisión, sin
   recargar/resetear dinero, comida, platos, recibos o contador de clientes.
   No simular una noche, calendario, facturas, sueño o guardado sin autorización.
 - M12: RestaurantElectricity es el único driver de consumo, con segundos de
@@ -278,8 +282,9 @@ silenciosamente**: indícalo antes.
   existentes. Cortes/restauración y Next Day conservan selección y medidor.
   Inicialmente suministro OFF y aparatos ON; selección configurable antes de Play.
 - M13/corrección: PaymentLedger es el único saldo, con transacciones por día y
-  snapshots DailySummary inmutables. Closed cobra solo costes fijos una vez tras
-  vaciarse la cola; Next Day exige resumen. Electricidad diaria devengada y período
+  snapshots DailySummary inmutables. M19 traslada el cobro de costes fijos de
+  Closed a End Day explícito tras vaciarse la cola; Next Day exige EndOfDay y resumen.
+  Electricidad diaria devengada y período
   pendiente salen del mismo ElectricitySupplyState; no cobrar en Next Day ni sumar
   redondeos diarios. La factura de desarrollo paga un período exactamente una vez,
   conserva recibo y resetea solo pendiente; permite saldo negativo. Separar neto
@@ -347,6 +352,18 @@ silenciosamente**: indícalo antes.
   PascalCase para tipos/métodos, `_camelCase` para campos privados.
 - Documentar decisiones relevantes en `Docs/Decisions` y mantener el roadmap y
   las instrucciones de comprobación alineados con lo realmente implementado.
+
+- M19: calendario del mismo GameTime, CurrentDay/TotalDaysElapsed/HasReachedDay,
+  sin eventos concretos. Solo EndOfDay → Preparation incrementa +1. Open manual;
+  Closed permite compras/organización; EndCurrentDay liquida costes fijos una vez.
+  StartNextDay conserva toda la sesión y reinicia solo diarios/delay/hora. Daily*
+  M15 no borran history/totales. M16 conserva instancias/plazos monotónicos y resuelve
+  por avance normal, sin noche ni salto al abrir. GameTime != FoodSimulation time.
+  Eventos DayStarted, RestaurantOpened/Closing/Closed, DayEnded Runtime observan hooks
+  completos. Resumen real distingue peligro M15 de confirmación M16. Electricidad
+  devengada != pagada; Next Day no paga deuda. Enter en HUD existente; desarrollo
+  Inspector. Sin rebuild, otro driver, disco, noche, calendario semanal o M20.
+  Ver Docs/M19.md y ADR 0029.
 
 ## Verificación y entrega
 
