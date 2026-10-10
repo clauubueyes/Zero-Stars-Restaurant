@@ -1,7 +1,8 @@
 # Zero Star Restaurant
 
 Proyecto actual para abrir en Unity: **`C:/Users/Usuario/Zero Stars Restaurant M15`**,
-rama **`fix/post-m19-visual-stats-regressions`**, desde M19 `f6fb68c`.
+rama **`main`**, con M19 y estabilización posterior `ec90c9d`.
+[Integración en main](Docs/MAIN-M19-INTEGRATION.md) autorizada el 2026-10-10.
 [Estabilización posterior a M19](Docs/POST-M19-STABILIZATION.md): suelos sin
 solapamiento, capas de pared separadas, linteles/apoyos/encimera sin superficies
 redundantes y HUD con cuatro outcomes exclusivos. Escena instalada de forma
@@ -15,7 +16,7 @@ VP1B/C añade materiales PBR propios, revestimientos y equipment modular sobre V
 **E** en el interruptor general enciende las luminarias VP1A. En el Inspector de
 `RestaurantArtPass`, **Art Enabled** compara el arte con VP1A durante Play;
 `AtmospherePass` conserva su comparación independiente de iluminación.
-No ejecutar Rebuild; escena ya instalada. Sin merge a main ni publicación.
+No ejecutar Rebuild; escena ya instalada. La versión validada está integrada en main.
 
 Estado actual: **M19: Multi-Day Restaurant Loop**, seguido de estabilización visual
 y de presentación de estadísticas. M18 mantiene Cross-Contamination & Food Safety. Proyecto entregado:

@@ -54,6 +54,11 @@
   M18 validado automáticamente en `8641de3`: 384/384 EditMode y 323/323 PlayMode;
   aceptación visual/de controles humana pendiente. Cooking no sanitiza y Dirt
   sigue independiente; Next Day conserva ambos estados.
+  Integración M14–M16 en main autorizada el 2026-10-08; ver
+  Docs/MAIN-M16-INTEGRATION.md. Los commits Godot accidentales permanecen
+  en el historial, fuera del árbol Unity restaurado. M17–M18 se integraron
+  en main el 2026-10-09; ver Docs/MAIN-M18-INTEGRATION.md. El proyecto original
+  sin sufijo conserva su trabajo manual y no se sustituye.
   VP1A añade iluminación y ambiente sobre M18 validado `0cdaab3`, en
   `visual/lighting-atmosphere-pass-1`; ver Docs/VP1A.md y ADR 0025. Es presentación:
   las luminarias leen el suministro M12; no cambian reglas, materiales anteriores
@@ -75,6 +80,9 @@
   `feature/multi-day-restaurant-loop`, mismo proyecto M15; ver Docs/M19.md y ADR 0029.
   M19 validado automáticamente en `c4fd102`: 395/395 EditMode y 348/348 PlayMode;
   aceptación manual de controles/visual pendiente. M20 y posteriores no implementados.
+  Integración de M19, visual passes y estabilización `ec90c9d` en main
+  autorizada el 2026-10-10. Ver Docs/MAIN-M19-INTEGRATION.md. Entrega en M15
+  en main: 398/398 EditMode y 350/350 PlayMode; mismo código y escena validados.
   Implementar el siguiente milestone solo cuando forme parte de la tarea
   solicitada, sin anticipar todos los sistemas del roadmap.
 
